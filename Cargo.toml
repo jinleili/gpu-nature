@@ -1,0 +1,53 @@
+[package]
+name = "nature"
+version = "0.1.0"
+authors = ["li jinlei <grenlight@icloud.com>"]
+edition = "2018"
+exclude = ["examples/**/*", "Cargo.lock", "target/**/*"]
+resolver = "2"
+
+[lib]
+crate-type = ["rlib"]
+# crate-type = ["rlib", "cdylib", "staticlib"]
+# [target.'cfg(target_os = "android")'.lib]
+# crate-type = ["cdylib"]
+
+[features]
+default = []
+# spirv = ["naga/spv-in"]
+
+[profile.release]
+# This makes the compiled code faster and smaller, but it makes compiling slower,
+# so it's only enabled in release mode.
+lto = true
+
+[dependencies]
+libc = "*"
+wgpu = {git = "https://github.com/gfx-rs/wgpu", rev="5d9c276c827e3c85da36251f1b6904733f31c6c8"}
+uni-view = { path="../idroid/uni-view" }
+idroid = { path="../idroid/idroid" }
+# uni-view = { git = "https://github.com/jinleili/idroid", branch="wgpu_0.9" }
+# idroid = { git = "https://github.com/jinleili/idroid", branch="wgpu_0.9" }
+
+nalgebra-glm = "*"
+image = "0.23"
+lazy_static = "*"
+zerocopy = "0.5"
+rand = { version = "0.7.2", features = ["wasm-bindgen"] }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+pollster = "0.2"
+# Used to print detailed info about wgsl error
+env_logger = "0.8"
+
+[target.'cfg(any(target_os = "macos", target_os = "ios"))'.dependencies]
+objc = "*"
+
+[target.'cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))'.dependencies]
+winit = { version = "0.25", features = ["web-sys"] }
+raw-window-handle = "0.3"
+log = "0.4"
+
+[dev-dependencies]
+lazy_static = "*"
+palette = "0.4"
