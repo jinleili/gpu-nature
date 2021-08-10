@@ -7,6 +7,8 @@ use diffraction::Diffraction;
 mod canvas;
 pub use canvas::Canvas;
 
+mod noise;
+
 use idroid::vertex::PosOnly;
 use idroid::vertex::PosColor as PosTangent;
 
