@@ -37,14 +37,7 @@ static P: [i32; 512] = [
     222, 114, 67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180,
 ];
 
-pub fn create_permulation_buf(device: &wgpu::Device) -> idroid::BufferObj {
-    let mut buf = idroid::BufferObj::create_storage_buffer(device, &P, None);
-    buf.read_only = true;
-    return buf;
-}
-
-pub fn create_gradient_buf(device: &wgpu::Device) -> idroid::BufferObj {
-    let data: [[f32; 4]; 16] = [
+static GRADIENT: [[f32; 4]; 16] = [
         [1.0, 1.0, 0.0, 0.0],
         [-1.0, 1.0, 0.0, 0.0],
         [1.0, -1.0, 0.0, 0.0],
@@ -62,7 +55,43 @@ pub fn create_gradient_buf(device: &wgpu::Device) -> idroid::BufferObj {
         [-1.0, 1.0, 0.0, 0.0],
         [0.0, -1.0, -1.0, 0.0],
     ];
-    let mut buf = idroid::BufferObj::create_storage_buffer(device, &data, None);
+
+pub fn create_permulation_buf(device: &wgpu::Device) -> idroid::BufferObj {
+    let mut list: Vec<[i32; 4]> = vec![];
+    // column
+    for y in 0..256 {
+        // row
+        for x in 0..256 {
+            // hash coordinates for 6 of th 8 cube corner 
+            let a = P[x] + y;
+            let aa = P[a as usize];
+            let ab = P[a as usize + 1];
+            let b = P[x + 1] + y;
+            let ba = P[b as usize];
+            let bb = P[b as usize + 1];
+            list.push([aa, ab, ba, bb]);
+        }
+    }
+    let mut buf = idroid::BufferObj::create_storage_buffer(device, &list, None);
     buf.read_only = true;
     return buf;
 }
+
+pub fn create_gradient_buf(device: &wgpu::Device) -> idroid::BufferObj {
+    let mut buf = idroid::BufferObj::create_storage_buffer(device, &GRADIENT, None);
+    buf.read_only = true;
+    return buf;
+}
+
+pub fn create_gradient_buf2(device: &wgpu::Device) -> idroid::BufferObj {
+    let mut list: [[f32; 4]; 256] = [[1.0, 1.0, 0.0, 0.0]; 256];
+    for i in 0..256 {
+        let permutation = P[i] as usize;
+        list[permutation] = GRADIENT[permutation % 16];
+    }
+    let mut buf = idroid::BufferObj::create_storage_buffer(device, &list, None);
+    buf.read_only = true;
+    return buf;
+}
+
+

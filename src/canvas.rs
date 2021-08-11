@@ -2,7 +2,7 @@ use crate::Diffraction;
 use idroid::node::BufferlessFullscreenNode;
 use idroid::{math::TouchPoint, SurfaceView};
 use uni_view::{AppView, GPUContext};
-use crate::noise::{create_permulation_buf, create_gradient_buf};
+use crate::noise::*;
 pub struct Canvas {
     pub app_view: AppView,
     pub nature_node: Diffraction,
@@ -27,6 +27,7 @@ impl Canvas {
             Some(vec![wgpu::ShaderStages::FRAGMENT, wgpu::ShaderStages::FRAGMENT]),
             &noise_shader,
         );
+
         Self { app_view, nature_node, noise_display }
     }
 }
