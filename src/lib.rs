@@ -7,6 +7,9 @@ use diffraction::Diffraction;
 mod canvas;
 pub use canvas::Canvas;
 
+mod floor;
+use floor::Floor;
+
 mod noise;
 
 use idroid::vertex::PosOnly;
@@ -24,7 +27,7 @@ pub struct MVPMatUniform {
 pub fn generate_circle_plane(r: f32, fan_segment: usize) -> (Vec<PosOnly>, Vec<u32>) {
     // WebGPU 1.0 not support Triangle_Fan primitive
     let mut vertex_list: Vec<PosOnly> = Vec::with_capacity(fan_segment + 2);
-    let z = -0.45_f32;
+    let z = 0.0_f32;
     vertex_list.push(PosOnly::new([0.0, 0.0, z]));
     vertex_list.push(PosOnly::new([r, 0.0, z]));
 
@@ -49,7 +52,7 @@ pub fn generate_circle_plane(r: f32, fan_segment: usize) -> (Vec<PosOnly>, Vec<u
 pub fn generate_disc_plane(min_r: f32, max_r: f32, fan_segment: usize) -> (Vec<PosTangent>, Vec<u32>) {
     // WebGPU 1.0 not support Triangle_Fan primitive
     let mut vertex_list: Vec<PosTangent> = Vec::with_capacity(fan_segment);
-    let z = -0.45_f32;
+    let z = 0.0_f32;
     vertex_list.push(PosTangent::new([min_r, 0.0, z], [0.0, 1.0, z, 1.0]));
     vertex_list.push(PosTangent::new([max_r, 0.0, z], [0.0, 1.0, z, 1.0]));
 

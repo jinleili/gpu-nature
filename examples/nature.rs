@@ -101,9 +101,9 @@ fn main() {
                     // if left_bt_pressed {
 
                     // }
-                    // last_touch_point = Position::new(position.x as f32, position.y as f32);
-                    // let point = TouchPoint::new_by_pos(last_touch_point);
-                    // surface_view.touch_moved(point);
+                    last_touch_point = Position::new(position.x as f32, position.y as f32);
+                    let point = TouchPoint::new_by_pos(last_touch_point);
+                    surface_view.touch_moved(point);
                 }
                 _ => {}
             },

@@ -1,34 +1,38 @@
-use idroid::node::BindingGroupSettingNode;
 use idroid::node::{ImageNodeBuilder, ImageViewNode};
-use idroid::vertex::{Pos, PosOnly};
-use idroid::{math::Size, vertex::PosParticleIndex, BufferObj};
+use idroid::{math::Size, BufferObj};
 
 use nalgebra_glm as glm;
-use uni_view::{fs::FileSystem, AppView, GPUContext};
+use uni_view::{AppView, GPUContext};
 use zerocopy::AsBytes;
 
 pub struct Diffraction {
+    mvp_buf: BufferObj,
+    mv_mat: glm::TMat4<f32>,
+    translate_z: f32,
+    proj_mat: glm::TMat4<f32>,
     disc_inner_circle: ImageViewNode,
     diffraction_node: ImageViewNode,
 }
 
 impl Diffraction {
-    pub fn new(app_view: &AppView) -> Self {
+    pub fn new(app_view: &AppView, is_use_depth_stencil: bool) -> Self {
         // let mut encoder =
         //     app_view.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
-        let viewport_size: Size<f32> = (&app_view.sc_desc).into();
-        let (p_matrix, mut mv_matrix, factor) =
+        let viewport_size: Size<f32> = (&app_view.config).into();
+        let (proj_mat, mut mv_mat, factor) =
             idroid::utils::matrix_helper::perspective_mvp(viewport_size);
-        let mut model_rotate_mat = glm::TMat4::<f32>::identity();
-        model_rotate_mat = glm::translate(&model_rotate_mat, &glm::TVec3::new(0.0, 0.0, -0.6));
-        model_rotate_mat = glm::rotate_x(&model_rotate_mat, -0.65);
-        mv_matrix = mv_matrix * model_rotate_mat;
+        // change mv_mat's z to 0
+        mv_mat = glm::translate(&mv_mat, &glm::vec3(0.0, 0.0, -factor.2));
+        let translate_z = factor.2 - 0.6;
+        let mut translate_mat = glm::TMat4::<f32>::identity();
+        translate_mat = glm::translate(&translate_mat, &glm::vec3(0.0, 0.0, translate_z));
+        let new_mv_mat = mv_mat * translate_mat;
 
-        let normal: [[f32; 4]; 4] = glm::inverse_transpose(mv_matrix).into();
+        let normal: [[f32; 4]; 4] = glm::inverse_transpose(new_mv_mat).into();
         let mvp_uniform = crate::MVPMatUniform {
-            mv: mv_matrix.into(),
-            proj: p_matrix.into(),
-            mvp: (p_matrix * mv_matrix).into(),
+            mv: new_mv_mat.into(),
+            proj: proj_mat.into(),
+            mvp: (proj_mat * new_mv_mat).into(),
             normal: normal,
             // normal: mv_matrix.into()
         };
@@ -56,7 +60,9 @@ impl Diffraction {
             .with_uniform_buffers(vec![&mvp_buf, &uniform_buf])
             .with_primitive_topology(wgpu::PrimitiveTopology::TriangleList)
             .with_vertices_and_indices((vertex_data, index_data))
-            .with_shader_states(vec![wgpu::ShaderStages::VERTEX, wgpu::ShaderStages::FRAGMENT]);
+            .with_shader_states(vec![wgpu::ShaderStages::VERTEX, wgpu::ShaderStages::FRAGMENT])
+            .with_color_format(app_view.config.format)
+            .with_use_depth_stencil(is_use_depth_stencil);
         let diffraction_node = builder.build(&app_view.device);
 
         let inner_circle_builder =
@@ -64,40 +70,60 @@ impl Diffraction {
                 .with_uniform_buffers(vec![&mvp_buf])
                 .with_primitive_topology(wgpu::PrimitiveTopology::TriangleList)
                 .with_vertices_and_indices((inner_circle_vertex_data, inner_circle_index_data))
-                .with_shader_states(vec![wgpu::ShaderStages::VERTEX]);
+                .with_shader_states(vec![wgpu::ShaderStages::VERTEX])
+                .with_color_format(app_view.config.format)
+                .with_use_depth_stencil(is_use_depth_stencil);
         let disc_inner_circle = inner_circle_builder.build(&app_view.device);
-        Self { diffraction_node, disc_inner_circle }
+        Self { proj_mat, mv_mat, translate_z, mvp_buf, diffraction_node, disc_inner_circle }
     }
+
+    pub fn rotate(&mut self, app_view: &idroid::AppView, x: f32, y: f32) {
+        let mut model_rotate_mat = glm::TMat4::<f32>::identity();
+        model_rotate_mat = glm::rotate_x(&model_rotate_mat, 0.8 * x);
+        model_rotate_mat = glm::rotate_y(&model_rotate_mat, 0.8 * y);
+
+        let translate_mat =
+            glm::translate(&glm::TMat4::<f32>::identity(), &glm::vec3(0.0, 0.0, self.translate_z));
+        let new_mv_mat = translate_mat * model_rotate_mat;
+
+        let normal: [[f32; 4]; 4] = glm::inverse_transpose(new_mv_mat).into();
+        let mvp_uniform = crate::MVPMatUniform {
+            mv: new_mv_mat.into(),
+            proj: self.proj_mat.into(),
+            mvp: (self.proj_mat * new_mv_mat).into(),
+            normal: normal,
+        };
+        app_view.queue.write_buffer(&self.mvp_buf.buffer, 0, &mvp_uniform.as_bytes());
+    }
+
     pub fn enter_frame(&mut self, app_view: &mut AppView) {
+        let (_frame, frame_view) = app_view.get_current_frame_view();
+        let color_attachments = [wgpu::RenderPassColorAttachment {
+            view: &frame_view,
+            resolve_target: None,
+            ops: wgpu::Operations {
+                load: wgpu::LoadOp::Clear(idroid::utils::alpha_color()),
+                store: true,
+            },
+        }];
+        let render_pass_descriptor = wgpu::RenderPassDescriptor {
+            label: None,
+            color_attachments: &color_attachments,
+            depth_stencil_attachment: None,
+        };
+
         let mut encoder = app_view.device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
             label: Some("diffraction encoder"),
         });
-        let frame = match app_view.swap_chain.get_current_frame() {
-            Ok(frame) => frame,
-            Err(_) => {
-                app_view.update_swap_chain();
-                app_view
-                    .swap_chain
-                    .get_current_frame()
-                    .expect("Failed to acquire next swap chain texture!")
-            }
-        };
         {
-            let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-                label: None,
-                color_attachments: &[wgpu::RenderPassColorAttachment {
-                    view: &frame.output.view,
-                    resolve_target: None,
-                    ops: wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(idroid::utils::alpha_color()),
-                        store: true,
-                    },
-                }],
-                depth_stencil_attachment: None,
-            });
-            self.diffraction_node.draw_render_pass(&mut rpass);
-            self.disc_inner_circle.draw_render_pass(&mut rpass);
+            let mut rpass = encoder.begin_render_pass(&render_pass_descriptor);
+            self.draw_render_pass(&mut rpass);
         }
         app_view.queue.submit(Some(encoder.finish()));
+    }
+
+    pub fn draw_render_pass<'a, 'b: 'a>(&'b self, rpass: &mut wgpu::RenderPass<'b>) {
+        self.diffraction_node.draw_render_pass(rpass);
+        self.disc_inner_circle.draw_render_pass(rpass);
     }
 }
