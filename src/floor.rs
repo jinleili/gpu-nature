@@ -8,7 +8,9 @@ pub struct Floor {
 }
 
 impl Floor {
-    pub fn new(app_view: &idroid::AppView, is_use_depth_stencil: bool) -> Floor {
+    pub fn new(
+        app_view: &idroid::AppView, noise_tex: &idroid::AnyTexture, is_use_depth_stencil: bool,
+    ) -> Floor {
         let threadgroup_count = (62, 62, 1);
         let tex_width = 16 * 62;
         let marble_tex = idroid::load_texture::empty(
@@ -39,29 +41,41 @@ impl Floor {
 
         let (p_matrix, mut mv_matrix, factor) =
             idroid::utils::matrix_helper::perspective_mvp((&app_view.config).into());
-        mv_matrix = glm::translate(&mv_matrix, &glm::vec3(0.0, -1.1 * factor.1, -1.1));
-        let scale = factor.0 * 1.2;
-        mv_matrix = glm::scale(&mv_matrix, &glm::vec3(scale, scale , 1.0));
-        mv_matrix = glm::rotate_x(&mv_matrix, -1.57);
+        // mv_matrix = glm::translate(&mv_matrix, &glm::vec3(0.0, -1.1 * factor.1, -1.1));
+        // let scale = factor.0 * 1.2;
+        // mv_matrix = glm::scale(&mv_matrix, &glm::vec3(scale, scale, 1.0));
+        // mv_matrix = glm::rotate_x(&mv_matrix, -1.57);
 
-        let mvp_buf = idroid::BufferObj::create_uniform_buffer(
-            &app_view.device,
-            &idroid::MVPUniform { mvp_matrix: (p_matrix * mv_matrix).into() },
-            None,
-        );
+        let rotate_mat = glm::rotate_x(&glm::TMat4::<f32>::identity(), -1.57);
+        let translate_mat =
+            glm::translate(&glm::TMat4::<f32>::identity(), &glm::vec3(0.0, -1.0, -2.0));
+        let new_mv_mat = translate_mat * rotate_mat;
+
+        let normal: [[f32; 4]; 4] = glm::inverse_transpose(new_mv_mat).into();
+        let mvp_uniform = crate::MVPMatUniform {
+            mv: new_mv_mat.into(),
+            proj: p_matrix.into(),
+            mvp: (p_matrix * new_mv_mat).into(),
+            normal: normal,
+        };
+        let mvp_buf =
+            idroid::BufferObj::create_uniform_buffer(&app_view.device, &mvp_uniform, None);
         let (vertices, indices) = idroid::geometry::Plane::new(1, 1).generate_vertices();
         let floor_shader = idroid::shader::create_shader_module(&app_view.device, "floor", None);
         let default_sampler = idroid::load_texture::default_sampler(&app_view.device);
+        let mirror_sampler = idroid::load_texture::mirror_repeate_sampler(&app_view.device);
         let builder = ImageNodeBuilder::<idroid::vertex::PosTex>::new(
-            vec![(&marble_tex, None)],
+            vec![(&marble_tex, None), (noise_tex, None)],
             &floor_shader,
         )
-        .with_samplers(vec![&default_sampler])
+        .with_samplers(vec![&default_sampler, &mirror_sampler])
         .with_uniform_buffers(vec![&mvp_buf])
         .with_vertices_and_indices((vertices, indices))
         .with_primitive_topology(wgpu::PrimitiveTopology::TriangleList)
         .with_shader_states(vec![
             wgpu::ShaderStages::VERTEX,
+            wgpu::ShaderStages::FRAGMENT,
+            wgpu::ShaderStages::FRAGMENT,
             wgpu::ShaderStages::FRAGMENT,
             wgpu::ShaderStages::FRAGMENT,
         ])

@@ -18,7 +18,7 @@ fn main() {
     let events_loop = EventLoop::new();
     // let events_loop: EventLoop<(i32, String)> = EventLoop::with_user_event();
     // let proxy = events_loop.create_proxy();
-    let size = winit::dpi::Size::Logical(winit::dpi::LogicalSize { width: 1000.0, height: 780.0 });
+    let size = winit::dpi::Size::Logical(winit::dpi::LogicalSize { width: 800.0, height: 800.0 });
 
     let builder = winit::window::WindowBuilder::new().with_inner_size(size).with_title("gpu-nature");
     let window = builder.build(&events_loop).unwrap();

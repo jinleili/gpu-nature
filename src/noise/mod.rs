@@ -4,6 +4,9 @@
 
 use std::vec::Vec;
 
+mod d3_noise_texture;
+pub use d3_noise_texture::D3NoiseTexture;
+
 pub mod noise_image;
 
 mod cpu_simplex_noise;

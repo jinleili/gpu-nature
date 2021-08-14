@@ -51,7 +51,7 @@ fn noise(pos: vec3<f32>) -> f32 {
             lerp( grad(hash.y, decimal_part_pos + vec3<f32>(0.0, -1.0, 0.0)), 
                 grad(hash.w, decimal_part_pos + vec3<f32>(-1.0, -1.0, 0.0)), f.x), 
             f.y),      
-        lerp(lerp(grad(hash.x + 1, decimal_part_pos + vec3<f32>(0.0, 0.0, -1.0)), grad(hash.z + 1, decimal_part_pos + vec3<f32>(-1.0, 0.0, -1.0)), f.x),           
+        lerp(lerp( grad(hash.x + 1, decimal_part_pos + vec3<f32>(0.0, 0.0, -1.0)), grad(hash.z + 1, decimal_part_pos + vec3<f32>(-1.0, 0.0, -1.0)), f.x),           
             lerp( grad(hash.y + 1, decimal_part_pos + vec3<f32>(0.0, -1.0, -1.0)), 
                 grad(hash.w + 1, decimal_part_pos + vec3<f32>(-1.0, -1.0, -1.0)), f.x), 
             f.y),

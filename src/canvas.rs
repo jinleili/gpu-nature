@@ -7,6 +7,7 @@ pub struct Canvas {
     pub app_view: AppView,
     dc_origin: Position,
     depth_tex: idroid::AnyTexture,
+    d3_noise: crate::noise::D3NoiseTexture,
     nature_node: Diffraction,
     floor_node: crate::Floor,
 }
@@ -27,12 +28,15 @@ impl Canvas {
             Some(wgpu::TextureViewDimension::D2),
             Some(wgpu::TextureUsages::RENDER_ATTACHMENT),
         );
+
+        let d3_noise = crate::noise::D3NoiseTexture::create(&app_view);
+
         let nature_node = Diffraction::new(&app_view, true);
 
         // floor
-        let floor_node = crate::Floor::new(&app_view, true);
+        let floor_node = crate::Floor::new(&app_view, &d3_noise.tex, true);
 
-        Self { app_view, dc_origin, depth_tex, nature_node, floor_node }
+        Self { app_view, dc_origin, depth_tex, d3_noise, nature_node, floor_node }
     }
 }
 
@@ -59,7 +63,7 @@ impl SurfaceView for Canvas {
             view: &frame_view,
             resolve_target: None,
             ops: wgpu::Operations {
-                load: wgpu::LoadOp::Clear(wgpu::Color { r: 0.2, g: 0.2, b: 0.3, a: 1.0 }),
+                load: wgpu::LoadOp::Clear(wgpu::Color::BLACK),
                 store: true,
             },
         }];
@@ -81,7 +85,7 @@ impl SurfaceView for Canvas {
         {
             let mut rpass = encoder.begin_render_pass(&render_pass_descriptor);
             self.floor_node.draw_render_pass(&mut rpass);
-            self.nature_node.draw_render_pass(&mut rpass);
+            // self.nature_node.draw_render_pass(&mut rpass);
         }
         self.app_view.queue.submit(Some(encoder.finish()));
     }

@@ -7,7 +7,6 @@ use zerocopy::AsBytes;
 
 pub struct Diffraction {
     mvp_buf: BufferObj,
-    mv_mat: glm::TMat4<f32>,
     translate_z: f32,
     proj_mat: glm::TMat4<f32>,
     disc_inner_circle: ImageViewNode,
@@ -19,22 +18,16 @@ impl Diffraction {
         // let mut encoder =
         //     app_view.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
         let viewport_size: Size<f32> = (&app_view.config).into();
-        let (proj_mat, mut mv_mat, factor) =
+        let (proj_mat, mv_mat, factor) =
             idroid::utils::matrix_helper::perspective_mvp(viewport_size);
         // change mv_mat's z to 0
-        mv_mat = glm::translate(&mv_mat, &glm::vec3(0.0, 0.0, -factor.2));
         let translate_z = factor.2 - 0.6;
-        let mut translate_mat = glm::TMat4::<f32>::identity();
-        translate_mat = glm::translate(&translate_mat, &glm::vec3(0.0, 0.0, translate_z));
-        let new_mv_mat = mv_mat * translate_mat;
 
-        let normal: [[f32; 4]; 4] = glm::inverse_transpose(new_mv_mat).into();
         let mvp_uniform = crate::MVPMatUniform {
-            mv: new_mv_mat.into(),
+            mv: mv_mat.into(),
             proj: proj_mat.into(),
-            mvp: (proj_mat * new_mv_mat).into(),
-            normal: normal,
-            // normal: mv_matrix.into()
+            mvp: (proj_mat * mv_mat).into(),
+            normal: mv_mat.into(),
         };
         let mvp_buf = BufferObj::create_uniform_buffer(&app_view.device, &mvp_uniform, None);
         let light_x: f32 = -0.0;
@@ -74,12 +67,13 @@ impl Diffraction {
                 .with_color_format(app_view.config.format)
                 .with_use_depth_stencil(is_use_depth_stencil);
         let disc_inner_circle = inner_circle_builder.build(&app_view.device);
-        Self { proj_mat, mv_mat, translate_z, mvp_buf, diffraction_node, disc_inner_circle }
+        let mut instance = Self { proj_mat, translate_z, mvp_buf, diffraction_node, disc_inner_circle };
+        instance.rotate(app_view, -0.3, -0.4);
+        instance
     }
 
     pub fn rotate(&mut self, app_view: &idroid::AppView, x: f32, y: f32) {
-        let mut model_rotate_mat = glm::TMat4::<f32>::identity();
-        model_rotate_mat = glm::rotate_x(&model_rotate_mat, 0.8 * x);
+        let mut model_rotate_mat = glm::rotate_x(&glm::TMat4::<f32>::identity(), 0.8 * x);
         model_rotate_mat = glm::rotate_y(&model_rotate_mat, 0.8 * y);
 
         let translate_mat =
