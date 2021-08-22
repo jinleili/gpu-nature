@@ -34,26 +34,26 @@ impl Diffraction {
         let light_y: f32 = -5.0;
         let light_z: f32 = 10.0;
         // distance between adjacent tracks: CD 1600nm, DVD 740nm
-        let d: f32 = 1600.0;
+        let d: f32 = 1240.0;
         let uniform_buf = BufferObj::create_uniform_buffer(
             &app_view.device,
             &[light_x, light_y, light_z, d],
             None,
         );
 
-        let (vertex_data, index_data) = crate::generate_disc_plane(0.255, 0.99, 220);
+        let (vertex_data, index_data) = crate::generate_disc_plane(0.255, 0.99, 360);
         let (inner_circle_vertex_data, inner_circle_index_data) =
             crate::generate_disc_plane(0.1, 0.26, 50);
 
         let diffraction_shader =
-            idroid::shader::create_shader_module(&app_view.device, "diffraction", None);
+            idroid::shader::create_shader_module(&app_view.device, "diffraction_vertex", None);
         let simle_shader = idroid::shader::create_shader_module(&app_view.device, "simple", None);
 
         let builder = ImageNodeBuilder::<crate::PosTangent>::new(vec![], &diffraction_shader)
             .with_uniform_buffers(vec![&mvp_buf, &uniform_buf])
             .with_primitive_topology(wgpu::PrimitiveTopology::TriangleList)
             .with_vertices_and_indices((vertex_data, index_data))
-            .with_shader_stages(vec![wgpu::ShaderStages::VERTEX, wgpu::ShaderStages::FRAGMENT])
+            .with_shader_stages(vec![wgpu::ShaderStages::VERTEX, wgpu::ShaderStages::VERTEX])
             .with_color_format(app_view.config.format)
             .with_use_depth_stencil(is_use_depth_stencil);
         let diffraction_node = builder.build(&app_view.device);
