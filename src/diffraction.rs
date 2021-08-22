@@ -41,7 +41,7 @@ impl Diffraction {
             None,
         );
 
-        let (vertex_data, index_data) = crate::generate_disc_plane(0.255, 0.99, 150);
+        let (vertex_data, index_data) = crate::generate_disc_plane(0.255, 0.99, 220);
         let (inner_circle_vertex_data, inner_circle_index_data) =
             crate::generate_disc_plane(0.1, 0.26, 50);
 
@@ -53,7 +53,7 @@ impl Diffraction {
             .with_uniform_buffers(vec![&mvp_buf, &uniform_buf])
             .with_primitive_topology(wgpu::PrimitiveTopology::TriangleList)
             .with_vertices_and_indices((vertex_data, index_data))
-            .with_shader_states(vec![wgpu::ShaderStages::VERTEX, wgpu::ShaderStages::FRAGMENT])
+            .with_shader_stages(vec![wgpu::ShaderStages::VERTEX, wgpu::ShaderStages::FRAGMENT])
             .with_color_format(app_view.config.format)
             .with_use_depth_stencil(is_use_depth_stencil);
         let diffraction_node = builder.build(&app_view.device);
@@ -63,7 +63,7 @@ impl Diffraction {
                 .with_uniform_buffers(vec![&mvp_buf])
                 .with_primitive_topology(wgpu::PrimitiveTopology::TriangleList)
                 .with_vertices_and_indices((inner_circle_vertex_data, inner_circle_index_data))
-                .with_shader_states(vec![wgpu::ShaderStages::VERTEX])
+                .with_shader_stages(vec![wgpu::ShaderStages::VERTEX])
                 .with_color_format(app_view.config.format)
                 .with_use_depth_stencil(is_use_depth_stencil);
         let disc_inner_circle = inner_circle_builder.build(&app_view.device);
@@ -73,7 +73,7 @@ impl Diffraction {
     }
 
     pub fn rotate(&mut self, app_view: &idroid::AppView, x: f32, y: f32) {
-        let mut model_rotate_mat = glm::rotate_x(&glm::TMat4::<f32>::identity(), 0.8 * x);
+        let mut model_rotate_mat = glm::rotate_x(&glm::Mat4::identity(), 0.8 * x);
         model_rotate_mat = glm::rotate_y(&model_rotate_mat, 0.8 * y);
 
         let translate_mat =

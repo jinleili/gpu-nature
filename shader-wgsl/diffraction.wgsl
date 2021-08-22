@@ -23,7 +23,7 @@ fn main(
     var output: VertexOutput;
     output.position = mvp_mat.mvp * vec4<f32>(pos, 1.0);
     output.ec_pos = (mvp_mat.mv * vec4<f32>(pos, 1.0)).xyz;
-    output.transf_tangent = normalize((mvp_mat.normal * tangent).xyz);
+    output.transf_tangent = (mvp_mat.normal * tangent).xyz;
 
     return output;
 }
@@ -70,7 +70,7 @@ fn main(in: VertexOutput) -> [[location(0)]] vec4<f32> {
     let to_light = normalize(vec3<f32>(params.light_x, params.light_y, params.light_z) - in.ec_pos);
     let to_eye = normalize(vec3<f32>(0.0) - in.ec_pos);
 
-    let sum = dot(to_light + to_eye, in.transf_tangent);
+    let sum = dot(to_light + to_eye, normalize(in.transf_tangent));
     let delta = params.d *  abs(sum);
     let m_min = i32(floor(delta / LAMBDA_MAX));
     let m_max = i32(ceil(delta / LAMBDA_MIN));

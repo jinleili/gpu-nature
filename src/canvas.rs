@@ -85,7 +85,7 @@ impl SurfaceView for Canvas {
         {
             let mut rpass = encoder.begin_render_pass(&render_pass_descriptor);
             self.floor_node.draw_render_pass(&mut rpass);
-            // self.nature_node.draw_render_pass(&mut rpass);
+            self.nature_node.draw_render_pass(&mut rpass);
         }
         self.app_view.queue.submit(Some(encoder.finish()));
     }

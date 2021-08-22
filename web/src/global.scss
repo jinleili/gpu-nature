@@ -1,0 +1,87 @@
+$main-bg-color: #111324;
+
+$toolbox-bg-color: #24272b;
+$toolbox-width: 440px;
+
+$toolbox-txt-color: #bbb;
+$tips-txt-color: #83929c;
+$highlight-txt-color: rgb(102, 148, 207);
+$disaled-txt-color: #666;
+
+$border-color: #495158;
+$border: $border-color solid 1px;
+$highlight-border: #3a6092 solid 1px;
+$border-radius: 8px;
+
+$hover-bg-color: #49515877;
+
+body {
+  margin: 0px;
+  padding: 0px;
+  background-color: $main-bg-color;
+  font-size: 14px;
+  width: 100%;
+  min-width: 100vh;
+}
+
+select {
+  /* Additional resets for further consistency */
+  background-color: transparent;
+  border: $border;
+  border-radius: $border-radius;
+  padding: 0 10px 0 10px;
+  margin: 0;
+  width: 100%;
+  // Remove focus outline, will add on alternate element
+  outline: none;
+}
+option {
+  background-color: $toolbox-bg-color;
+}
+
+ul {
+  margin: 5px 0px;
+}
+
+.divider {
+  width: 100%;
+  height: 1px;
+  border-bottom: $border;
+  margin: 8px 0;
+}
+
+.tips {
+  margin-top: 10px;
+  font-size: 15px;
+  color: $tips-txt-color;
+}
+.border_comp {
+  border-color: $border-color;
+  border-width: 1px;
+  border-radius: 8px;
+  height: 36px;
+  background-color: #00000000;
+  color: #bbb;
+  width: 100%;
+}
+
+.cornerBt {
+  border: $highlight-border;
+  background-color: transparent;
+  height: 38px;
+  border-radius: 19px;
+  padding: 0px 20px 0px 20px;
+  color: $tips-txt-color;
+  font-size: 17px;
+  cursor: pointer;
+}
+
+.cornerBt:hover {
+  background-color: $hover-bg-color;
+  color: $highlight-txt-color;
+}
+
+.isDisabled {
+  cursor: not-allowed;
+  color: $disaled-txt-color;
+}

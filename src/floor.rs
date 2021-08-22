@@ -72,7 +72,7 @@ impl Floor {
         .with_uniform_buffers(vec![&mvp_buf])
         .with_vertices_and_indices((vertices, indices))
         .with_primitive_topology(wgpu::PrimitiveTopology::TriangleList)
-        .with_shader_states(vec![
+        .with_shader_stages(vec![
             wgpu::ShaderStages::VERTEX,
             wgpu::ShaderStages::FRAGMENT,
             wgpu::ShaderStages::FRAGMENT,

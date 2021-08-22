@@ -23,7 +23,7 @@ lto = true
 
 [dependencies]
 libc = "*"
-wgpu = {git = "https://github.com/gfx-rs/wgpu", rev="1e7d86b655cedc0f463f675848f3fd6410c8f8c1"}
+wgpu = {git = "https://github.com/gfx-rs/wgpu", rev="8f02b73655aff641361822a8ac0347fc47622b49"}
 uni-view = { path="../idroid/uni-view" }
 idroid = { path="../idroid/idroid" }
 # uni-view = { git = "https://github.com/jinleili/idroid", branch="wgpu_0.9" }
@@ -44,10 +44,159 @@ env_logger = "0.8"
 objc = "*"
 
 [target.'cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))'.dependencies]
-winit = { version = "0.25", features = ["web-sys"] }
+winit = { version = "0.25", features = [] }
 raw-window-handle = "0.3"
 log = "0.4"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+winit = { version = "0.25", features = ["web-sys"] }
+# The `wasm-bindgen` crate provides the bare minimum functionality needed
+# to interact with JavaScript.
+wasm-bindgen = "0.2.73"
+# `wee_alloc` is a tiny allocator for wasm that is only ~1K in code size
+# compared to the default allocator's ~10K. However, it is slower than the default
+# allocator, so it's not enabled by default.
+wee_alloc = { version = "0.4.5", optional = true }
+web-sys = { version = "=0.3.51", features = [
+    "Storage",
+    "Document",
+    "HtmlCollection",
+    "EventListener",
+    "EventTarget",
+    "Navigator",
+    "Node",
+    "NodeList",
+    "RadioNodeList",
+    "Gpu",
+    "GpuAdapter",
+    "GpuAdapterFeatures",
+    "GpuAdapterLimits",
+    "GpuAddressMode",
+    "GpuBindGroup",
+    "GpuBindGroupDescriptor",
+    "GpuBindGroupEntry",
+    "GpuBindGroupLayout",
+    "GpuBindGroupLayoutDescriptor",
+    "GpuBindGroupLayoutEntry",
+    "GpuBlendComponent",
+    "GpuBlendFactor",
+    "GpuBlendOperation",
+    "GpuBlendState",
+    "GpuBuffer",
+    "GpuBufferBinding",
+    "GpuBufferBindingLayout",
+    "GpuBufferBindingType",
+    "GpuBufferDescriptor",
+    "GpuBufferUsage",
+    "GpuCanvasContext",
+    "GpuColorDict",
+    "GpuColorTargetState",
+    "GpuColorWrite",
+    "GpuCommandBuffer",
+    "GpuCommandBufferDescriptor",
+    "GpuCommandEncoder",
+    "GpuCommandEncoderDescriptor",
+    "GpuCompareFunction",
+    "GpuCompilationInfo",
+    "GpuCompilationMessage",
+    "GpuCompilationMessageType",
+    "GpuComputePassDescriptor",
+    "GpuComputePassEncoder",
+    "GpuComputePipeline",
+    "GpuComputePipelineDescriptor",
+    "GpuCullMode",
+    "GpuDepthStencilState",
+    "GpuDevice",
+    "GpuDeviceDescriptor",
+    "GpuDeviceLostInfo",
+    "GpuDeviceLostReason",
+    "GpuErrorFilter",
+    "GpuExtent3dDict",
+    "GpuFeatureName",
+    "GpuFilterMode",
+    "GpuFragmentState",
+    "GpuFrontFace",
+    "GpuImageCopyBuffer",
+    "GpuImageCopyImageBitmap",
+    "GpuImageCopyTexture",
+    "GpuImageDataLayout",
+    "GpuIndexFormat",
+    "GpuInputStepMode",
+    "GpuLoadOp",
+    "GpuMapMode",
+    "GpuMultisampleState",
+    "GpuObjectDescriptorBase",
+    "GpuOrigin2dDict",
+    "GpuOrigin3dDict",
+    "GpuOutOfMemoryError",
+    "GpuPipelineDescriptorBase",
+    "GpuPipelineLayout",
+    "GpuPipelineLayoutDescriptor",
+    "GpuPipelineStatisticName",
+    "GpuPowerPreference",
+    "GpuPrimitiveState",
+    "GpuPrimitiveTopology",
+    "GpuProgrammableStage",
+    "GpuQuerySet",
+    "GpuQuerySetDescriptor",
+    "GpuQueryType",
+    "GpuQueue",
+    "GpuRenderBundle",
+    "GpuRenderBundleDescriptor",
+    "GpuRenderBundleEncoder",
+    "GpuRenderBundleEncoderDescriptor",
+    "GpuRenderPassColorAttachment",
+    "GpuRenderPassDepthStencilAttachment",
+    "GpuRenderPassDescriptor",
+    "GpuRenderPassEncoder",
+    "GpuRenderPipeline",
+    "GpuRenderPipelineDescriptor",
+    "GpuRequestAdapterOptions",
+    "GpuSampler",
+    "GpuSamplerBindingLayout",
+    "GpuSamplerBindingType",
+    "GpuSamplerDescriptor",
+    "GpuShaderModule",
+    "GpuShaderModuleDescriptor",
+    "GpuShaderStage",
+    "GpuStencilFaceState",
+    "GpuStencilOperation",
+    "GpuStorageTextureAccess",
+    "GpuStorageTextureBindingLayout",
+    "GpuStoreOp",
+    "GpuSwapChain",
+    "GpuSwapChainDescriptor",
+    "GpuTexture",
+    "GpuTextureAspect",
+    "GpuTextureBindingLayout",
+    "GpuTextureDescriptor",
+    "GpuTextureDimension",
+    "GpuTextureFormat",
+    "GpuTextureSampleType",
+    "GpuTextureUsage",
+    "GpuTextureView",
+    "GpuTextureViewDescriptor",
+    "GpuTextureViewDimension",
+    "GpuUncapturedErrorEvent",
+    "GpuUncapturedErrorEventInit",
+    "GpuValidationError",
+    "GpuVertexAttribute",
+    "GpuVertexBufferLayout",
+    "GpuVertexFormat",
+    "GpuVertexState",
+    "HtmlCanvasElement",
+    "Location",
+    "Window",
+    "XmlHttpRequest",
+    "XmlHttpRequestResponseType",
+]}
+js-sys = "0.3.50"
+wasm-bindgen-futures = "0.4.23"
+console_log = "0.1.2"
 
 [dev-dependencies]
 lazy_static = "*"
 palette = "0.4"
+
+[target.'cfg(target_arch = "wasm32")'.dev-dependencies]
+wasm-bindgen-test = "0.3.23"
