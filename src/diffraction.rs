@@ -1,4 +1,4 @@
-use idroid::node::{ImageNodeBuilder, ImageViewNode};
+use idroid::node::{ViewNode, ViewNodeBuilder};
 use idroid::{math::Size, BufferObj};
 
 use nalgebra_glm as glm;
@@ -9,8 +9,8 @@ pub struct Diffraction {
     mvp_buf: BufferObj,
     translate_z: f32,
     proj_mat: glm::TMat4<f32>,
-    disc_inner_circle: ImageViewNode,
-    diffraction_node: ImageViewNode,
+    disc_inner_circle: ViewNode,
+    diffraction_node: ViewNode,
 }
 
 impl Diffraction {
@@ -49,7 +49,7 @@ impl Diffraction {
             idroid::shader::create_shader_module(&app_view.device, "diffraction_vertex", None);
         let simle_shader = idroid::shader::create_shader_module(&app_view.device, "simple", None);
 
-        let builder = ImageNodeBuilder::<crate::PosTangent>::new(vec![], &diffraction_shader)
+        let builder = ViewNodeBuilder::<crate::PosTangent>::new(vec![], &diffraction_shader)
             .with_uniform_buffers(vec![&mvp_buf, &uniform_buf])
             .with_primitive_topology(wgpu::PrimitiveTopology::TriangleList)
             .with_vertices_and_indices((vertex_data, index_data))
@@ -58,16 +58,16 @@ impl Diffraction {
             .with_use_depth_stencil(is_use_depth_stencil);
         let diffraction_node = builder.build(&app_view.device);
 
-        let inner_circle_builder =
-            ImageNodeBuilder::<crate::PosTangent>::new(vec![], &simle_shader)
-                .with_uniform_buffers(vec![&mvp_buf])
-                .with_primitive_topology(wgpu::PrimitiveTopology::TriangleList)
-                .with_vertices_and_indices((inner_circle_vertex_data, inner_circle_index_data))
-                .with_shader_stages(vec![wgpu::ShaderStages::VERTEX])
-                .with_color_format(app_view.config.format)
-                .with_use_depth_stencil(is_use_depth_stencil);
+        let inner_circle_builder = ViewNodeBuilder::<crate::PosTangent>::new(vec![], &simle_shader)
+            .with_uniform_buffers(vec![&mvp_buf])
+            .with_primitive_topology(wgpu::PrimitiveTopology::TriangleList)
+            .with_vertices_and_indices((inner_circle_vertex_data, inner_circle_index_data))
+            .with_shader_stages(vec![wgpu::ShaderStages::VERTEX])
+            .with_color_format(app_view.config.format)
+            .with_use_depth_stencil(is_use_depth_stencil);
         let disc_inner_circle = inner_circle_builder.build(&app_view.device);
-        let mut instance = Self { proj_mat, translate_z, mvp_buf, diffraction_node, disc_inner_circle };
+        let mut instance =
+            Self { proj_mat, translate_z, mvp_buf, diffraction_node, disc_inner_circle };
         instance.rotate(app_view, -0.3, -0.4);
         instance
     }

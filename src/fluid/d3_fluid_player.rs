@@ -74,6 +74,7 @@ impl D3FluidPlayer {
             },
             Some(wgpu::TextureViewDimension::D2),
             Some(wgpu::TextureUsages::RENDER_ATTACHMENT),
+            Some("depth_tex")
         );
         let particles_render = super::D3ParticleRenderNode::new(
             device,

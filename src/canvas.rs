@@ -1,6 +1,6 @@
 use crate::noise::*;
 use crate::Diffraction;
-use idroid::node::{BufferlessFullscreenNode, ComputeNode, ImageNodeBuilder, ImageViewNode};
+use idroid::node::{BufferlessFullscreenNode, ComputeNode, ViewNode, ViewNodeBuilder};
 use idroid::{math::Position, math::TouchPoint, SurfaceView};
 use uni_view::{AppView, GPUContext};
 pub struct Canvas {
@@ -27,6 +27,7 @@ impl Canvas {
             },
             Some(wgpu::TextureViewDimension::D2),
             Some(wgpu::TextureUsages::RENDER_ATTACHMENT),
+            Some("depth_tex"),
         );
 
         let d3_noise = crate::noise::D3NoiseTexture::create(&app_view);
@@ -62,10 +63,7 @@ impl SurfaceView for Canvas {
         let color_attachments = [wgpu::RenderPassColorAttachment {
             view: &frame_view,
             resolve_target: None,
-            ops: wgpu::Operations {
-                load: wgpu::LoadOp::Clear(wgpu::Color::BLACK),
-                store: true,
-            },
+            ops: wgpu::Operations { load: wgpu::LoadOp::Clear(wgpu::Color::BLACK), store: true },
         }];
         let render_pass_descriptor = wgpu::RenderPassDescriptor {
             label: None,

@@ -23,7 +23,7 @@ fn main() {
     let builder = winit::window::WindowBuilder::new().with_inner_size(size).with_title("gpu-nature");
     let window = builder.build(&events_loop).unwrap();
 
-    let v = pollster::block_on(AppView::new(window));
+    let v = pollster::block_on(AppView::new(window, false));
 
     // let mut surface_view = CombinateCanvas::new(v);
     let mut surface_view = Canvas::new(v);

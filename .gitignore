@@ -3,6 +3,7 @@ shader-preprocessed-wgsl/
 src/web/generated_shader_map.rs
 GPU-Frame-Capture/
 web-test/
+WGPU_TRACE/
 Cargo.lock
 **/*.rs.bk
 */.DS_STORE

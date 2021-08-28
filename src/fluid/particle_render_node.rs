@@ -33,6 +33,7 @@ impl ParticleRenderNode {
             },
             Some(wgpu::TextureViewDimension::D2Array),
             Some(wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::RENDER_ATTACHMENT),
+            Some("trajectory_tex"),
         );
         let mut trajectory_views: Vec<wgpu::TextureView> = vec![];
         for i in 0..2 {

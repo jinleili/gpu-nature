@@ -1,9 +1,9 @@
 use crate::noise::{create_gradient_buf, create_permulation_buf};
-use idroid::node::{BufferlessFullscreenNode, ComputeNode, ImageNodeBuilder, ImageViewNode};
+use idroid::node::{BufferlessFullscreenNode, ComputeNode, ViewNode, ViewNodeBuilder};
 use nalgebra_glm as glm;
 
 pub struct Floor {
-    display_node: ImageViewNode,
+    display_node: ViewNode,
     noise_display: BufferlessFullscreenNode,
 }
 
@@ -19,6 +19,7 @@ impl Floor {
             wgpu::Extent3d { width: tex_width, height: tex_width, depth_or_array_layers: 1 },
             None,
             Some(wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::STORAGE_BINDING),
+            Some("marble_tex"),
         );
         let permulation_buf = create_permulation_buf(&app_view.device);
         let gradient_buf = create_gradient_buf(&app_view.device);
@@ -64,7 +65,7 @@ impl Floor {
         let floor_shader = idroid::shader::create_shader_module(&app_view.device, "floor", None);
         let default_sampler = idroid::load_texture::default_sampler(&app_view.device);
         let mirror_sampler = idroid::load_texture::mirror_repeate_sampler(&app_view.device);
-        let builder = ImageNodeBuilder::<idroid::vertex::PosTex>::new(
+        let builder = ViewNodeBuilder::<idroid::vertex::PosTex>::new(
             vec![(&marble_tex, None), (noise_tex, None)],
             &floor_shader,
         )

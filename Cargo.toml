@@ -23,14 +23,14 @@ lto = true
 
 [dependencies]
 libc = "*"
-wgpu = {git = "https://github.com/gfx-rs/wgpu", rev="8f02b73655aff641361822a8ac0347fc47622b49"}
+wgpu = {git = "https://github.com/gfx-rs/wgpu", rev="5fd4fffdde0d19d5eabd5ec4f832bd95d4c9b0e1"}
 uni-view = { path="../idroid/uni-view" }
 idroid = { path="../idroid/idroid" }
 # uni-view = { git = "https://github.com/jinleili/idroid", branch="wgpu_0.9" }
 # idroid = { git = "https://github.com/jinleili/idroid", branch="wgpu_0.9" }
 
 nalgebra-glm = "*"
-image = "0.23"
+image =  { version = "0.23", default-features = false, features = ["png"] }
 lazy_static = "*"
 zerocopy = "0.5"
 rand = { version = "0.7.2", features = ["wasm-bindgen"] }
@@ -52,12 +52,12 @@ log = "0.4"
 winit = { version = "0.25", features = ["web-sys"] }
 # The `wasm-bindgen` crate provides the bare minimum functionality needed
 # to interact with JavaScript.
-wasm-bindgen = "0.2.73"
+wasm-bindgen = "0.2.76"
 # `wee_alloc` is a tiny allocator for wasm that is only ~1K in code size
 # compared to the default allocator's ~10K. However, it is slower than the default
 # allocator, so it's not enabled by default.
 wee_alloc = { version = "0.4.5", optional = true }
-web-sys = { version = "=0.3.51", features = [
+web-sys = { version = "=0.3.53", features = [
     "Storage",
     "Document",
     "HtmlCollection",
@@ -67,10 +67,9 @@ web-sys = { version = "=0.3.51", features = [
     "Node",
     "NodeList",
     "RadioNodeList",
+    "Document",
     "Gpu",
     "GpuAdapter",
-    "GpuAdapterFeatures",
-    "GpuAdapterLimits",
     "GpuAddressMode",
     "GpuBindGroup",
     "GpuBindGroupDescriptor",
@@ -89,6 +88,7 @@ web-sys = { version = "=0.3.51", features = [
     "GpuBufferDescriptor",
     "GpuBufferUsage",
     "GpuCanvasContext",
+    "GpuCanvasConfiguration",
     "GpuColorDict",
     "GpuColorTargetState",
     "GpuColorWrite",
@@ -117,11 +117,9 @@ web-sys = { version = "=0.3.51", features = [
     "GpuFragmentState",
     "GpuFrontFace",
     "GpuImageCopyBuffer",
-    "GpuImageCopyImageBitmap",
     "GpuImageCopyTexture",
     "GpuImageDataLayout",
     "GpuIndexFormat",
-    "GpuInputStepMode",
     "GpuLoadOp",
     "GpuMapMode",
     "GpuMultisampleState",
@@ -164,8 +162,8 @@ web-sys = { version = "=0.3.51", features = [
     "GpuStorageTextureAccess",
     "GpuStorageTextureBindingLayout",
     "GpuStoreOp",
-    "GpuSwapChain",
-    "GpuSwapChainDescriptor",
+    "GpuSupportedFeatures",
+    "GpuSupportedLimits",
     "GpuTexture",
     "GpuTextureAspect",
     "GpuTextureBindingLayout",
@@ -184,11 +182,9 @@ web-sys = { version = "=0.3.51", features = [
     "GpuVertexBufferLayout",
     "GpuVertexFormat",
     "GpuVertexState",
+    "GpuVertexStepMode",
     "HtmlCanvasElement",
-    "Location",
     "Window",
-    "XmlHttpRequest",
-    "XmlHttpRequestResponseType",
 ]}
 js-sys = "0.3.50"
 wasm-bindgen-futures = "0.4.23"

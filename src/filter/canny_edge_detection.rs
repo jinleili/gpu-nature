@@ -24,6 +24,7 @@ impl CannyEdgeDetection {
             wgpu::TextureFormat::R32Float,
             extent,
             Some(wgpu::TextureUsages::SAMPLED | wgpu::TextureUsages::STORAGE),
+            None,
         )
         .1;
 
@@ -45,6 +46,7 @@ impl CannyEdgeDetection {
             wgpu::TextureFormat::Rgba8Unorm,
             extent,
             Some(wgpu::TextureUsages::SAMPLED | wgpu::TextureUsages::STORAGE),
+            None,
         )
         .1;
         let sobel_edge_detection = OneInOneOut::new(

@@ -46,6 +46,7 @@ impl FluidPlayer {
             },
             None,
             Some(wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::STORAGE_BINDING),
+            Some("curl_tex")
         );
         let curl_cal_node = ComputeNode::new(
             device,

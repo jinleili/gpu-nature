@@ -23,6 +23,7 @@ impl LuminanceFilter {
             wgpu::TextureFormat::R32Float,
             extent,
             Some(wgpu::TextureUsages::SAMPLED | wgpu::TextureUsages::STORAGE),
+            None,
         )
         .1;
 

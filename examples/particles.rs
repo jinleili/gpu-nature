@@ -22,7 +22,7 @@ fn main() {
     let builder = winit::window::WindowBuilder::new().with_inner_size(size).with_title("Particles");
     let window = builder.build(&events_loop).unwrap();
 
-    let v = pollster::block_on(AppView::new(window));
+    let v = pollster::block_on(AppView::new(window, false));
     // LBM Player
     let setting = SettingObj::new(
         FieldType::Fluid,

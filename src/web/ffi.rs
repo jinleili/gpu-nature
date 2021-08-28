@@ -106,7 +106,7 @@ pub fn run() {
     );
 
     wasm_bindgen_futures::spawn_local(async move {
-        let v = AppView::new(window).await;
+        let v = AppView::new(window, false).await;
         let mut surface_view = CombinateCanvas::new(v, setting);
 
         let container = document.get_element_by_id("canvas_container").unwrap();

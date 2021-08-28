@@ -84,6 +84,7 @@ impl D3Q15Node {
             lattice,
             Some(wgpu::TextureViewDimension::D3),
             Some(wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::STORAGE_BINDING),
+            Some("macro_tex")
         );
 
         let lattice_info_data = init_lattice_material(lattice, setting.animation_type);
