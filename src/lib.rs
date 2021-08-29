@@ -40,8 +40,8 @@ use idroid::shader::{create_shader_module, insert_code_then_create};
 #[cfg(target_arch = "wasm32")]
 use web::{create_shader_module, insert_code_then_create};
 
-use idroid::vertex::PosOnly;
 use idroid::vertex::PosColor as PosTangent;
+use idroid::vertex::PosOnly;
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, AsBytes, FromBytes)]
@@ -288,7 +288,9 @@ pub fn generate_circle_plane(r: f32, fan_segment: usize) -> (Vec<PosOnly>, Vec<u
 }
 
 // 光盘平面
-pub fn generate_disc_plane(min_r: f32, max_r: f32, fan_segment: usize) -> (Vec<PosTangent>, Vec<u32>) {
+pub fn generate_disc_plane(
+    min_r: f32, max_r: f32, fan_segment: usize,
+) -> (Vec<PosTangent>, Vec<u32>) {
     // WebGPU 1.0 not support Triangle_Fan primitive
     let mut vertex_list: Vec<PosTangent> = Vec::with_capacity(fan_segment);
     let z = 0.0_f32;
@@ -304,7 +306,12 @@ pub fn generate_disc_plane(min_r: f32, max_r: f32, fan_segment: usize) -> (Vec<P
     for i in 1..fan_segment {
         let angle = step * i as f32;
         // 切线只表达大小与方向，可以任意平移，so, Z 与平面的 Z 坐标无关
-        let tangent = [tangent_r * (angle + tan_offset_angle).cos(), tangent_r * (angle + tan_offset_angle).sin(), 0.0, 1.0];
+        let tangent = [
+            tangent_r * (angle + tan_offset_angle).cos(),
+            tangent_r * (angle + tan_offset_angle).sin(),
+            0.0,
+            1.0,
+        ];
         vertex_list.push(PosTangent::new([min_r * angle.cos(), min_r * angle.sin(), z], tangent));
         vertex_list.push(PosTangent::new([max_r * angle.cos(), max_r * angle.sin(), z], tangent));
         let index = i as u32 * 2;

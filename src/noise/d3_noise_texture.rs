@@ -27,7 +27,7 @@ impl D3NoiseTexture {
             wgpu::Extent3d { width: 64, height: 64, depth_or_array_layers: 64 },
             Some(wgpu::TextureViewDimension::D3),
             Some(wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::STORAGE_BINDING),
-            None
+            None,
         );
 
         let threadgroup_count = (8, 8, 8);

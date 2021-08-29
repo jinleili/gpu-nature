@@ -45,7 +45,7 @@ pub fn init_lattice_material(
                     }
                     FieldAnimationType::Poiseuille => {
                         // poiseuille
-                        if y == 0 || y == ny - 1 || (nz > 1 && (z == 0 || z == nz -1)){
+                        if y == 0 || y == ny - 1 || (nz > 1 && (z == 0 || z == nz - 1)) {
                             material = LatticeType::BOUNDARY as i32;
                         } else if x == 0 {
                             material = LatticeType::INLET as i32;

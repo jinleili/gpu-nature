@@ -12,7 +12,8 @@ pub fn create_noise(width: usize, height: usize) -> Vec<u8> {
                 .step(
                     ((x as f64 - (width as f64 / 2.0)) / ZOOM as f64),
                     ((y as f64 - (height as f64 / 2.0)) / ZOOM as f64),
-                ).abs();
+                )
+                .abs();
             pixels.push(((value * 0.5 + 0.5) * 255.) as u8);
             pixels.push(((value * 0.5 + 0.5) * 255.) as u8);
             pixels.push(((value * 0.5 + 0.5) * 255.) as u8);

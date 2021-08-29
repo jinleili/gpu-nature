@@ -1,4 +1,3 @@
-
 #[derive(Debug)]
 struct Grad {
     x: f64,
@@ -8,11 +7,7 @@ struct Grad {
 
 impl Grad {
     pub fn new(x: i32, y: i32, z: i32) -> Grad {
-        Grad {
-            x: x as f64,
-            y: y as f64,
-            z: z as f64,
-        }
+        Grad { x: x as f64, y: y as f64, z: z as f64 }
     }
 
     pub fn dot2(&self, x: f64, y: f64) -> f64 {

@@ -46,7 +46,7 @@ impl FluidPlayer {
             },
             None,
             Some(wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::STORAGE_BINDING),
-            Some("curl_tex")
+            Some("curl_tex"),
         );
         let curl_cal_node = ComputeNode::new(
             device,
@@ -156,7 +156,8 @@ impl Player for FluidPlayer {
         // 通过外部参数来重置流体粒子碰撞松解时间 tau = (3.0 * x + 0.5), x：[0~1] 趋大，松解时间趋快
         let tau = 3.0 * setting.fluid_viscosity + 0.5;
         let fluid_ty = if setting.animation_type == FieldAnimationType::Poiseuille { 0 } else { 1 };
-        let uniform_data = LbmUniform::new(tau, fluid_ty,  (self.lattice.width * self.lattice.height) as i32);
+        let uniform_data =
+            LbmUniform::new(tau, fluid_ty, (self.lattice.width * self.lattice.height) as i32);
         queue.write_buffer(
             &self.fluid_compute_node.lbm_uniform_buf.buffer,
             0,

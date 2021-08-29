@@ -20,7 +20,8 @@ fn main() {
     // let proxy = events_loop.create_proxy();
     let size = winit::dpi::Size::Logical(winit::dpi::LogicalSize { width: 800.0, height: 800.0 });
 
-    let builder = winit::window::WindowBuilder::new().with_inner_size(size).with_title("gpu-nature");
+    let builder =
+        winit::window::WindowBuilder::new().with_inner_size(size).with_title("gpu-nature");
     let window = builder.build(&events_loop).unwrap();
 
     let v = pollster::block_on(AppView::new(window, false));
