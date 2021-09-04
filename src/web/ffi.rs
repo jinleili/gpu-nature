@@ -59,7 +59,7 @@ struct ParticleSettingEvent {
 
 #[wasm_bindgen(start)]
 pub fn run() {
-    console_log::init_with_level(log::Level::Debug);
+    console_log::init().expect("could not initialize web logger");
 
     let event_loop: EventLoop<ParticleSettingEvent> = EventLoop::with_user_event();
     let proxy = event_loop.create_proxy();

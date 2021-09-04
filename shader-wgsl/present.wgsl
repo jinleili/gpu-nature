@@ -6,7 +6,7 @@
 
 [[group(0), binding(0)]] var<uniform> field: FieldUniform;
 [[group(0), binding(1)]] var<uniform> particle_uniform: ParticleUniform;
-[[group(0), binding(2)]] var<storage> canvas: [[access(read_write)]] CanvasBuffer;
+[[group(0), binding(2)]] var<storage, read_write> canvas: CanvasBuffer;
 
 #include "func/color_space_convert.wgsl"
 

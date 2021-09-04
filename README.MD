@@ -3,7 +3,7 @@
 ## DEMO
 
 currently, only runable on FireFox Nightly
-[https://jinleili.github.io/gpu-particles-rs.html](https://jinleili.github.io/gpu-particles-rs.html)
+[https://jinleili.github.io/gpu-nature.html](https://jinleili.github.io/gpu-nature.html)
 
 https://user-images.githubusercontent.com/1001342/120171869-0fdb0800-c235-11eb-8912-18a5b30e59cc.mov
 
@@ -12,7 +12,7 @@ https://user-images.githubusercontent.com/1001342/120171869-0fdb0800-c235-11eb-8
 ```sh
 RUST_BACKTRACE=full cargo run --example nature
 # or
-RUST_BACKTRACE=full RUST_LOG=debug WGPU_POWER_PREF=high cargo run --example nature
+RUST_BACKTRACE=full WGPU_POWER_PREF=high cargo run --example nature
 ```
 
 ## Run on browser

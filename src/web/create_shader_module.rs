@@ -1,6 +1,6 @@
 use super::generated_shader_map::*;
 use std::{borrow::Cow, collections::HashMap, fs::read_to_string, path::PathBuf};
-use wgpu::{ShaderFlags, ShaderModule, ShaderModuleDescriptor, ShaderSource};
+use wgpu::{ShaderModule, ShaderModuleDescriptor, ShaderSource};
 
 const SHADER_SEGMENT: &str = "#insert_code_segment";
 
@@ -16,7 +16,6 @@ pub fn insert_code_then_create(
     device: &wgpu::Device, shader_name: &'static str, code_segment: Option<&str>,
     label: Option<&str>,
 ) -> ShaderModule {
-    let flags = ShaderFlags::VALIDATION;
     let shader_name = shader_name.replace("/", "_");
 
     let mut shader_source = String::from("");
@@ -44,6 +43,5 @@ pub fn insert_code_then_create(
     device.create_shader_module(&ShaderModuleDescriptor {
         label,
         source: ShaderSource::Wgsl(Cow::Borrowed(&final_source)),
-        flags,
     })
 }

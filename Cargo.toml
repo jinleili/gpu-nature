@@ -7,8 +7,9 @@ exclude = ["examples/**/*", "Cargo.lock", "target/**/*"]
 resolver = "2"
 
 [lib]
-crate-type = ["rlib"]
-# crate-type = ["rlib", "cdylib", "staticlib"]
+# crate-type = ["rlib"]
+# [target.'cfg(target_arch = "wasm32")'.lib]
+crate-type = ["rlib", "cdylib"]
 # [target.'cfg(target_os = "android")'.lib]
 # crate-type = ["cdylib"]
 

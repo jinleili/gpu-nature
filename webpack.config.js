@@ -14,7 +14,11 @@ module.exports = {
     filename: "[name].js"
   },
   devServer: {
-    contentBase: dist,
+    static: {
+      directory: dist,
+    },
+    compress: true,
+    port: 8080,
   },
   module: {
     // https://webpack.js.org/concepts/loaders/
