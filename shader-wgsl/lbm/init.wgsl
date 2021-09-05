@@ -27,17 +27,9 @@ fn main([[builtin(global_invocation_id)]] GlobalInvocationID: vec3<u32>) {
   var info: LatticeInfo = lattice_info.data[field_index];
   if (isBoundaryCell(info.material) || isObstacleCell(info.material)) {
     for (var i : i32 = 0; i < 9; i = i + 1) {
-        // lattice coords that will bounce back to
-        let new_uv : vec2<i32> = uv - vec2<i32>(e(i));
-        if (new_uv.x <= 0 || new_uv.y <= 0 || new_uv.x >= (field.lattice_size.x - 1) || new_uv.y >= (field.lattice_size.y - 1)) {
-            collide_cell.data[field_index + soaOffset(i)] =  0.0;
-            stream_cell.data[field_index + soaOffset(i)] = 0.0;
-        } else {
-            // pull scheme:
-            let new_index = field_index + soaOffset(fluid.inversed_direction[i].x);
-            collide_cell.data[new_index] =  w(i);
-            stream_cell.data[new_index] = w(i);
-        }
+      // lattice coords that will bounce back to
+      collide_cell.data[field_index + soaOffset(i)] =  0.0;
+      stream_cell.data[field_index + soaOffset(i)] = 0.0;
     }
   } elseif (isPoiseuilleFlow()) {
     for (var i: i32 = 0; i < 9; i = i + 1) {
@@ -52,7 +44,7 @@ fn main([[builtin(global_invocation_id)]] GlobalInvocationID: vec3<u32>) {
   } else {
     for (var i: i32 = 0; i < 9; i = i + 1) {
       collide_cell.data[field_index + soaOffset(i)] =  w(i);
-      collide_cell.data[field_index + soaOffset(i)] =  0.0;
+      stream_cell.data[field_index + soaOffset(i)] =  0.0;
     }
   }
 

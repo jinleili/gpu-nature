@@ -1,19 +1,12 @@
-#include "lbm/layout_and_fn.wgsl"
+#include "aa_lbm/aa_layout_and_fn.wgsl"
 
-
-fn diffuse_feq(velocity : vec2<f32>, rho : f32, direction : i32)->f32 {
-  // return rho * w(direction) * (1.0 + 3.0 * dot(e(direction), velocity));
-  return rho * w(direction);
-}
-
-fn diffuse_feq2(velocity: vec2<f32>, rho: f32, direction: i32, usqr: f32) -> f32 {
-  let e_dot_u = dot(e(direction), velocity);
-  // 公式： w * (rho + 𝛙*rho(3.0 * e_dot_u + 4.5 * (e_dot_u * e_dot_u) - usqr))
-  // psi 放在 loop
-  // 外计算后传进来并不能提高性能，似乎纯数据运算的速度是极快的，减小几步运算并没有优化效果
-  let psi = smoothStep(0.01, 0.2, rho) * rho;
-  return w(direction) * (rho + psi * (3.0 * e_dot_u + 4.5 * (e_dot_u * e_dot_u) - usqr));
-}
+[[block]]
+struct TickTockUniforms {
+  // A-A pattern lattice offset
+  read_offset: [[stride(4)]] array<i32, 9>;
+  write_offset: [[stride(4)]] array<i32, 9>;
+};
+[[group(1), binding(0)]] var<uniform> params: TickTockUniforms;
 
 fn equilibrium(velocity: vec2<f32>, rho: f32, direction: i32, usqr: f32) -> f32 {
   let e_dot_u = dot(e(direction), velocity);
@@ -21,6 +14,21 @@ fn equilibrium(velocity: vec2<f32>, rho: f32, direction: i32, usqr: f32) -> f32 
   return rho * w(direction) * (1.0 + 3.0 * e_dot_u + 4.5 * (e_dot_u * e_dot_u) - usqr);
 }
 
+// pull scheme
+fn streaming_in(uv : vec2<i32>, direction : i32)->i32 {
+    var target_uv : vec2<i32> = uv + vec2<i32>(e(fluid.inversed_direction[direction].x));  
+    if (target_uv.x < 0) {
+      target_uv.x = field.lattice_size.x - 1;
+    } elseif (target_uv.x >= field.lattice_size.x) {
+      target_uv.x = 0;
+    }
+    if (target_uv.y < 0) {
+      target_uv.y = field.lattice_size.y - 1;
+    } elseif (target_uv.y >= field.lattice_size.y) {
+      target_uv.y = 0;
+    } 
+    return latticeIndex(target_uv, direction);
+}
 
 [[stage(compute), workgroup_size(64, 4)]]
 fn main([[builtin(global_invocation_id)]] GlobalInvocationID: vec3<u32>) {
@@ -30,9 +38,7 @@ fn main([[builtin(global_invocation_id)]] GlobalInvocationID: vec3<u32>) {
     }
     var field_index : i32 = fieldIndex(uv);
     var info: LatticeInfo = lattice_info.data[field_index];
-    // streaming out on boundary cell will cause crash
     if (isBoundaryCell(info.material) || isObstacleCell(info.material)) {
-      // macro_info.data[field_index] = vec4<f32>(0.0, 0.0, 0.0, 0.0);
       textureStore(macro_info, vec2<i32>(uv), vec4<f32>(0.0, 0.0, 0.0, 0.0));
       return;
     }
@@ -41,12 +47,11 @@ fn main([[builtin(global_invocation_id)]] GlobalInvocationID: vec3<u32>) {
     var velocity : vec2<f32> = vec2<f32>(0.0, 0.0);
     var rho : f32 = 0.0;
     for (var i : i32 = 0; i < 9; i = i + 1) {
-      f_i[i] = collide_cell.data[streaming_in(uv, i)];
-      // f_i[i] = collide_cell.data[field_index + soaOffset(i)];
+      f_i[i] = aa_cell.data[field_index + params.read_offset[i] + soaOffset(i)];
       rho = rho + f_i[i];
       velocity = velocity + e(i) * f_i[i];
     }
-     // reset lbm field sometimes cause Nan?
+    // reset lbm field sometimes cause Nan?
     // external force sometimes can cause Inf.
     if (isOutletCell(info.material)) {
       rho = 1.0;
@@ -76,7 +81,6 @@ fn main([[builtin(global_invocation_id)]] GlobalInvocationID: vec3<u32>) {
       }
     }
    
-    // macro_info.data[field_index] = vec4<f32>(velocity.x, velocity.y, rho, 0.0);
     textureStore(macro_info, vec2<i32>(uv), vec4<f32>(velocity.x, velocity.y, rho, 1.0));
 
     let usqr = 1.5 * dot(velocity, velocity);
@@ -87,8 +91,6 @@ fn main([[builtin(global_invocation_id)]] GlobalInvocationID: vec3<u32>) {
       } elseif (temp_val < 0.0) {
         temp_val = 0.0;
       }
-      // stream_cell.data[streaming_out(uv, i)] = temp_val;
-      stream_cell.data[field_index + soaOffset(i)] = temp_val;
-      // stream_cell.data[field_index + soaOffset(fluid.inversed_direction[i].x)] = temp_val;
+      aa_cell.data[field_index + params.write_offset[i] + soaOffset(fluid.inversed_direction[i].x)] = temp_val;
     }
 }
