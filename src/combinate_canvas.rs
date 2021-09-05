@@ -16,11 +16,6 @@ pub struct CombinateCanvas {
 
 impl CombinateCanvas {
     pub fn new(app_view: AppView, setting: SettingObj) -> Self {
-        let test_shader = idroid::shader::create_shader_module(
-            &app_view.device,
-            "aa_lbm/aa_collide_stream",
-            Some("aa_collide_stream"),
-        );
         let canvas_size: Size<u32> = (&app_view.config).into();
         let mut setting = setting;
         setting.update_canvas_size(&app_view.device, &app_view.queue, canvas_size);
@@ -95,8 +90,7 @@ impl CombinateCanvas {
                 setting,
             )),
             FieldType::Fluid => Box::new(FluidPlayer::new(
-                &app_view.device,
-                &app_view.queue,
+                &app_view,
                 app_view.config.format,
                 canvas_size,
                 canvas_buf,

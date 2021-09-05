@@ -28,6 +28,7 @@ fn main([[builtin(global_invocation_id)]] GlobalInvocationID: vec3<u32>) {
                 let val = stream_cell.data[latticeIndex(new_uv, i)];
                 let lattice_index = field_index + soaOffset(fluid.inversed_direction[i].x);
                 stream_cell.data[lattice_index] = val;
+                stream_cell.data[latticeIndex(new_uv, i)] = 0.0;
             }
         }
     }

@@ -1,4 +1,4 @@
-use super::{D2Q9Node, ParticleRenderNode, OBSTACLE_RADIUS};
+use super::{D2Q9Node, AAD2Q9Node, ParticleRenderNode, OBSTACLE_RADIUS};
 use crate::{fluid::LbmUniform, setting_obj::SettingObj, FieldAnimationType, Player};
 use idroid::{
     math::{Position, Size},
@@ -17,7 +17,7 @@ pub struct FluidPlayer {
     lattice: wgpu::Extent3d,
     lattice_pixel_size: u32,
     pre_pos: Position,
-    fluid_compute_node: D2Q9Node,
+    fluid_compute_node: AAD2Q9Node,
     curl_cal_node: ComputeNode,
     particle_update_node: ComputeNode,
     render_node: BufferlessFullscreenNode,
@@ -26,10 +26,12 @@ pub struct FluidPlayer {
 
 impl FluidPlayer {
     pub fn new(
-        device: &wgpu::Device, queue: &wgpu::Queue, canvas_format: wgpu::TextureFormat,
+        app_view: &idroid::AppView, canvas_format: wgpu::TextureFormat,
         canvas_size: Size<u32>, canvas_buf: &BufferObj, setting: &SettingObj,
     ) -> Self {
-        let fluid_compute_node = D2Q9Node::new(device, queue, canvas_size, setting);
+        let device = &app_view.device;
+        let queue = &app_view.queue;
+        let fluid_compute_node = AAD2Q9Node::new(app_view, canvas_size, setting);
         let lattice = fluid_compute_node.lattice;
         let macro_tex_access = wgpu::StorageTextureAccess::ReadOnly;
 

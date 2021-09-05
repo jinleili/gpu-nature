@@ -8,6 +8,8 @@ use particle_render_node::ParticleRenderNode;
 
 mod d2q9_node;
 use d2q9_node::D2Q9Node;
+mod aa_d2q9_node;
+use aa_d2q9_node::AAD2Q9Node;
 mod d3q15_node;
 use d3q15_node::D3Q15Node;
 
@@ -63,6 +65,13 @@ impl LbmUniform {
             ],
         }
     }
+}
+
+#[repr(C)]
+#[derive(Copy, Clone, AsBytes, FromBytes)]
+pub struct TickTockUniforms {
+    pub read_offset: [i32; 9],
+    pub write_offset: [i32; 9],
 }
 
 fn is_sd_sphere(p: &idroid::math::Position, r: f32) -> bool {
