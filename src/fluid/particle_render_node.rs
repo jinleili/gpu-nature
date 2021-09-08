@@ -15,14 +15,12 @@ pub struct ParticleRenderNode {
 }
 
 impl ParticleRenderNode {
-    pub fn new(
-        device: &wgpu::Device, canvas_format: wgpu::TextureFormat, point_size: f32,
-        canvas_size: Size<u32>,
-    ) -> Self {
+    pub fn new(app_view: &idroid::AppView, point_size: f32, canvas_size: Size<u32>) -> Self {
+        let device = &app_view.device;
         let sampler = idroid::load_texture::bilinear_sampler(device);
         // Render pipeline is incompatible with render pass
         // Incompatible color attachment: [Rgba8Unorm] != [Bgra8Unorm]
-        let format = wgpu::TextureFormat::Bgra8Unorm;
+        let format = app_view.config.format;
         let trajectory_tex = idroid::load_texture::empty(
             device,
             format,
@@ -35,11 +33,12 @@ impl ParticleRenderNode {
             Some(wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::RENDER_ATTACHMENT),
             Some("trajectory_tex"),
         );
+
         let mut trajectory_views: Vec<wgpu::TextureView> = vec![];
         for i in 0..2 {
             trajectory_views.push(trajectory_tex.tex.create_view(&wgpu::TextureViewDescriptor {
                 label: Some("trajectory"),
-                format: None,
+                format: Some(format),
                 dimension: Some(wgpu::TextureViewDimension::D2),
                 aspect: wgpu::TextureAspect::All,
                 base_mip_level: 0,
@@ -47,17 +46,6 @@ impl ParticleRenderNode {
                 base_array_layer: i,
                 array_layer_count: std::num::NonZeroU32::new(1),
             }));
-            // let (_, view) = idroid::load_texture::empty(
-            //     device,
-            //     format,
-            //     wgpu::Extent3d {
-            //         width: canvas_size.width,
-            //         height: canvas_size.height,
-            //         depth_or_array_layers: 1,
-            //     },
-            //     Some(wgpu::TextureUsages::SAMPLED | wgpu::TextureUsages::RENDER_ATTACHMENT),
-            // );
-            // trajectory_views.push(view);
         }
         let uniform_data = TrajectoryUniform {
             screen_factor: [2.0 / canvas_size.width as f32, 2.0 / canvas_size.height as f32],
@@ -158,7 +146,7 @@ impl ParticleRenderNode {
         );
         let compose_pipeline = generate_pipeline(
             device,
-            vec![canvas_format.into()],
+            vec![format.into()],
             &render_pipeline_layout,
             &trajectory_shader,
             ("main", "fs_compose"),
@@ -183,7 +171,7 @@ impl ParticleRenderNode {
         let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
             label: Some("update trajectory"),
             color_attachments: &[wgpu::RenderPassColorAttachment {
-                view: &self.trajectory_views[0],
+                view: &self.trajectory_views[1],
                 resolve_target: None,
                 ops: wgpu::Operations {
                     load: wgpu::LoadOp::Clear(wgpu::Color { r: 0.0, g: 0.0, b: 0.0, a: 0.0 }),
@@ -196,12 +184,13 @@ impl ParticleRenderNode {
         rpass.set_pipeline(&self.fade_out_pipeline);
         rpass.set_bind_group(0, &self.bind_group, &[]);
         rpass.draw(0..3, 0..1);
+
         // update trajectory
-        // rpass.set_pipeline(&self.update_pipeline);
-        // rpass.set_bind_group(0, &self.bind_group, &[]);
-        // rpass.set_vertex_buffer(0, particles_buf.buffer.slice(..));
-        // rpass.set_vertex_buffer(1, self.vertices_buf.slice(..));
-        // rpass.draw(0..4, 0..particle_count as u32);
+        rpass.set_pipeline(&self.update_pipeline);
+        rpass.set_bind_group(0, &self.bind_group, &[]);
+        rpass.set_vertex_buffer(0, particles_buf.buffer.slice(..));
+        rpass.set_vertex_buffer(1, self.vertices_buf.slice(..));
+        rpass.draw(0..4, 0..particle_count as u32);
     }
 
     pub fn draw_rpass<'a, 'b: 'a>(

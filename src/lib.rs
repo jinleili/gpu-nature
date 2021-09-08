@@ -90,6 +90,7 @@ pub enum FieldAnimationType {
     JuliaSet,
     Spirl,
     Poiseuille,
+    LidDrivenCavity,
     Custom,
 }
 

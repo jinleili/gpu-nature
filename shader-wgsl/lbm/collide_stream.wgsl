@@ -46,13 +46,7 @@ fn main([[builtin(global_invocation_id)]] GlobalInvocationID: vec3<u32>) {
       rho = rho + f_i[i];
       velocity = velocity + e(i) * f_i[i];
     }
-     // reset lbm field sometimes cause Nan?
-    // external force sometimes can cause Inf.
-    if (isOutletCell(info.material)) {
-      rho = 1.0;
-    } else {
-      rho = clamp(rho, 0.8, 1.2);
-    }
+    rho = clamp(rho, 0.8, 1.2);
 
     velocity = velocity / rho;
     // external forcing

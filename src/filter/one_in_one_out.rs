@@ -4,7 +4,7 @@ pub struct OneInOneOut {
     pub bind_group: wgpu::BindGroup,
     pub uniform_buffer: wgpu::Buffer,
     pub pipeline: wgpu::ComputePipeline,
-    pub threadgroup_count: (u32, u32),
+    pub dispatch_group_count: (u32, u32),
 }
 
 #[allow(dead_code)]
@@ -79,15 +79,21 @@ impl OneInOneOut {
             label: None,
         });
 
-        let threadgroup_count = ((extent.width + 15) / 16, (extent.height + 15) / 16);
+        let dispatch_group_count = ((extent.width + 15) / 16, (extent.height + 15) / 16);
 
-        OneInOneOut { bind_group_layout, bind_group, uniform_buffer, pipeline, threadgroup_count }
+        OneInOneOut {
+            bind_group_layout,
+            bind_group,
+            uniform_buffer,
+            pipeline,
+            dispatch_group_count,
+        }
     }
 
     pub fn compute(&mut self, _device: &mut wgpu::Device, encoder: &mut wgpu::CommandEncoder) {
         let mut cpass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor { label: None });
         cpass.set_pipeline(&self.pipeline);
         cpass.set_bind_group(0, &self.bind_group, &[0]);
-        cpass.dispatch(self.threadgroup_count.0, self.threadgroup_count.1, 1);
+        cpass.dispatch(self.dispatch_group_count.0, self.dispatch_group_count.1, 1);
     }
 }

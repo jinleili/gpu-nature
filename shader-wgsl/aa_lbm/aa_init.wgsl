@@ -1,8 +1,8 @@
 #include "aa_lbm/aa_layout_and_fn.wgsl"
 
 [[stage(compute), workgroup_size(64, 4)]]
-fn main([[builtin(global_invocation_id)]] GlobalInvocationID: vec3<u32>) {
-  let uv = vec2<i32>(GlobalInvocationID.xy);
+fn main([[builtin(global_invocation_id)]] global_invocation_id: vec3<u32>) {
+  let uv = vec2<i32>(global_invocation_id.xy);
   if (uv.x >= field.lattice_size.x || uv.y >= field.lattice_size.y) {
     return;
   }
@@ -14,14 +14,16 @@ fn main([[builtin(global_invocation_id)]] GlobalInvocationID: vec3<u32>) {
         // lattice coords that will bounce back to
         aa_cell.data[field_index + soaOffset(i)] =  0.0;
     }
-  } elseif (isPoiseuilleFlow()) {
+  } 
+  elseif (isPoiseuilleFlow()) {
     for (var i: i32 = 0; i < 9; i = i + 1) {
       aa_cell.data[field_index + soaOffset(i)] =  w(i);
     }
-    let temp = w(3) * 0.5;
+    let temp = w(3) * 0.3;
     aa_cell.data[field_index + soaOffset(1)] = w(1) + temp;
     aa_cell.data[field_index + soaOffset(3)] = temp;
-  } else {
+  } 
+  else {
     for (var i: i32 = 0; i < 9; i = i + 1) {
       aa_cell.data[field_index + soaOffset(i)] =  w(i);
     }

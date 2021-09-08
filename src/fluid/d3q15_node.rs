@@ -23,7 +23,7 @@ pub struct D3Q15Node {
     setting_nodes: Vec<BindingGroupSettingNode>,
     collide_stream_pipelines: Vec<wgpu::ComputePipeline>,
     boundary_pipelines: Vec<wgpu::ComputePipeline>,
-    pub threadgroup_count: (u32, u32, u32),
+    pub dispatch_group_count: (u32, u32, u32),
     pub reset_node: ComputeNode,
 }
 
@@ -33,7 +33,7 @@ impl D3Q15Node {
     ) -> Self {
         let lattice_pixel_size = 4;
         let lattice = wgpu::Extent3d { width: 64, height: 64, depth_or_array_layers: 64 };
-        let threadgroup_count = (1, 64, 64);
+        let dispatch_group_count = (1, 64, 64);
         // reynolds number: (length)(velocity)/(viscosity)
         // Kármán vortex street： 47 < Re < 10^5
         // let viscocity = (lattice.width as f32 * 0.05) / 320.0;
@@ -149,7 +149,7 @@ impl D3Q15Node {
 
         let reset_node = ComputeNode::new(
             device,
-            threadgroup_count,
+            dispatch_group_count,
             vec![&lbm_uniform_buf, &fluid_uniform_buf],
             vec![&collide_stream_buffers[0], &collide_stream_buffers[1], &info_buf],
             vec![(&macro_tex, Some(macro_tex_access))],
@@ -166,7 +166,7 @@ impl D3Q15Node {
             lattice_info_data,
             info_buf,
             setting_nodes,
-            threadgroup_count,
+            dispatch_group_count,
             collide_stream_pipelines,
             boundary_pipelines,
             reset_node,
@@ -191,7 +191,7 @@ impl D3Q15Node {
 
     pub fn add_obstacle(&mut self, queue: &wgpu::Queue, x: u32, y: u32) {
         let obstacle = LatticeInfo {
-            material: LatticeType::OBSTACLE as i32,
+            material: LatticeType::Obstacle as i32,
             block_iter: -1,
             vx: 0.0,
             vy: 0.0,
@@ -243,7 +243,7 @@ impl D3Q15Node {
         let vx: f32 = force * ridian.cos();
         let vy = force * ridian.sin();
         let info: Vec<LatticeInfo> =
-            vec![LatticeInfo { material: LatticeType::INLET as i32, block_iter: 30, vx, vy }];
+            vec![LatticeInfo { material: LatticeType::Inlet as i32, block_iter: 30, vx, vy }];
         let c = (dis / (self.lattice_pixel_size - 1) as f32).ceil();
         let step = dis / c;
         for i in 0..c as i32 {
@@ -261,8 +261,8 @@ impl D3Q15Node {
     pub fn dispatch<'a, 'b: 'a>(&'b self, cpass: &mut wgpu::ComputePass<'a>, swap_index: usize) {
         cpass.set_bind_group(0, &self.setting_nodes[swap_index].bind_group, &[]);
         cpass.set_pipeline(&self.collide_stream_pipelines[swap_index]);
-        cpass.dispatch(self.threadgroup_count.0, self.threadgroup_count.1, 1);
+        cpass.dispatch(self.dispatch_group_count.0, self.dispatch_group_count.1, 1);
         cpass.set_pipeline(&self.boundary_pipelines[swap_index]);
-        cpass.dispatch(self.threadgroup_count.0, self.threadgroup_count.1, 1);
+        cpass.dispatch(self.dispatch_group_count.0, self.dispatch_group_count.1, 1);
     }
 }

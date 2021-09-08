@@ -1,10 +1,12 @@
 #include "lbm/struct/lbm_uniform.wgsl"
 #include "struct/field.wgsl"
+#include "lbm/struct/lattice_info.wgsl"
 
 [[group(0), binding(0)]] var<uniform> fluid: LbmUniform;
 [[group(0), binding(1)]] var<uniform> field: FieldUniform;
-[[group(0), binding(2)]] var fb: texture_2d<f32>;
-[[group(0), binding(3)]] var curl_info: texture_storage_2d<r32float, write>;
+[[group(0), binding(2)]] var<storage, read_write> lattice_info: StoreInfo;
+[[group(0), binding(3)]] var fb: texture_2d<f32>;
+[[group(0), binding(4)]] var curl_info: texture_storage_2d<r32float, write>;
 
 [[stage(compute), workgroup_size(64, 4)]]
 fn main([[builtin(global_invocation_id)]] GlobalInvocationID: vec3<u32>) {
@@ -12,6 +14,8 @@ fn main([[builtin(global_invocation_id)]] GlobalInvocationID: vec3<u32>) {
     if (uv.x >= field.lattice_size.x || uv.y >= field.lattice_size.y) {
       return;
     }
+    var field_index : i32 = uv.x + (uv.y * field.lattice_size.x);
+    var info: LatticeInfo = lattice_info.data[field_index];
     let right = min(vec2<i32>(uv.x + 1, uv.y), field.lattice_size.xy);
     let left = max(vec2<i32>(uv.x - 1, uv.y), vec2<i32>(0, 0));
     let top = max(vec2<i32>(uv.x, uv.y - 1), vec2<i32>(0, 0));
@@ -25,4 +29,5 @@ fn main([[builtin(global_invocation_id)]] GlobalInvocationID: vec3<u32>) {
     // }
 
     textureStore(curl_info, uv, vec4<f32>(curl * 2.5 + 0.5, 0.0, 0.0, 0.0));
+    
 }

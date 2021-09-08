@@ -11,7 +11,7 @@ impl Floor {
     pub fn new(
         app_view: &idroid::AppView, noise_tex: &idroid::AnyTexture, is_use_depth_stencil: bool,
     ) -> Floor {
-        let threadgroup_count = (62, 62, 1);
+        let dispatch_group_count = (62, 62, 1);
         let tex_width = 16 * 62;
         let marble_tex = idroid::load_texture::empty(
             &app_view.device,
@@ -27,7 +27,7 @@ impl Floor {
             idroid::shader::create_shader_module(&app_view.device, "noise/marble_tex", None);
         let marble_node = ComputeNode::new(
             &app_view.device,
-            threadgroup_count,
+            dispatch_group_count,
             vec![],
             vec![&permulation_buf, &gradient_buf],
             vec![(&marble_tex, Some(wgpu::StorageTextureAccess::WriteOnly))],

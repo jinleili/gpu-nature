@@ -91,7 +91,6 @@ impl CombinateCanvas {
             )),
             FieldType::Fluid => Box::new(FluidPlayer::new(
                 &app_view,
-                app_view.config.format,
                 canvas_size,
                 canvas_buf,
                 setting,

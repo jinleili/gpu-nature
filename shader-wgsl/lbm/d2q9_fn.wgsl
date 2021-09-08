@@ -18,8 +18,9 @@ fn latticeIndex(uv: vec2<i32>, direction: i32) -> i32 {
 
 fn isBoundaryCell(material: i32) -> bool { return material == 2; }
 fn isNotBoundaryCell(material: i32) -> bool { return material != 2; }
-fn isAccelerateCell(material: i32) -> bool { return material == 3; }
+fn isInletCell(material: i32) -> bool { return material == 3; }
 fn isObstacleCell(material: i32) -> bool { return material == 4; }
 fn isOutletCell(material: i32) -> bool { return material == 5; }
+fn isAccelerateCell(material: i32) -> bool { return material == 3 || material == 6; }
 
-fn isBulkFluidCell(material: i32) -> bool { return material == 1 || material == 5 || material == 6; }
+fn isBulkFluidCell(material: i32) -> bool { return material == 1 || material == 3 || material == 5; }

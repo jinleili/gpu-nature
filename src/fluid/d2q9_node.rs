@@ -25,14 +25,12 @@ pub struct D2Q9Node {
     setting_nodes: Vec<BindingGroupSettingNode>,
     collide_stream_pipelines: Vec<wgpu::ComputePipeline>,
     boundary_pipelines: Vec<wgpu::ComputePipeline>,
-    pub threadgroup_count: (u32, u32, u32),
+    pub dispatch_group_count: (u32, u32, u32),
     pub reset_node: ComputeNode,
 }
 
 impl D2Q9Node {
-    pub fn new(
-        app_view: &idroid::AppView, canvas_size: Size<u32>, setting: &SettingObj,
-    ) -> Self {
+    pub fn new(app_view: &idroid::AppView, canvas_size: Size<u32>, setting: &SettingObj) -> Self {
         let device = &app_view.device;
         let queue = &app_view.queue;
         let lattice_pixel_size = 4;
@@ -42,8 +40,8 @@ impl D2Q9Node {
             depth_or_array_layers: 1,
         };
 
-        let threadgroup_count = ((lattice.width + 63) / 64, (lattice.height + 3) / 4, 1);
-        println!("threadgroup_count: {:?}", threadgroup_count);
+        let dispatch_group_count = ((lattice.width + 63) / 64, (lattice.height + 3) / 4, 1);
+        println!("dispatch_group_count: {:?}", dispatch_group_count);
         // reynolds number: (length)(velocity)/(viscosity)
         // Kármán vortex street： 47 < Re < 10^5
         // let viscocity = (lattice.width as f32 * 0.05) / 320.0;
@@ -161,7 +159,7 @@ impl D2Q9Node {
         collide_stream_buffers[1].borrow_mut().read_only = false;
         let reset_node = ComputeNode::new(
             device,
-            threadgroup_count,
+            dispatch_group_count,
             vec![&lbm_uniform_buf, &fluid_uniform_buf],
             vec![&collide_stream_buffers[0], &collide_stream_buffers[1], &info_buf],
             vec![(&macro_tex, Some(macro_tex_access))],
@@ -178,7 +176,7 @@ impl D2Q9Node {
             lattice_info_data,
             info_buf,
             setting_nodes,
-            threadgroup_count,
+            dispatch_group_count,
             collide_stream_pipelines,
             boundary_pipelines,
             reset_node,
@@ -197,7 +195,7 @@ impl D2Q9Node {
 
     pub fn add_obstacle(&mut self, queue: &wgpu::Queue, x: u32, y: u32) {
         let obstacle = LatticeInfo {
-            material: LatticeType::OBSTACLE as i32,
+            material: LatticeType::Obstacle as i32,
             block_iter: -1,
             vx: 0.0,
             vy: 0.0,
@@ -248,8 +246,12 @@ impl D2Q9Node {
         let ridian = pos.slope_ridian(&pre_pos);
         let vx: f32 = force * ridian.cos();
         let vy = force * ridian.sin();
-        let info: Vec<LatticeInfo> =
-            vec![LatticeInfo { material: LatticeType::INLET as i32, block_iter: 30, vx, vy }];
+        let info: Vec<LatticeInfo> = vec![LatticeInfo {
+            material: LatticeType::ExternalForce as i32,
+            block_iter: 30,
+            vx,
+            vy,
+        }];
         let c = (dis / (self.lattice_pixel_size - 1) as f32).ceil();
         let step = dis / c;
         for i in 0..c as i32 {
@@ -267,8 +269,8 @@ impl D2Q9Node {
     pub fn dispatch<'c, 'b: 'c>(&'b self, cpass: &mut wgpu::ComputePass<'c>, swap_index: usize) {
         cpass.set_bind_group(0, &self.setting_nodes[swap_index].bind_group, &[]);
         cpass.set_pipeline(&self.collide_stream_pipelines[swap_index]);
-        cpass.dispatch(self.threadgroup_count.0, self.threadgroup_count.1, 1);
+        cpass.dispatch(self.dispatch_group_count.0, self.dispatch_group_count.1, 1);
         cpass.set_pipeline(&self.boundary_pipelines[swap_index]);
-        cpass.dispatch(self.threadgroup_count.0, self.threadgroup_count.1, 1);
+        cpass.dispatch(self.dispatch_group_count.0, self.dispatch_group_count.1, 1);
     }
 }

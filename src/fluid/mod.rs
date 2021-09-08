@@ -68,7 +68,7 @@ impl LbmUniform {
 }
 
 #[repr(C)]
-#[derive(Copy, Clone, AsBytes, FromBytes)]
+#[derive(Copy, Clone, Debug, AsBytes, FromBytes)]
 pub struct TickTockUniforms {
     pub read_offset: [i32; 9],
     pub write_offset: [i32; 9],

@@ -26,7 +26,7 @@ pub struct AAD2Q9Node {
     dynamic_setting: DynamicBindingGroupNode,
     collide_stream_pipeline: wgpu::ComputePipeline,
     boundary_pipeline: wgpu::ComputePipeline,
-    pub threadgroup_count: (u32, u32, u32),
+    pub dispatch_group_count: (u32, u32, u32),
     pub reset_node: ComputeNode,
 }
 
@@ -41,8 +41,8 @@ impl AAD2Q9Node {
             depth_or_array_layers: 1,
         };
 
-        let threadgroup_count = ((lattice.width + 63) / 64, (lattice.height + 3) / 4, 1);
-        println!("threadgroup_count: {:?}", threadgroup_count);
+        let dispatch_group_count = ((lattice.width + 63) / 64, (lattice.height + 3) / 4, 1);
+        println!("dispatch_group_count: {:?}", dispatch_group_count);
         // reynolds number: (length)(velocity)/(viscosity)
         // Kármán vortex street： 47 < Re < 10^5
         // let viscocity = (lattice.width as f32 * 0.05) / 320.0;
@@ -122,22 +122,29 @@ impl AAD2Q9Node {
             visibilitys.clone(),
         );
 
-        let dynamic_data0 = super::TickTockUniforms { read_offset: [0; 9], write_offset: [0; 9] };
+        let mut dynamic_data0 =
+            super::TickTockUniforms { read_offset: [0; 9], write_offset: [0; 9] };
         let mut dynamic_data1 =
             super::TickTockUniforms { read_offset: [0; 9], write_offset: [0; 9] };
+        let soa_offset = (lattice.width * lattice.height) as i32;
         for i in 1..9 {
             let e = lbm_uniform_data.e_w_max[i];
             let inversed = lbm_uniform_data.inversed_direction[i][0] as usize;
             let inversed_e = lbm_uniform_data.e_w_max[inversed];
-            dynamic_data1.read_offset[i] = (e[0] + e[1] * lattice.width as f32) as i32;
-            dynamic_data1.write_offset[i] =
-                (inversed_e[0] + inversed_e[1] * lattice.width as f32) as i32;
+            dynamic_data0.read_offset[i] =
+                (e[0] + e[1] * lattice.width as f32) as i32 + soa_offset * inversed as i32;
+            dynamic_data0.write_offset[i] = (inversed_e[0] + inversed_e[1] * lattice.width as f32)
+                as i32
+                + soa_offset * i as i32;
+            dynamic_data1.read_offset[i] = soa_offset * i as i32;
+            dynamic_data1.write_offset[i] = soa_offset * inversed as i32;
         }
+        println!("soa_offset: {}, \n {:?} \n {:?}", soa_offset, dynamic_data0, dynamic_data1);
         let dynamic_buf = BufferObj::create_empty_dynamic_uniform_buffer(
             device,
             2 * wgpu::BIND_BUFFER_ALIGNMENT,
             None,
-            None,
+            Some("dynamic_buf"),
         );
         queue.write_buffer(&dynamic_buf.buffer, 0, dynamic_data0.as_bytes());
         queue.write_buffer(
@@ -151,7 +158,10 @@ impl AAD2Q9Node {
 
         let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: None,
-            bind_group_layouts: &[&setting_node.bind_group_layout, &dynamic_setting.bind_group_layout],
+            bind_group_layouts: &[
+                &setting_node.bind_group_layout,
+                &dynamic_setting.bind_group_layout,
+            ],
             push_constant_ranges: &[],
         });
         let collide_stream_pipeline =
@@ -171,7 +181,7 @@ impl AAD2Q9Node {
         let init_shader = create_shader_module(device, "aa_lbm/aa_init", Some("init_shader"));
         let reset_node = ComputeNode::new(
             device,
-            threadgroup_count,
+            dispatch_group_count,
             vec![&lbm_uniform_buf, &fluid_uniform_buf],
             vec![&aa_buffer, &info_buf],
             vec![(&macro_tex, Some(macro_tex_access))],
@@ -189,7 +199,7 @@ impl AAD2Q9Node {
             info_buf,
             setting_node,
             dynamic_setting,
-            threadgroup_count,
+            dispatch_group_count,
             collide_stream_pipeline,
             boundary_pipeline,
             reset_node,
@@ -208,7 +218,7 @@ impl AAD2Q9Node {
 
     pub fn add_obstacle(&mut self, queue: &wgpu::Queue, x: u32, y: u32) {
         let obstacle = LatticeInfo {
-            material: LatticeType::OBSTACLE as i32,
+            material: LatticeType::Obstacle as i32,
             block_iter: -1,
             vx: 0.0,
             vy: 0.0,
@@ -259,8 +269,12 @@ impl AAD2Q9Node {
         let ridian = pos.slope_ridian(&pre_pos);
         let vx: f32 = force * ridian.cos();
         let vy = force * ridian.sin();
-        let info: Vec<LatticeInfo> =
-            vec![LatticeInfo { material: LatticeType::INLET as i32, block_iter: 30, vx, vy }];
+        let info: Vec<LatticeInfo> = vec![LatticeInfo {
+            material: LatticeType::ExternalForce as i32,
+            block_iter: 30,
+            vx,
+            vy,
+        }];
         let c = (dis / (self.lattice_pixel_size - 1) as f32).ceil();
         let step = dis / c;
         for i in 0..c as i32 {
@@ -279,15 +293,15 @@ impl AAD2Q9Node {
         cpass.set_pipeline(&self.collide_stream_pipeline);
         cpass.set_bind_group(0, &self.setting_node.bind_group, &[]);
         cpass.set_bind_group(1, &self.dynamic_setting.bind_group, &[0]);
-        cpass.dispatch(self.threadgroup_count.0, self.threadgroup_count.1, 1);
+        cpass.dispatch(self.dispatch_group_count.0, self.dispatch_group_count.1, 1);
         cpass.set_bind_group(
             1,
             &self.dynamic_setting.bind_group,
             &[wgpu::BIND_BUFFER_ALIGNMENT as _],
         );
-        cpass.dispatch(self.threadgroup_count.0, self.threadgroup_count.1, 1);
+        cpass.dispatch(self.dispatch_group_count.0, self.dispatch_group_count.1, 1);
 
-        cpass.set_pipeline(&self.boundary_pipeline);
-        cpass.dispatch(self.threadgroup_count.0, self.threadgroup_count.1, 1);
+        // cpass.set_pipeline(&self.boundary_pipeline);
+        // cpass.dispatch(self.dispatch_group_count.0, self.dispatch_group_count.1, 1);
     }
 }

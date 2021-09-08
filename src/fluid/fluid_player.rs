@@ -1,4 +1,4 @@
-use super::{D2Q9Node, AAD2Q9Node, ParticleRenderNode, OBSTACLE_RADIUS};
+use super::{AAD2Q9Node, D2Q9Node, ParticleRenderNode, OBSTACLE_RADIUS};
 use crate::{fluid::LbmUniform, setting_obj::SettingObj, FieldAnimationType, Player};
 use idroid::{
     math::{Position, Size},
@@ -26,8 +26,8 @@ pub struct FluidPlayer {
 
 impl FluidPlayer {
     pub fn new(
-        app_view: &idroid::AppView, canvas_format: wgpu::TextureFormat,
-        canvas_size: Size<u32>, canvas_buf: &BufferObj, setting: &SettingObj,
+        app_view: &idroid::AppView,  canvas_size: Size<u32>,
+        canvas_buf: &BufferObj, setting: &SettingObj,
     ) -> Self {
         let device = &app_view.device;
         let queue = &app_view.queue;
@@ -52,9 +52,9 @@ impl FluidPlayer {
         );
         let curl_cal_node = ComputeNode::new(
             device,
-            fluid_compute_node.threadgroup_count,
+            fluid_compute_node.dispatch_group_count,
             vec![&fluid_compute_node.lbm_uniform_buf, &fluid_compute_node.fluid_uniform_buf],
-            vec![],
+            vec![&fluid_compute_node.info_buf],
             vec![
                 (&fluid_compute_node.macro_tex, None),
                 (&curl_tex, Some(wgpu::StorageTextureAccess::WriteOnly)),
@@ -80,7 +80,7 @@ impl FluidPlayer {
         let sampler = idroid::load_texture::bilinear_sampler(device);
         let render_node = BufferlessFullscreenNode::new(
             device,
-            canvas_format,
+            app_view.config.format,
             vec![
                 &fluid_compute_node.fluid_uniform_buf,
                 &setting.particles_uniform.as_ref().unwrap(),
@@ -93,8 +93,7 @@ impl FluidPlayer {
         );
 
         let particle_render = ParticleRenderNode::new(
-            device,
-            canvas_format,
+            app_view,
             setting.particles_uniform_data.point_size as f32,
             canvas_size,
         );
@@ -189,17 +188,18 @@ impl Player for FluidPlayer {
             for _ in 0..3 {
                 self.fluid_compute_node.dispatch(&mut cpass, 0);
                 self.particle_update_node.dispatch(&mut cpass);
+                // self.curl_cal_node.dispatch(&mut cpass);
 
                 self.fluid_compute_node.dispatch(&mut cpass, 1);
                 self.particle_update_node.dispatch(&mut cpass);
+                // self.curl_cal_node.dispatch(&mut cpass);
             }
-            self.curl_cal_node.dispatch(&mut cpass);
         }
-        // self.particle_render.update_trajectory(
-        //     &mut encoder,
-        //     &setting.particles_buf.as_ref().unwrap(),
-        //     setting.particles_count,
-        // );
+        self.particle_render.update_trajectory(
+            &mut encoder,
+            &setting.particles_buf.as_ref().unwrap(),
+            setting.particles_count,
+        );
         {
             let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: None,
@@ -214,11 +214,11 @@ impl Player for FluidPlayer {
                 depth_stencil_attachment: None,
             });
             self.render_node.draw_rpass(&mut rpass);
-            // self.particle_render.draw_rpass(
-            //     &mut rpass,
-            //     &setting.particles_buf.as_ref().unwrap(),
-            //     setting.particles_count,
-            // );
+            self.particle_render.draw_rpass(
+                &mut rpass,
+                &setting.particles_buf.as_ref().unwrap(),
+                setting.particles_count,
+            );
         }
         queue.submit(Some(encoder.finish()));
     }

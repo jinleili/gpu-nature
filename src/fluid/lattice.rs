@@ -14,11 +14,14 @@ pub struct LatticeInfo {
 }
 
 pub enum LatticeType {
-    BULK = 1,
-    BOUNDARY = 2,
-    INLET = 3,
-    OBSTACLE = 4,
-    OUTLET = 5,
+    Bulk = 1,
+    Boundary = 2,
+    Inlet = 3,
+    Obstacle = 4,
+    Outlet = 5,
+    // external force
+    ExternalForce = 6,
+    Ghost = 7,
 }
 
 pub fn init_lattice_material(
@@ -33,25 +36,37 @@ pub fn init_lattice_material(
     for z in 0..nz {
         for y in 0..ny {
             for x in 0..nx {
-                let mut material = LatticeType::BULK as i32;
+                let mut material = LatticeType::Bulk as i32;
                 let mut vx = 0.0;
 
                 // need boundary cell to avoid NAN
                 match ty {
                     FieldAnimationType::Custom => {
                         if x == 0 || x == nx - 1 || y == 0 || y == ny - 1 {
-                            material = LatticeType::BOUNDARY as i32;
+                            material = LatticeType::Boundary as i32;
+                        }
+                    }
+                    FieldAnimationType::LidDrivenCavity => {
+                        if y == 0 {
+                            material = LatticeType::Ghost as i32;
+                        } else if y == 1 {
+                            material = LatticeType::ExternalForce as i32;
+                            vx = 0.13;
+                        } else if x == 0 || x == nx - 1 || y == ny - 1 {
+                            material = LatticeType::Boundary as i32;
                         }
                     }
                     FieldAnimationType::Poiseuille => {
                         // poiseuille
                         if y == 0 || y == ny - 1 || (nz > 1 && (z == 0 || z == nz - 1)) {
-                            material = LatticeType::BOUNDARY as i32;
-                        } else if x == 0 {
-                            material = LatticeType::INLET as i32;
+                            material = LatticeType::Boundary as i32;
+                        } else if x == 0 || x == nx - 1 {
+                            material = LatticeType::Ghost as i32;
+                        } else if x == 1 {
+                            material = LatticeType::Inlet as i32;
                             vx = 0.12;
-                        } else if x == nx - 1 {
-                            material = LatticeType::OUTLET as i32;
+                        } else if x == nx - 2 {
+                            material = LatticeType::Outlet as i32;
                         } else {
                             // obstacle
                             let p = Position::new(x as f32, y as f32);
@@ -59,7 +74,7 @@ pub fn init_lattice_material(
                                 || is_sd_sphere(&p.minus(&s1), OBSTACLE_RADIUS)
                                 || is_sd_sphere(&p.minus(&s2), OBSTACLE_RADIUS)
                             {
-                                material = LatticeType::OBSTACLE as i32;
+                                material = LatticeType::Obstacle as i32;
                             }
                         }
                     }

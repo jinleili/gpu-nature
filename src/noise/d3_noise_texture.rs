@@ -30,7 +30,7 @@ impl D3NoiseTexture {
             None,
         );
 
-        let threadgroup_count = (8, 8, 8);
+        let dispatch_group_count = (8, 8, 8);
 
         let permulation_buf = create_permulation_buf(&app_view.device);
         let gradient_buf = create_gradient_buf(&app_view.device);
@@ -38,7 +38,7 @@ impl D3NoiseTexture {
             idroid::shader::create_shader_module(&app_view.device, "noise/3d_noise_tex", None);
         let noise_node = ComputeNode::new(
             &app_view.device,
-            threadgroup_count,
+            dispatch_group_count,
             vec![],
             vec![&permulation_buf, &gradient_buf],
             vec![(&tex, Some(wgpu::StorageTextureAccess::WriteOnly))],
