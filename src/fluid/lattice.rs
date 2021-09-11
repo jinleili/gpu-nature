@@ -47,13 +47,13 @@ pub fn init_lattice_material(
                         }
                     }
                     FieldAnimationType::LidDrivenCavity => {
-                        if y == 0 {
+                        if x == 0 || x == nx - 1 || y == ny - 1 {
+                            material = LatticeType::Boundary as i32;
+                        } else if y == 0 {
                             material = LatticeType::Ghost as i32;
                         } else if y == 1 {
                             material = LatticeType::ExternalForce as i32;
                             vx = 0.13;
-                        } else if x == 0 || x == nx - 1 || y == ny - 1 {
-                            material = LatticeType::Boundary as i32;
                         }
                     }
                     FieldAnimationType::Poiseuille => {

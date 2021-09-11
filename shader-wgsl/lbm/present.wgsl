@@ -31,7 +31,8 @@ fn main(in : VertexOutput) -> [[location(0)]] vec4<f32> {
      // moving angle as color
     let angle = (atan2(macro.y, macro.x) + PI) / (2.0 * PI);
     // frag_color = vec4<f32>(hsv2rgb(angle, 0.9, 1.0), macro.z);
-    frag_color = vec4<f32>(hsv2rgb(curl.x , 0.9, 0.6 + speed * 2.0), macro.z);
+    // frag_color = vec4<f32>(hsv2rgb(curl.x , 0.9, 0.6 + speed * 2.0), macro.z);
+    frag_color = vec4<f32>(hsv2rgb(curl.x , 0.6 + speed * 1.4, 0.6 + macro.z * 0.33), macro.z);
 
     return frag_color;
 }

@@ -105,17 +105,17 @@ pub enum ParticleColorType {
 #[derive(Copy, Clone, Debug, AsBytes, FromBytes)]
 pub struct FieldUniform {
     // field lattice number
-    pub lattice_size: [i32; 3],
-    pub lattice_pixel_size: [f32; 3],
+    pub lattice_size: [i32; 4],
+    pub lattice_pixel_size: [f32; 4],
     // canvas pixel number
-    pub canvas_size: [i32; 3],
-    pub normalized_space_size: [f32; 3],
-    pub pixel_distance: [f32; 3],
+    pub canvas_size: [i32; 4],
+    pub normalized_space_size: [f32; 4],
+    pub pixel_distance: [f32; 4],
     // 0: pixel speed, field player used
     // 1: lbm lattice speed, fluid player used. Its value is usually no greater than 0.2
     pub speed_ty: i32,
     // align to 16 * n
-    pub _padding: [i32; 5],
+    pub _padding: [f32; 3],
 }
 #[repr(C)]
 #[derive(Copy, Clone, AsBytes, FromBytes)]

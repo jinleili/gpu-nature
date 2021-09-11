@@ -40,10 +40,10 @@ impl SettingObj {
             particles_uniform_data: ParticleUniform {
                 color: [1.0; 4],
                 num: [0; 2],
-                point_size: 3,
+                point_size: 2,
                 life_time: 60.0,
                 fade_out_factor: 0.96,
-                speed_factor: if field_type == FieldType::Field { 0.15 } else { 4.15 },
+                speed_factor: if field_type == FieldType::Field { 0.15 } else { 8.15 },
                 color_ty: color_ty as i32,
                 is_only_update_pos: 1,
             },
@@ -53,7 +53,7 @@ impl SettingObj {
         if self.field_type != ty {
             self.field_type = ty;
             self.particles_uniform_data.speed_factor =
-                if self.field_type == FieldType::Field { 0.15 } else { 4.15 };
+                if self.field_type == FieldType::Field { 0.15 } else { 8.15 };
             self.update_particles_uniform(queue);
             true
         } else {

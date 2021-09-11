@@ -23,8 +23,8 @@ fn equilibrium(velocity: vec2<f32>, rho: f32, direction: i32, usqr: f32) -> f32 
 
 
 [[stage(compute), workgroup_size(64, 4)]]
-fn main([[builtin(global_invocation_id)]] GlobalInvocationID: vec3<u32>) {
-    let uv = vec2<i32>(GlobalInvocationID.xy);
+fn main([[builtin(global_invocation_id)]] global_invocation_id: vec3<u32>) {
+    let uv = vec2<i32>(global_invocation_id.xy);
     if (uv.x >= field.lattice_size.x || uv.y >= field.lattice_size.y) {
       return;
     }

@@ -14,7 +14,7 @@ let PI: f32 = 3.1415926535;
 
 [[stage(fragment)]] 
 fn main([[builtin(position)]] coord : vec4<f32>) -> [[location(0)]] vec4<f32> {
-    let pixel_coord = min(vec2<i32>(floor(coord.xy)), field.canvas_size - 1);
+    let pixel_coord = min(vec2<i32>(floor(coord.xy)), field.canvas_size.xy - 1);
     let p_index = pixel_coord.x + pixel_coord.y * field.canvas_size.x;
     var p: Pixel = canvas.pixels[p_index];
 
@@ -32,8 +32,8 @@ fn main([[builtin(position)]] coord : vec4<f32>) -> [[location(0)]] vec4<f32> {
             frag_color = vec4<f32>(hsv2rgb(0.05 + speed * 0.75, 0.9, 1.0), p.alpha);
         } elseif (particle_uniform.color_ty == 1) {
             // moving angle as color
-            let angle = (atan2(p.velocity_y, p.velocity_x) + PI) / (2.0 * PI);
-            frag_color = vec4<f32>(hsv2rgb(angle, 0.9, 1.0), p.alpha);
+            let angle = atan2(p.velocity_y, p.velocity_x) / (2.0 * PI);
+            frag_color = vec4<f32>(hsv2rgb(angle + 0.5, 0.9, 1.0), p.alpha);
         } else {
             frag_color = vec4<f32>(particle_uniform.color.rgb, p.alpha);
         }
@@ -51,7 +51,5 @@ fn main([[builtin(position)]] coord : vec4<f32>) -> [[location(0)]] vec4<f32> {
     }
      
     return frag_color;
-    // return vec4<f32>(coord.xy / vec2<f32>(field.canvas_size), 0.0, 1.0);
-    // return vec4<f32>(abs(p.velocity_x), abs(p.velocity_y), 0.0, 1.0);
 }
 

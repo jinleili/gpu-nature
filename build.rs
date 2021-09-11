@@ -30,6 +30,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         "lbm/curl_update",
         "lbm/present",
         "lbm/trajectory_present",
+        "aa_lbm/aa_init",
+        "aa_lbm/aa_collide_stream",
     ];
     let mut map_generator = ShaderMapGenerator::new();
 

@@ -27,9 +27,9 @@ fn main() {
     let setting = SettingObj::new(
         FieldType::Fluid,
         FieldAnimationType::LidDrivenCavity,
-        ParticleColorType::MovementAngle,
-        30000,
-        0.0,
+        ParticleColorType::Speed,
+        20000,
+        120.0,
     );
 
     // field player

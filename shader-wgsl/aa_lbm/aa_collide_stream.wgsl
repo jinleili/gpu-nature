@@ -87,10 +87,10 @@ fn main([[builtin(global_invocation_id)]] global_invocation_id: vec3<u32>) {
       velocity = e(1) * f_i[1] + e(2) * f_i[2] + e(3) * f_i[3] + e(4) * f_i[4] + e(5) * f_i[5] + e(6) * f_i[6] + e(7) * f_i[7] + e(8) * f_i[8];
       velocity = velocity / rho;
       // Avoid numerical simulation errors
-      velocity = clamp(velocity, vec2<f32>(-0.28), vec2<f32>(0.28));
+      velocity = clamp(velocity, vec2<f32>(-0.26), vec2<f32>(0.26));
     }
-   
-    textureStore(macro_info, vec2<i32>(uv), vec4<f32>(velocity, rho, 1.0));
+    // A-A pattern macro velocity need to inverse
+    textureStore(macro_info, vec2<i32>(uv), vec4<f32>(velocity * vec2<f32>(-1.0), rho, 1.0));
 
     let usqr = 1.5 * dot(velocity, velocity);
     aa_cell.data[field_index] = f_i[0] - fluid.omega * (f_i[0] - rho * w(0) * (1.0 - usqr));

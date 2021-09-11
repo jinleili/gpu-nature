@@ -25,18 +25,20 @@ impl FieldPlayer {
         let pixel_distance = 4;
         let field_size: idroid::math::Size<u32> =
             (canvas_size.width / pixel_distance, canvas_size.height / pixel_distance).into();
+        println!("field_size: {:?} \n {:?}", field_size, canvas_size);
+
         let field_threadgroup = ((field_size.width + 15) / 16, (field_size.height + 15) / 16, 1);
         let (_, sx, sy) = idroid::utils::matrix_helper::fullscreen_factor(
             (canvas_size.width as f32, canvas_size.height as f32).into(),
         );
         let field_uniform_data = FieldUniform {
-            lattice_size: [field_size.width as i32, field_size.height as i32, 1],
-            lattice_pixel_size: [pixel_distance as f32; 3],
-            canvas_size: [canvas_size.width as i32, canvas_size.height as i32, 1],
-            normalized_space_size: [sx, sy, 0.0],
-            pixel_distance: [pixel_distance as f32; 3],
+            lattice_size: [field_size.width as i32, field_size.height as i32, 1, 0],
+            lattice_pixel_size: [pixel_distance as f32; 4],
+            canvas_size: [canvas_size.width as i32, canvas_size.height as i32, 1, 0],
+            normalized_space_size: [sx, sy, 0.0, 0.0],
+            pixel_distance: [pixel_distance as f32; 4],
             speed_ty: 0,
-            _padding: [0; 5],
+            _padding: [0.0; 3],
         };
         let field_uniform =
             BufferObj::create_uniform_buffer(device, &field_uniform_data, Some("field_uniform"));

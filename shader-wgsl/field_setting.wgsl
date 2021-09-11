@@ -1,14 +1,14 @@
 #include "struct/field.wgsl"
 
 [[group(0), binding(0)]] var<uniform> field: FieldUniform;
-[[group(0), binding(1)]] var<storage, write> fb: FieldBuffer;
+[[group(0), binding(1)]] var<storage, read_write> fb: FieldBuffer;
 
 fn field_index(uv: vec2<i32>) -> i32 {
    return uv.x + (uv.y * field.lattice_size.x);
 }
 
 fn get_velocity(p: vec2<i32>) -> vec2<f32> {
-#insert_code_segment
+    #insert_code_segment
 }
 
 fn get_velocity0(p: vec2<i32>) -> vec2<f32> {
@@ -19,8 +19,8 @@ fn get_velocity0(p: vec2<i32>) -> vec2<f32> {
 }
 
 [[stage(compute), workgroup_size(16, 16)]]
-fn main([[builtin(global_invocation_id)]] GlobalInvocationID: vec3<u32>) {
-    let uv = vec2<i32>(GlobalInvocationID.xy);
+fn main([[builtin(global_invocation_id)]] global_invocation_id: vec3<u32>) {
+    let uv = vec2<i32>(global_invocation_id.xy);
     if (uv.x >= field.lattice_size.x || uv.y >= field.lattice_size.y) {
         return;
     }

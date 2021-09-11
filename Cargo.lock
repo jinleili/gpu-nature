@@ -527,9 +527,9 @@ dependencies = [
 
 [[package]]
 name = "fixedbitset"
-version = "0.2.0"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "37ab347416e802de484e4d03c7316c48f1ecb56574dfd4a46a80f173ce1de04d"
+checksum = "398ea4fabe40b9b0d885340a2a991a44c8a645624075ad966d21f88688e2b69e"
 
 [[package]]
 name = "fnv"
@@ -656,6 +656,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "hexf-parse"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dfa686283ad6dd069f105e5ab091b04c62850d3e4cf5d67debad1933f55023df"
+
+[[package]]
 name = "humantime"
 version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -672,19 +678,10 @@ name = "idroid"
 version = "0.2.6"
 dependencies = [
  "image",
- "js-sys",
- "lazy_static",
  "libc",
  "nalgebra-glm",
- "objc",
- "pollster",
- "raw-window-handle",
  "uni-view",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "web-sys",
  "wgpu",
- "winit",
  "zerocopy",
 ]
 
@@ -926,12 +923,13 @@ dependencies = [
 [[package]]
 name = "naga"
 version = "0.6.0"
-source = "git+https://github.com/gfx-rs/naga?rev=93db57c#93db57c12b4a5eff48bdd00c494efa5ec89567ad"
+source = "git+https://github.com/gfx-rs/naga?rev=e226cf3#e226cf3f1d67d0bf91587e392879f0aee109ec42"
 dependencies = [
  "bit-set",
  "bitflags",
  "codespan-reporting",
  "fxhash",
+ "hexf-parse",
  "log",
  "num-traits",
  "petgraph",
@@ -979,7 +977,6 @@ dependencies = [
  "libc",
  "log",
  "nalgebra-glm",
- "objc",
  "palette",
  "pollster",
  "rand 0.7.3",
@@ -1284,9 +1281,9 @@ checksum = "d4fd5641d01c8f18a23da7b6fe29298ff4b55afcccdf78973b24cf3175fee32e"
 
 [[package]]
 name = "petgraph"
-version = "0.5.1"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "467d164a6de56270bd7c4d070df81d07beace25012d5103ced4e9ff08d6afdb7"
+checksum = "4a13a2fa9d0b63e5f22328828741e523766fff0ee9e779316902290dff3f824f"
 dependencies = [
  "fixedbitset",
  "indexmap",
@@ -2079,7 +2076,7 @@ dependencies = [
 [[package]]
 name = "wgpu"
 version = "0.10.1"
-source = "git+https://github.com/gfx-rs/wgpu?rev=5fd4fffdde0d19d5eabd5ec4f832bd95d4c9b0e1#5fd4fffdde0d19d5eabd5ec4f832bd95d4c9b0e1"
+source = "git+https://github.com/gfx-rs/wgpu?rev=69e86453#69e86453d91e2ee55781bc2e2b6cdb63656f67fd"
 dependencies = [
  "arrayvec",
  "js-sys",
@@ -2098,7 +2095,7 @@ dependencies = [
 [[package]]
 name = "wgpu-core"
 version = "0.10.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=5fd4fffdde0d19d5eabd5ec4f832bd95d4c9b0e1#5fd4fffdde0d19d5eabd5ec4f832bd95d4c9b0e1"
+source = "git+https://github.com/gfx-rs/wgpu?rev=69e86453#69e86453d91e2ee55781bc2e2b6cdb63656f67fd"
 dependencies = [
  "arrayvec",
  "bitflags",
@@ -2119,7 +2116,7 @@ dependencies = [
 [[package]]
 name = "wgpu-hal"
 version = "0.10.1"
-source = "git+https://github.com/gfx-rs/wgpu?rev=5fd4fffdde0d19d5eabd5ec4f832bd95d4c9b0e1#5fd4fffdde0d19d5eabd5ec4f832bd95d4c9b0e1"
+source = "git+https://github.com/gfx-rs/wgpu?rev=69e86453#69e86453d91e2ee55781bc2e2b6cdb63656f67fd"
 dependencies = [
  "arrayvec",
  "ash",
@@ -2152,7 +2149,7 @@ dependencies = [
 [[package]]
 name = "wgpu-types"
 version = "0.10.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=5fd4fffdde0d19d5eabd5ec4f832bd95d4c9b0e1#5fd4fffdde0d19d5eabd5ec4f832bd95d4c9b0e1"
+source = "git+https://github.com/gfx-rs/wgpu?rev=69e86453#69e86453d91e2ee55781bc2e2b6cdb63656f67fd"
 dependencies = [
  "bitflags",
 ]

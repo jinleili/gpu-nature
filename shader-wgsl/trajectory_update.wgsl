@@ -4,7 +4,7 @@
 
 [[group(0), binding(0)]] var<uniform> field: FieldUniform;
 [[group(0), binding(1)]] var<uniform> particle_uniform: ParticleUniform;
-[[group(0), binding(2)]] var<storage, read> fb: FieldBuffer;
+[[group(0), binding(2)]] var<storage, read_write> fb: FieldBuffer;
 [[group(0), binding(3)]] var<storage, read_write> pb: ParticleBuffer;
 [[group(0), binding(4)]] var<storage, read_write> canvas: CanvasBuffer;
 
@@ -67,7 +67,7 @@ fn main([[builtin(global_invocation_id)]] global_invocation_id: vec3<u32>) {
     }
 
     // Calculate which lattice this particle is located
-    let ij = (particle.pos / field.pixel_distance) - 0.5;
+    let ij = (particle.pos / field.pixel_distance.xy) - 0.5;
     let velocity = bilinear_interpolate_2f(ij);
     particle.pos = particle.pos + (velocity * particle_uniform.speed_factor);
 

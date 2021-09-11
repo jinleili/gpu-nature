@@ -7,7 +7,7 @@ use crate::{
 };
 use idroid::{
     math::{Position, Size},
-    node::{BindingGroupSettingNode, ComputeNode},
+    node::{BindingGroupSetting, ComputeNode},
     AnyTexture, BufferObj,
 };
 use wgpu::{TextureFormat, TextureView};
@@ -22,7 +22,7 @@ pub struct D2Q9Node {
     pub macro_tex: AnyTexture,
     pub lattice_info_data: Vec<LatticeInfo>,
     pub info_buf: BufferObj,
-    setting_nodes: Vec<BindingGroupSettingNode>,
+    setting_nodes: Vec<BindingGroupSetting>,
     collide_stream_pipelines: Vec<wgpu::ComputePipeline>,
     boundary_pipelines: Vec<wgpu::ComputePipeline>,
     pub dispatch_group_count: (u32, u32, u32),
@@ -58,13 +58,13 @@ impl D2Q9Node {
             (canvas_size.width as f32, canvas_size.height as f32).into(),
         );
         let field_uniform_data = FieldUniform {
-            lattice_size: [lattice.width as i32, lattice.height as i32, 1],
-            lattice_pixel_size: [lattice_pixel_size as f32, lattice_pixel_size as f32, 1.0],
-            canvas_size: [canvas_size.width as i32, canvas_size.height as i32, 0],
-            normalized_space_size: [sx, sy, 0.0],
-            pixel_distance: [0.0; 3],
+            lattice_size: [lattice.width as i32, lattice.height as i32, 1, 0],
+            lattice_pixel_size: [lattice_pixel_size as f32; 4],
+            canvas_size: [canvas_size.width as i32, canvas_size.height as i32, 0, 0],
+            normalized_space_size: [sx, sy, 0.0, 0.0],
+            pixel_distance: [0.0; 4],
             speed_ty: 1,
-            _padding: [0; 5],
+            _padding: [0.0; 3],
         };
         let lbm_uniform_buf =
             BufferObj::create_uniform_buffer(device, &lbm_uniform_data, Some("uniform_buf0"));
@@ -113,7 +113,7 @@ impl D2Q9Node {
         let boundary_shader = create_shader_module(device, "lbm/boundary", Some("boundary_shader"));
 
         let visibilitys: Vec<wgpu::ShaderStages> = [wgpu::ShaderStages::COMPUTE; 10].to_vec();
-        let mut setting_nodes = Vec::<BindingGroupSettingNode>::with_capacity(2);
+        let mut setting_nodes = Vec::<BindingGroupSetting>::with_capacity(2);
         let mut collide_stream_pipelines = Vec::<wgpu::ComputePipeline>::with_capacity(2);
         let mut boundary_pipelines = Vec::<wgpu::ComputePipeline>::with_capacity(2);
 
@@ -122,7 +122,7 @@ impl D2Q9Node {
             collide_stream_buffers[(i + 1) % 2].borrow_mut().read_only = false;
             let buffers =
                 vec![&collide_stream_buffers[i], &collide_stream_buffers[(i + 1) % 2], &info_buf];
-            let setting_node = BindingGroupSettingNode::new(
+            let setting_node = BindingGroupSetting::new(
                 device,
                 vec![&lbm_uniform_buf, &fluid_uniform_buf],
                 buffers.clone(),

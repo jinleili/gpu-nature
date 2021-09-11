@@ -15,9 +15,9 @@ const float weight[3] = { 0.39894346935609776, 0.2959625730773051, 0.00456569224
 
 void main()
 {
-    ivec2 uv = ivec2(gl_GlobalInvocationID.xy);
-    if (uv.x > (info.x - 1) || uv.y > (info.y - 1)) {
-        return;
+  ivec2 uv = ivec2(global_invocation_id.xy);
+  if (uv.x > (info.x - 1) || uv.y > (info.y - 1)) {
+    return;
     }
     
     bool is_direction_x = info[2] == 0 ? true : false;

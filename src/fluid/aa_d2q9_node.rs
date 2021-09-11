@@ -1,5 +1,3 @@
-use std::{borrow::BorrowMut, u32};
-
 use super::{init_lattice_material, is_sd_sphere, LatticeInfo, LatticeType, OBSTACLE_RADIUS};
 use crate::{
     create_shader_module, fluid::LbmUniform, setting_obj::SettingObj, FieldAnimationType,
@@ -7,10 +5,10 @@ use crate::{
 };
 use idroid::{
     math::{Position, Size},
-    node::{BindingGroupSettingNode, ComputeNode, DynamicBindingGroupNode},
+    node::ComputeNode,
     AnyTexture, BufferObj,
 };
-use wgpu::{TextureFormat, TextureView};
+use wgpu::TextureFormat;
 use zerocopy::AsBytes;
 
 pub struct AAD2Q9Node {
@@ -22,10 +20,7 @@ pub struct AAD2Q9Node {
     pub macro_tex: AnyTexture,
     pub lattice_info_data: Vec<LatticeInfo>,
     pub info_buf: BufferObj,
-    setting_node: BindingGroupSettingNode,
-    dynamic_setting: DynamicBindingGroupNode,
-    collide_stream_pipeline: wgpu::ComputePipeline,
-    boundary_pipeline: wgpu::ComputePipeline,
+    collide_stream_node: ComputeNode,
     pub dispatch_group_count: (u32, u32, u32),
     pub reset_node: ComputeNode,
 }
@@ -59,13 +54,13 @@ impl AAD2Q9Node {
             (canvas_size.width as f32, canvas_size.height as f32).into(),
         );
         let field_uniform_data = FieldUniform {
-            lattice_size: [lattice.width as i32, lattice.height as i32, 1],
-            lattice_pixel_size: [lattice_pixel_size as f32, lattice_pixel_size as f32, 1.0],
-            canvas_size: [canvas_size.width as i32, canvas_size.height as i32, 0],
-            normalized_space_size: [sx, sy, 0.0],
-            pixel_distance: [0.0; 3],
+            lattice_size: [lattice.width as i32, lattice.height as i32, 1, 0],
+            lattice_pixel_size: [lattice_pixel_size as f32, lattice_pixel_size as f32, 1.0, 0.0],
+            canvas_size: [canvas_size.width as i32, canvas_size.height as i32, 0, 0],
+            normalized_space_size: [sx, sy, 0.0, 0.0],
+            pixel_distance: [0.0; 4],
             speed_ty: 1,
-            _padding: [0; 5],
+            _padding: [0.0; 3],
         };
         let lbm_uniform_buf =
             BufferObj::create_uniform_buffer(device, &lbm_uniform_data, Some("uniform_buf0"));
@@ -106,21 +101,8 @@ impl AAD2Q9Node {
             false,
             Some("lattice_buf"),
         );
-
         let collide_stream_shader =
             create_shader_module(device, "aa_lbm/aa_collide_stream", Some("aa_collide_stream"));
-        let boundary_shader =
-            create_shader_module(device, "aa_lbm/aa_boundary", Some("aa_boundary"));
-
-        let visibilitys: Vec<wgpu::ShaderStages> = [wgpu::ShaderStages::COMPUTE; 10].to_vec();
-        let setting_node = BindingGroupSettingNode::new(
-            device,
-            vec![&lbm_uniform_buf, &fluid_uniform_buf],
-            vec![&aa_buffer, &info_buf],
-            vec![(&macro_tex, Some(macro_tex_access))],
-            vec![],
-            visibilitys.clone(),
-        );
 
         let mut dynamic_data0 =
             super::TickTockUniforms { read_offset: [0; 9], write_offset: [0; 9] };
@@ -139,44 +121,25 @@ impl AAD2Q9Node {
             dynamic_data1.read_offset[i] = soa_offset * i as i32;
             dynamic_data1.write_offset[i] = soa_offset * inversed as i32;
         }
-        println!("soa_offset: {}, \n {:?} \n {:?}", soa_offset, dynamic_data0, dynamic_data1);
+        let dynamic_offset =
+            device.limits().min_uniform_buffer_offset_alignment as wgpu::BufferAddress;
         let dynamic_buf = BufferObj::create_empty_dynamic_uniform_buffer(
             device,
-            2 * wgpu::BIND_BUFFER_ALIGNMENT,
+            2 * dynamic_offset,
             None,
             Some("dynamic_buf"),
         );
         queue.write_buffer(&dynamic_buf.buffer, 0, dynamic_data0.as_bytes());
-        queue.write_buffer(
-            &dynamic_buf.buffer,
-            wgpu::BIND_BUFFER_ALIGNMENT,
-            dynamic_data1.as_bytes(),
+        queue.write_buffer(&dynamic_buf.buffer, dynamic_offset, dynamic_data1.as_bytes());
+        let collide_stream_node = ComputeNode::new_with_dynamic_uniforms(
+            device,
+            dispatch_group_count,
+            vec![&lbm_uniform_buf, &fluid_uniform_buf],
+            vec![(&dynamic_buf, wgpu::ShaderStages::COMPUTE)],
+            vec![&aa_buffer, &info_buf],
+            vec![(&macro_tex, Some(macro_tex_access))],
+            &collide_stream_shader,
         );
-
-        let dynamic_setting =
-            DynamicBindingGroupNode::new(device, vec![(&dynamic_buf, wgpu::ShaderStages::COMPUTE)]);
-
-        let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: None,
-            bind_group_layouts: &[
-                &setting_node.bind_group_layout,
-                &dynamic_setting.bind_group_layout,
-            ],
-            push_constant_ranges: &[],
-        });
-        let collide_stream_pipeline =
-            device.create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
-                label: Some("collid_stream pipeline"),
-                layout: Some(&pipeline_layout),
-                module: &collide_stream_shader,
-                entry_point: "main",
-            });
-        let boundary_pipeline = device.create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
-            label: Some("boundary_pipeline pipeline"),
-            layout: Some(&pipeline_layout),
-            module: &boundary_shader,
-            entry_point: "main",
-        });
 
         let init_shader = create_shader_module(device, "aa_lbm/aa_init", Some("init_shader"));
         let reset_node = ComputeNode::new(
@@ -197,16 +160,12 @@ impl AAD2Q9Node {
             macro_tex,
             lattice_info_data,
             info_buf,
-            setting_node,
-            dynamic_setting,
             dispatch_group_count,
-            collide_stream_pipeline,
-            boundary_pipeline,
+            collide_stream_node,
             reset_node,
         };
         // On latast wgpu(2021/06/05), must reset twice to get correct result
         // But, cannot use official demo reproduce this problem, so strange!!
-        instance.reset_lattice_info(device, queue);
         instance.reset_lattice_info(device, queue);
 
         return instance;
@@ -290,18 +249,6 @@ impl AAD2Q9Node {
     }
 
     pub fn dispatch<'c, 'b: 'c>(&'b self, cpass: &mut wgpu::ComputePass<'c>, swap_index: usize) {
-        cpass.set_pipeline(&self.collide_stream_pipeline);
-        cpass.set_bind_group(0, &self.setting_node.bind_group, &[]);
-        cpass.set_bind_group(1, &self.dynamic_setting.bind_group, &[0]);
-        cpass.dispatch(self.dispatch_group_count.0, self.dispatch_group_count.1, 1);
-        cpass.set_bind_group(
-            1,
-            &self.dynamic_setting.bind_group,
-            &[wgpu::BIND_BUFFER_ALIGNMENT as _],
-        );
-        cpass.dispatch(self.dispatch_group_count.0, self.dispatch_group_count.1, 1);
-
-        // cpass.set_pipeline(&self.boundary_pipeline);
-        // cpass.dispatch(self.dispatch_group_count.0, self.dispatch_group_count.1, 1);
+        self.collide_stream_node.dispatch_by_offsets(cpass, Some(vec![&[0], &[256]]));
     }
 }

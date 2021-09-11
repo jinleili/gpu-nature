@@ -9,21 +9,20 @@ fn main([[builtin(global_invocation_id)]] global_invocation_id: vec3<u32>) {
   let field_index = fieldIndex(uv);
   
   var info: LatticeInfo = lattice_info.data[field_index];
-  if (isBoundaryCell(info.material) || isObstacleCell(info.material)) {
+  if (isObstacleCell(info.material)) {
     for (var i : i32 = 0; i < 9; i = i + 1) {
         // lattice coords that will bounce back to
+        // A-A pattern not need warry about boundray cell
         aa_cell.data[field_index + soaOffset(i)] =  0.0;
     }
-  } 
-  elseif (isPoiseuilleFlow()) {
+  } elseif (isPoiseuilleFlow()) {
     for (var i: i32 = 0; i < 9; i = i + 1) {
       aa_cell.data[field_index + soaOffset(i)] =  w(i);
     }
     let temp = w(3) * 0.3;
     aa_cell.data[field_index + soaOffset(1)] = w(1) + temp;
     aa_cell.data[field_index + soaOffset(3)] = temp;
-  } 
-  else {
+  } else {
     for (var i: i32 = 0; i < 9; i = i + 1) {
       aa_cell.data[field_index + soaOffset(i)] =  w(i);
     }

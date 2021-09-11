@@ -25,7 +25,6 @@ impl CombinateCanvas {
             false,
             Some("canvas_buf"),
         );
-
         let player = Self::create_player(&app_view, canvas_size, &canvas_buf, &setting);
         CombinateCanvas { app_view, canvas_size, canvas_buf, setting, player }
     }
@@ -89,12 +88,9 @@ impl CombinateCanvas {
                 canvas_buf,
                 setting,
             )),
-            FieldType::Fluid => Box::new(FluidPlayer::new(
-                &app_view,
-                canvas_size,
-                canvas_buf,
-                setting,
-            )),
+            FieldType::Fluid => {
+                Box::new(FluidPlayer::new(&app_view, canvas_size, canvas_buf, setting))
+            }
             _ => Box::new(D3FluidPlayer::new(
                 &app_view.device,
                 &app_view.queue,

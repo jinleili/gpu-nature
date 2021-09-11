@@ -18,22 +18,23 @@ pub struct FluidPlayer {
     lattice_pixel_size: u32,
     pre_pos: Position,
     fluid_compute_node: AAD2Q9Node,
+    // collide scheme
+    use_aa_pattern: bool,
     curl_cal_node: ComputeNode,
     particle_update_node: ComputeNode,
     render_node: BufferlessFullscreenNode,
-    particle_render: ParticleRenderNode,
+    particle_render: BufferlessFullscreenNode,
 }
 
 impl FluidPlayer {
     pub fn new(
-        app_view: &idroid::AppView,  canvas_size: Size<u32>,
-        canvas_buf: &BufferObj, setting: &SettingObj,
+        app_view: &idroid::AppView, canvas_size: Size<u32>, canvas_buf: &BufferObj,
+        setting: &SettingObj,
     ) -> Self {
         let device = &app_view.device;
-        let queue = &app_view.queue;
+        let use_aa_pattern = true;
         let fluid_compute_node = AAD2Q9Node::new(app_view, canvas_size, setting);
         let lattice = fluid_compute_node.lattice;
-        let macro_tex_access = wgpu::StorageTextureAccess::ReadOnly;
 
         let curl_shader =
             create_shader_module(device, "lbm/curl_update", Some("curl_update_shader"));
@@ -61,20 +62,6 @@ impl FluidPlayer {
             ],
             &curl_shader,
         );
-        let update_shader =
-            create_shader_module(device, "lbm/particle_update", Some("particle_update_shader"));
-        let particle_update_node = ComputeNode::new(
-            device,
-            setting.particles_threadgroup,
-            vec![
-                &fluid_compute_node.lbm_uniform_buf,
-                &fluid_compute_node.fluid_uniform_buf,
-                &setting.particles_uniform.as_ref().unwrap(),
-            ],
-            vec![&setting.particles_buf.as_ref().unwrap(), &canvas_buf],
-            vec![(&fluid_compute_node.macro_tex, None)],
-            &update_shader,
-        );
 
         let render_shader = create_shader_module(device, "lbm/present", Some("lbm present shader"));
         let sampler = idroid::load_texture::bilinear_sampler(device);
@@ -92,16 +79,41 @@ impl FluidPlayer {
             &render_shader,
         );
 
-        let particle_render = ParticleRenderNode::new(
-            app_view,
-            setting.particles_uniform_data.point_size as f32,
-            canvas_size,
+        let update_shader =
+            create_shader_module(device, "lbm/particle_update", Some("particle_update_shader"));
+        let particle_update_node = ComputeNode::new(
+            device,
+            setting.particles_threadgroup,
+            vec![
+                &fluid_compute_node.lbm_uniform_buf,
+                &fluid_compute_node.fluid_uniform_buf,
+                &setting.particles_uniform.as_ref().unwrap(),
+            ],
+            vec![&setting.particles_buf.as_ref().unwrap(), &canvas_buf],
+            vec![(&fluid_compute_node.macro_tex, None)],
+            &update_shader,
+        );
+
+        let particle_shader = create_shader_module(device, "present", None);
+        let particle_render = BufferlessFullscreenNode::new(
+            device,
+            app_view.config.format,
+            vec![
+                &fluid_compute_node.fluid_uniform_buf,
+                &setting.particles_uniform.as_ref().unwrap(),
+            ],
+            vec![&canvas_buf],
+            vec![],
+            vec![],
+            None,
+            &particle_shader,
         );
 
         FluidPlayer {
             animation_ty: setting.animation_type,
             canvas_size,
             lattice,
+            use_aa_pattern,
             lattice_pixel_size: fluid_compute_node.lattice_pixel_size,
             pre_pos: Position::new(0.0, 0.0),
             fluid_compute_node,
@@ -183,41 +195,42 @@ impl Player for FluidPlayer {
         });
         {
             let mut cpass =
-                encoder.begin_compute_pass(&wgpu::ComputePassDescriptor { label: None });
+                encoder.begin_compute_pass(&wgpu::ComputePassDescriptor { label: Some("fluid solver") });
 
             for _ in 0..3 {
                 self.fluid_compute_node.dispatch(&mut cpass, 0);
                 self.particle_update_node.dispatch(&mut cpass);
                 // self.curl_cal_node.dispatch(&mut cpass);
 
-                self.fluid_compute_node.dispatch(&mut cpass, 1);
-                self.particle_update_node.dispatch(&mut cpass);
-                // self.curl_cal_node.dispatch(&mut cpass);
+                if !self.use_aa_pattern {
+                    self.fluid_compute_node.dispatch(&mut cpass, 1);
+                    self.particle_update_node.dispatch(&mut cpass);
+                    // self.curl_cal_node.dispatch(&mut cpass);
+                }
             }
         }
-        self.particle_render.update_trajectory(
-            &mut encoder,
-            &setting.particles_buf.as_ref().unwrap(),
-            setting.particles_count,
-        );
+        // draw macro_tex
         {
-            let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-                label: None,
-                color_attachments: &[wgpu::RenderPassColorAttachment {
-                    view: frame_view,
-                    resolve_target: None,
-                    ops: wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(wgpu::Color { r: 0.2, g: 0.2, b: 0.25, a: 1.0 }),
-                        store: true,
-                    },
-                }],
-                depth_stencil_attachment: None,
-            });
-            self.render_node.draw_rpass(&mut rpass);
-            self.particle_render.draw_rpass(
-                &mut rpass,
-                &setting.particles_buf.as_ref().unwrap(),
-                setting.particles_count,
+            // let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+            //     label: None,
+            //     color_attachments: &[wgpu::RenderPassColorAttachment {
+            //         view: frame_view,
+            //         resolve_target: None,
+            //         ops: wgpu::Operations {
+            //             load: wgpu::LoadOp::Clear(wgpu::Color { r: 0.2, g: 0.2, b: 0.25, a: 1.0 }),
+            //             store: true,
+            //         },
+            //     }],
+            //     depth_stencil_attachment: None,
+            // });
+            // self.render_node.draw_rpass(&mut rpass);
+        }
+        // draw paticles
+        {
+            self.particle_render.draw(
+                frame_view,
+                &mut encoder,
+                wgpu::LoadOp::Clear(wgpu::Color { r: 0.2, g: 0.2, b: 0.25, a: 1.0 }),
             );
         }
         queue.submit(Some(encoder.finish()));

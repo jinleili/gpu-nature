@@ -17,7 +17,7 @@ fn src_3f(u: i32, v: i32) -> vec3<f32> {
   let new_v = clamp(v, 0, field.lattice_size.y - 1);
 //   let index = new_v * field.lattice_size.x + new_u;
 //   return fb.data[index].xyz;
-  return vec3<f32>(textureLoad(fb, vec2<i32>(new_u, new_v), 0).xyz);
+  return textureLoad(fb, vec2<i32>(new_u, new_v), 0).xyz;
 }
 #include "func/bilinear_interpolate_3f.wgsl"
 
@@ -32,7 +32,7 @@ fn particle_index(uv: vec2<i32>) -> i32 {
 fn update_canvas(particle: TrajectoryParticle, velocity: vec2<f32>) {
     let speed = abs(velocity.x) + abs(velocity.y);
     // keep obstacle area blank
-    if ((isPoiseuilleFlow() == false && speed < 0.035) || (isPoiseuilleFlow() && speed < 0.015)) {
+    if ((isPoiseuilleFlow() == false && speed < 0.0) || (isPoiseuilleFlow() && speed < 0.015)) {
         return;
     }
     // first, need calculate out pixel coordinate
@@ -53,34 +53,35 @@ fn update_canvas(particle: TrajectoryParticle, velocity: vec2<f32>) {
 }
 
 [[stage(compute), workgroup_size(16, 16)]]
-fn main([[builtin(global_invocation_id)]] GlobalInvocationID: vec3<u32>) {
-    let uv = vec2<i32>(GlobalInvocationID.xy);
+fn main([[builtin(global_invocation_id)]] global_invocation_id: vec3<u32>) {
+    let uv = vec2<i32>(global_invocation_id.xy);
     if (uv.x >= particle_uniform.num.x || uv.y >= particle_uniform.num.y) {
         return;
     }
     let p_index: i32 = particle_index(uv);
     var particle: TrajectoryParticle = pb.particles[p_index];
-     // Calculate which lattice this particle is located
-    let ij = (particle.pos / field.lattice_pixel_size.xy) - 0.5;
-    let field_info = bilinear_interpolate_3f(ij);
-    if (abs(field_info.x) < 0.0001 && abs(field_info.y) < 0.0001) {
+    if (particle.life_time <= 0.1) {
         particle.fade = 0.0;
+        particle.pos = particle.pos_initial;
+        particle.life_time = particle_uniform.life_time;
     } else {
+        particle.life_time = particle.life_time - 1.0;
         // fade in effect
         if (particle.fade < 1.0) {
-            if (particle.fade < 0.9) {
+            if (particle.fade < 0.95) {
                 particle.fade = particle.fade + 0.1;
             } else {
                 particle.fade = 1.0;
             }
-        }   
+        }
+
+        // Calculate which lattice this particle is located
+        let ij = (particle.pos / field.lattice_pixel_size.xy) - 0.5;
+        let field_info = bilinear_interpolate_3f(ij);
         particle.pos = particle.pos + (field_info.xy * particle_uniform.speed_factor);
-    }
-    
-    let pixel_coords = vec2<i32>(particle.pos);
-    if (pixel_coords.x < 0 || pixel_coords.x > field.canvas_size.x || pixel_coords.y < 0 || pixel_coords.y > field.canvas_size.y ) {
-        particle.pos = particle.pos_initial;
-        particle.fade = 0.0;
+
+        // update pixel's value：    
+        update_canvas(particle, field_info.xy);
     }
    
     pb.particles[p_index] = particle;
