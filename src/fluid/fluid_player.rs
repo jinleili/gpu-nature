@@ -17,7 +17,7 @@ pub struct FluidPlayer {
     lattice: wgpu::Extent3d,
     lattice_pixel_size: u32,
     pre_pos: Position,
-    fluid_compute_node: AAD2Q9Node,
+    fluid_compute_node: D2Q9Node,
     // collide scheme
     use_aa_pattern: bool,
     curl_cal_node: ComputeNode,
@@ -32,13 +32,13 @@ impl FluidPlayer {
         setting: &SettingObj,
     ) -> Self {
         let device = &app_view.device;
-        let use_aa_pattern = true;
-        let fluid_compute_node = AAD2Q9Node::new(app_view, canvas_size, setting);
+        let use_aa_pattern = false;
+        let fluid_compute_node = D2Q9Node::new(app_view, canvas_size, setting);
         let lattice = fluid_compute_node.lattice;
 
         let curl_shader =
             create_shader_module(device, "lbm/curl_update", Some("curl_update_shader"));
-        let curl_texture_format = TextureFormat::R32Float;
+        let curl_texture_format = TextureFormat::R16Float;
         let curl_tex = idroid::load_texture::empty(
             device,
             curl_texture_format,
@@ -65,6 +65,7 @@ impl FluidPlayer {
 
         let render_shader = create_shader_module(device, "lbm/present", Some("lbm present shader"));
         let sampler = idroid::load_texture::bilinear_sampler(device);
+        println!("abc");
         let render_node = BufferlessFullscreenNode::new(
             device,
             app_view.config.format,
@@ -78,6 +79,7 @@ impl FluidPlayer {
             None,
             &render_shader,
         );
+        println!("abc2");
 
         let update_shader =
             create_shader_module(device, "lbm/particle_update", Some("particle_update_shader"));
@@ -93,6 +95,7 @@ impl FluidPlayer {
             vec![(&fluid_compute_node.macro_tex, None)],
             &update_shader,
         );
+        println!("abc3");
 
         let particle_shader = create_shader_module(device, "present", None);
         let particle_render = BufferlessFullscreenNode::new(
@@ -108,6 +111,7 @@ impl FluidPlayer {
             None,
             &particle_shader,
         );
+        println!("abc4");
 
         FluidPlayer {
             animation_ty: setting.animation_type,

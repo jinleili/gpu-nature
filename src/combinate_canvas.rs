@@ -26,6 +26,9 @@ impl CombinateCanvas {
             Some("canvas_buf"),
         );
         let player = Self::create_player(&app_view, canvas_size, &canvas_buf, &setting);
+         if let Some(callback) = app_view.callback_to_app {
+            callback(0);
+        }
         CombinateCanvas { app_view, canvas_size, canvas_buf, setting, player }
     }
 
@@ -134,5 +137,6 @@ impl SurfaceView for CombinateCanvas {
             &frame_view,
             &mut self.setting,
         );
+       
     }
 }

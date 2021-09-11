@@ -21,7 +21,7 @@ impl CannyEdgeDetection {
     ) -> Self {
         let output_view = idroid::load_texture::empty(
             device,
-            wgpu::TextureFormat::R32Float,
+            wgpu::TextureFormat::R16Float,
             extent,
             Some(wgpu::TextureUsages::SAMPLED | wgpu::TextureUsages::STORAGE),
             None,

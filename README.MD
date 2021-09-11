@@ -15,6 +15,14 @@ RUST_BACKTRACE=full cargo run --example nature
 RUST_BACKTRACE=full WGPU_POWER_PREF=high cargo run --example nature
 ```
 
+## Run on iOS 
+
+first, build to iOS target
+```sh
+PREPROCESS_SHADER=true cargo build --target aarch64-apple-ios
+```
+then, use Xcode to open ```iOS/wgpu_test.xcodeproj``` and connect iOS device to run.
+
 ## Run on browser
 
 0th, reprocess shader.

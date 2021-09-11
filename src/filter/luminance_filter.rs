@@ -20,7 +20,7 @@ impl LuminanceFilter {
         let uniform_size = offset_stride * 1;
         let output_view = idroid::load_texture::empty(
             device,
-            wgpu::TextureFormat::R32Float,
+            wgpu::TextureFormat::R16Float,
             extent,
             Some(wgpu::TextureUsages::SAMPLED | wgpu::TextureUsages::STORAGE),
             None,

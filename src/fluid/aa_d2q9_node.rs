@@ -131,6 +131,7 @@ impl AAD2Q9Node {
         );
         queue.write_buffer(&dynamic_buf.buffer, 0, dynamic_data0.as_bytes());
         queue.write_buffer(&dynamic_buf.buffer, dynamic_offset, dynamic_data1.as_bytes());
+
         let collide_stream_node = ComputeNode::new_with_dynamic_uniforms(
             device,
             dispatch_group_count,

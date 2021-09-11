@@ -7,11 +7,6 @@ use std::vec::Vec;
 mod d3_noise_texture;
 pub use d3_noise_texture::D3NoiseTexture;
 
-pub mod noise_image;
-
-mod cpu_simplex_noise;
-use cpu_simplex_noise::SimplexNoise;
-
 static P: [i32; 512] = [
     151, 160, 137, 91, 90, 15, 131, 13, 201, 95, 96, 53, 194, 233, 7, 225, 140, 36, 103, 30, 69,
     142, 8, 99, 37, 240, 21, 10, 23, 190, 6, 148, 247, 120, 234, 75, 0, 26, 197, 62, 94, 252, 219,
@@ -86,13 +81,3 @@ pub fn create_gradient_buf(device: &wgpu::Device) -> idroid::BufferObj {
     return buf;
 }
 
-pub fn create_gradient_buf2(device: &wgpu::Device) -> idroid::BufferObj {
-    let mut list: [[f32; 4]; 256] = [[1.0, 1.0, 0.0, 0.0]; 256];
-    for i in 0..256 {
-        let permutation = P[i] as usize;
-        list[permutation] = GRADIENT[permutation % 16];
-    }
-    let mut buf = idroid::BufferObj::create_storage_buffer(device, &list, None);
-    buf.read_only = true;
-    return buf;
-}
