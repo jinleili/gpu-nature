@@ -26,7 +26,9 @@ use floor::Floor;
 
 mod noise;
 
+#[cfg(target_os = "ios")]
 mod ffi_ios;
+#[cfg(target_os = "ios")]
 pub use ffi_ios::*;
 
 #[cfg(target_arch = "wasm32")]

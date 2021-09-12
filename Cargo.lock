@@ -681,6 +681,7 @@ dependencies = [
  "libc",
  "nalgebra-glm",
  "uni-view",
+ "web-sys",
  "wgpu",
  "zerocopy",
 ]

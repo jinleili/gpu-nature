@@ -17,7 +17,7 @@ pub struct FluidPlayer {
     lattice: wgpu::Extent3d,
     lattice_pixel_size: u32,
     pre_pos: Position,
-    fluid_compute_node: D2Q9Node,
+    fluid_compute_node: AAD2Q9Node,
     // collide scheme
     use_aa_pattern: bool,
     curl_cal_node: ComputeNode,
@@ -32,8 +32,8 @@ impl FluidPlayer {
         setting: &SettingObj,
     ) -> Self {
         let device = &app_view.device;
-        let use_aa_pattern = false;
-        let fluid_compute_node = D2Q9Node::new(app_view, canvas_size, setting);
+        let use_aa_pattern = true;
+        let fluid_compute_node = AAD2Q9Node::new(app_view, canvas_size, setting);
         let lattice = fluid_compute_node.lattice;
 
         let curl_shader =
