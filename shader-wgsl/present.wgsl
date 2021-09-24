@@ -20,6 +20,7 @@ fn main([[builtin(position)]] coord : vec4<f32>) -> [[location(0)]] vec4<f32> {
 
     var frag_color: vec4<f32>;
     if (p.alpha > 0.001) {
+        // frag_color = vec4<f32>(particle_uniform.color.rgb, 0.0);
         if (particle_uniform.color_ty == 2) {
             // speed as color
             let velocity = abs(p.velocity_x) + abs(p.velocity_y);
@@ -49,7 +50,6 @@ fn main([[builtin(position)]] coord : vec4<f32>) -> [[location(0)]] vec4<f32> {
     } else {
         frag_color = vec4<f32>(particle_uniform.color.rgb, 0.0);
     }
-     
     return frag_color;
 }
 

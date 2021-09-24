@@ -38,7 +38,8 @@ impl FluidPlayer {
 
         let curl_shader =
             create_shader_module(device, "lbm/curl_update", Some("curl_update_shader"));
-        let curl_texture_format = TextureFormat::R16Float;
+        // iOS cannot create R32Float texture, R16Float cannot use to storage texture
+        let curl_texture_format = TextureFormat::Rgba16Float;
         let curl_tex = idroid::load_texture::empty(
             device,
             curl_texture_format,
@@ -65,7 +66,6 @@ impl FluidPlayer {
 
         let render_shader = create_shader_module(device, "lbm/present", Some("lbm present shader"));
         let sampler = idroid::load_texture::bilinear_sampler(device);
-        println!("abc");
         let render_node = BufferlessFullscreenNode::new(
             device,
             app_view.config.format,
@@ -74,9 +74,8 @@ impl FluidPlayer {
                 &setting.particles_uniform.as_ref().unwrap(),
             ],
             vec![&canvas_buf],
-            vec![(&fluid_compute_node.macro_tex, None), (&curl_tex, None)],
+            vec![&fluid_compute_node.macro_tex, &curl_tex],
             vec![&sampler],
-            None,
             &render_shader,
         );
         println!("abc2");
@@ -108,7 +107,6 @@ impl FluidPlayer {
             vec![&canvas_buf],
             vec![],
             vec![],
-            None,
             &particle_shader,
         );
         println!("abc4");
@@ -198,8 +196,8 @@ impl Player for FluidPlayer {
             label: Some("fluid player encoder"),
         });
         {
-            let mut cpass =
-                encoder.begin_compute_pass(&wgpu::ComputePassDescriptor { label: Some("fluid solver") });
+            let mut cpass = encoder
+                .begin_compute_pass(&wgpu::ComputePassDescriptor { label: Some("fluid solver") });
 
             for _ in 0..3 {
                 self.fluid_compute_node.dispatch(&mut cpass, 0);

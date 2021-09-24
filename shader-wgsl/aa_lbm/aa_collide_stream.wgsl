@@ -26,22 +26,6 @@ fn equilibrium2(velocity: vec2<f32>, rho: f32, direction: i32, usqr: f32) -> f32
   return rho * w(direction) * (1.0 + 3.0 * e_dot_u + 4.5 * (e_dot_u * e_dot_u) - usqr);
 }
 
-// pull scheme
-fn streaming_in(uv : vec2<i32>, direction : i32)->i32 {
-    var target_uv : vec2<i32> = uv + vec2<i32>(e(fluid.inversed_direction[direction].x));  
-    if (target_uv.x < 0) {
-      target_uv.x = field.lattice_size.x - 1;
-    } elseif (target_uv.x >= field.lattice_size.x) {
-      target_uv.x = 0;
-    }
-    if (target_uv.y < 0) {
-      target_uv.y = field.lattice_size.y - 1;
-    } elseif (target_uv.y >= field.lattice_size.y) {
-      target_uv.y = 0;
-    } 
-    return latticeIndex(target_uv, direction);
-}
-
 [[stage(compute), workgroup_size(64, 4)]]
 fn main([[builtin(global_invocation_id)]] global_invocation_id: vec3<u32>) {
     let uv = vec2<i32>(global_invocation_id.xy);

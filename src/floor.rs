@@ -90,11 +90,10 @@ impl Floor {
         let noise_display = BufferlessFullscreenNode::new(
             &app_view.device,
             app_view.config.format,
-            vec![],
             vec![&permulation_buf, &gradient_buf],
             vec![],
             vec![],
-            Some(vec![wgpu::ShaderStages::FRAGMENT, wgpu::ShaderStages::FRAGMENT]),
+            vec![],
             &noise_shader,
         );
         Floor { display_node, noise_display }

@@ -6,7 +6,7 @@
 [[group(0), binding(1)]] var<uniform> field: FieldUniform;
 [[group(0), binding(2)]] var<storage, read_write> lattice_info: StoreInfo;
 [[group(0), binding(3)]] var fb: texture_2d<f32>;
-[[group(0), binding(4)]] var curl_info: texture_storage_2d<r16float, write>;
+[[group(0), binding(4)]] var curl_info: texture_storage_2d<rgba16float, write>;
 
 [[stage(compute), workgroup_size(64, 4)]]
 fn main([[builtin(global_invocation_id)]] global_invocation_id: vec3<u32>) {

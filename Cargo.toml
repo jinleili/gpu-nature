@@ -24,7 +24,7 @@ lto = true
 
 [dependencies]
 libc = "*"
-wgpu = {git = "https://github.com/gfx-rs/wgpu", rev="69e86453"}
+wgpu = {git = "https://github.com/gfx-rs/wgpu", rev="180e3e35"}
 uni-view = { path="../idroid/uni-view" }
 idroid = { path="../idroid/idroid" }
 # uni-view = { git = "https://github.com/jinleili/idroid", branch="wgpu_0.9" }

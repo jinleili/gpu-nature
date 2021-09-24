@@ -17,6 +17,8 @@ let PI: f32 = 3.1415926535;
 
 [[stage(fragment)]] 
 fn main(in : VertexOutput) -> [[location(0)]] vec4<f32> {
+    //trick wgpu validation
+    let xx = particle_uniform.color;
     let pixel_coord = min(vec2<i32>(floor(in.position.xy)), field.canvas_size.xy - 1);
     let p_index = pixel_coord.x + pixel_coord.y * field.canvas_size.x;
     var p: Pixel = canvas.pixels[p_index];
