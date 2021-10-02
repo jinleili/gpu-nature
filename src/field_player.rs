@@ -82,6 +82,7 @@ impl FieldPlayer {
             vec![],
             vec![],
             &render_shader,
+            None,
         );
         let mut instance = FieldPlayer {
             canvas_size,

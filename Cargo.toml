@@ -24,7 +24,7 @@ lto = true
 
 [dependencies]
 libc = "*"
-wgpu = {git = "https://github.com/gfx-rs/wgpu", rev="180e3e35"}
+wgpu = {git = "https://github.com/gfx-rs/wgpu", rev="089294fc"}
 uni-view = { path="../idroid/uni-view" }
 idroid = { path="../idroid/idroid" }
 # uni-view = { git = "https://github.com/jinleili/idroid", branch="wgpu_0.9" }
@@ -33,12 +33,13 @@ idroid = { path="../idroid/idroid" }
 nalgebra-glm = "*"
 image =  { version = "0.23", default-features = false, features = ["png"] }
 lazy_static = "*"
-zerocopy = "0.5"
+zerocopy = "0.6"
 rand = { version = "0.7.2", features = ["wasm-bindgen"] }
+lyon = { git = "https://github.com/nical/lyon", version = "0.17.5" }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 pollster = "0.2"
-env_logger = "0.8"
+env_logger = "0.9"
 
 [target.'cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))'.dependencies]
 winit = { version = "0.25", features = [] }

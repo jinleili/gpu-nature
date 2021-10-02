@@ -95,6 +95,7 @@ impl Floor {
             vec![],
             vec![],
             &noise_shader,
+            None,
         );
         Floor { display_node, noise_display }
     }

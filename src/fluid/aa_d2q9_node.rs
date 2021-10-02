@@ -136,7 +136,7 @@ impl AAD2Q9Node {
             device,
             dispatch_group_count,
             vec![&lbm_uniform_buf, &fluid_uniform_buf],
-            vec![(&dynamic_buf, wgpu::ShaderStages::COMPUTE)],
+            vec![&dynamic_buf],
             vec![&aa_buffer, &info_buf],
             vec![(&macro_tex, Some(macro_tex_access))],
             &collide_stream_shader,

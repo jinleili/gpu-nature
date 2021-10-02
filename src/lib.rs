@@ -26,6 +26,9 @@ use floor::Floor;
 
 mod noise;
 
+mod pbd;
+pub use pbd::PBDCanvas;
+
 #[cfg(target_os = "ios")]
 mod ffi_ios;
 #[cfg(target_os = "ios")]

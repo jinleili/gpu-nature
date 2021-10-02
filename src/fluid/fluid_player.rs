@@ -77,6 +77,7 @@ impl FluidPlayer {
             vec![&fluid_compute_node.macro_tex, &curl_tex],
             vec![&sampler],
             &render_shader,
+            None,
         );
         println!("abc2");
 
@@ -108,6 +109,7 @@ impl FluidPlayer {
             vec![],
             vec![],
             &particle_shader,
+            None,
         );
         println!("abc4");
 
