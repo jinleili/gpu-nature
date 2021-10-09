@@ -91,7 +91,7 @@ impl Diffraction {
     }
 
     pub fn enter_frame(&mut self, app_view: &mut AppView) {
-        let (_frame, frame_view) = app_view.get_current_frame_view();
+        let (frame, frame_view) = app_view.get_current_frame_view();
         let color_attachments = [wgpu::RenderPassColorAttachment {
             view: &frame_view,
             resolve_target: None,
@@ -114,6 +114,7 @@ impl Diffraction {
             self.draw_render_pass(&mut rpass);
         }
         app_view.queue.submit(Some(encoder.finish()));
+        frame.present();
     }
 
     pub fn draw_render_pass<'a, 'b: 'a>(&'b self, rpass: &mut wgpu::RenderPass<'b>) {

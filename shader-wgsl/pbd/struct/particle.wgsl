@@ -1,4 +1,4 @@
-struct ParticleObj {
+struct Particle {
    pos: vec4<f32>;
    old_pos: vec4<f32>;
    accelerate: vec4<f32>;
@@ -9,6 +9,6 @@ struct ParticleObj {
    connect: vec4<i32>;
 };
 [[block]]
-struct Particles {
-    data: [[stride(80)]] array<ParticleObj>;
+struct ParticlesBuffer {
+    data: [[stride(80)]] array<Particle>;
 };

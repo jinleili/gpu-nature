@@ -10,7 +10,7 @@ fn main([[builtin(global_invocation_id)]] global_invocation_id: vec3<u32>) {
     return;
   }
   let particle_index: i32 = uv.y * cloth.num_x + uv.x;
-  var particle: ParticleObj = particles.data[particle_index];
+  var particle: Particle = particles.data[particle_index];
   if (is_movable_particle(particle)) {
     let temp_pos = particle.pos;
     // 预估新的位置

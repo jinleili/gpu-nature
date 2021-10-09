@@ -43,8 +43,8 @@ impl Cloth {
             None,
         );
         // （32， 64） 这个组合，约束分组后为 9 组，且没有极小数据量的分组
-        let particle_x_num = 32_u32;
-        let particle_y_num = 64_u32;
+        let particle_x_num = 8_u32;
+        let particle_y_num = 16_u32;
 
         //static const float MODE_COMPLIANCE[eModeMax] = {
         //  0.0f,            // Miles Macklin's blog (http://blog.mmacklin.com/2016/10/12/xpbd-slides-and-stiffness/)
@@ -156,7 +156,7 @@ impl Cloth {
         );
         let predict_and_reset = ComputeNode::new(
             &app_view.device,
-            (((particle_x_num * particle_y_num + 31) as f32 / 32.0).floor() as u32, 1,  1),
+            (((particle_x_num * particle_y_num + 31) as f32 / 32.0).floor() as u32, 1, 1),
             vec![&uniform_buf],
             vec![&particle_buf, &constraint_buf, &group_constraints_buf, &reorder_constraints_buf],
             vec![],
@@ -293,6 +293,9 @@ impl Cloth {
     }
 
     fn step_solver(&mut self, encoder: &mut wgpu::CommandEncoder) {
+        // if self.frame_count >= 1 {
+        //     return;
+        // }
         // 重用 cpass 在 macOS 上不能提升性能， 但是在 iOS 上提升明显
         // 64*64，8 约束，迭代20 ：Xs Max, 12ms -> 8ms
         let mut cpass =
@@ -300,7 +303,7 @@ impl Cloth {
         self.predict_and_reset.dispatch(&mut cpass);
 
         let dynamic_offset = 256;
-        for _ in 0..2 {
+        for _ in 0..10 {
             cpass.set_pipeline(&self.stretch_solver.pipeline);
             cpass.set_bind_group(0, &self.stretch_solver.bg_setting.bind_group, &[]);
             let mut index = 0;
@@ -312,16 +315,16 @@ impl Cloth {
                 index += 1;
             }
 
-            // cpass.set_pipeline(&self.bend_solver.pipeline);
-            // cpass.set_bind_group(0, &self.bend_solver.bg_setting.bind_group, &[]);
-            // index = 0;
-            // for mc in self.bend_mesh_coloring.iter() {
-            //     if let Some(bg) = &self.bend_solver.dy_uniform_bg {
-            //         cpass.set_bind_group(1, &bg.bind_group, &[index * dynamic_offset]);
-            //     }
-            //     cpass.dispatch(mc.thread_group.0, mc.thread_group.1, 1);
-            //     index += 1;
-            // }
+            cpass.set_pipeline(&self.bend_solver.pipeline);
+            cpass.set_bind_group(0, &self.bend_solver.bg_setting.bind_group, &[]);
+            index = 0;
+            for mc in self.bend_mesh_coloring.iter() {
+                if let Some(bg) = &self.bend_solver.dy_uniform_bg {
+                    cpass.set_bind_group(1, &bg.bind_group, &[index * dynamic_offset]);
+                }
+                cpass.dispatch(mc.thread_group.0, mc.thread_group.1, 1);
+                index += 1;
+            }
         }
 
         self.frame_count += 1;
@@ -332,7 +335,7 @@ impl Cloth {
             label: Some("cloth encoder"),
         });
         self.step_solver(&mut encoder);
-        let (_frame, frame_view) = app_view.get_current_frame_view();
+        let (frame, frame_view) = app_view.get_current_frame_view();
         {
             let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: Some("cloth render pass"),
@@ -352,5 +355,6 @@ impl Cloth {
             self.display_node.draw_render_pass(&mut rpass);
         }
         app_view.queue.submit(Some(encoder.finish()));
+        frame.present();
     }
 }

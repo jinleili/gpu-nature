@@ -59,7 +59,7 @@ impl SurfaceView for Canvas {
     fn enter_frame(&mut self) {
         // self.nature_node.enter_frame(&mut self.app_view);
 
-        let (_frame, frame_view) = self.app_view.get_current_frame_view();
+        let (frame, frame_view) = self.app_view.get_current_frame_view();
         let color_attachments = [wgpu::RenderPassColorAttachment {
             view: &frame_view,
             resolve_target: None,
@@ -86,5 +86,6 @@ impl SurfaceView for Canvas {
             self.nature_node.draw_render_pass(&mut rpass);
         }
         self.app_view.queue.submit(Some(encoder.finish()));
+        frame.present();
     }
 }

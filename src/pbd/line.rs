@@ -19,9 +19,11 @@ pub struct Line {
 
 impl Line {
     pub fn new(app_view: &AppView) -> Self {
-        let mut encoder = app_view.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
+        let mut encoder =
+            app_view.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
         let viewport_size: Size<f32> = (&app_view.config).into();
-        let (p_matrix, base_mv_matrix, factor) = idroid::utils::matrix_helper::perspective_mvp(viewport_size);
+        let (p_matrix, base_mv_matrix, factor) =
+            idroid::utils::matrix_helper::perspective_mvp(viewport_size);
         let mvp_buf = BufferObj::create_uniform_buffer(
             &app_view.device,
             &MVPUniform { mvp_matrix: (p_matrix * base_mv_matrix).into() },
@@ -61,13 +63,22 @@ impl Line {
             factor.0 / viewport_size.width,
         );
 
-        let particle_buf =
-            BufferObj::create_storage_buffer(&app_view.device, particles.as_bytes(), Some("particle_buf"));
-        let constraint_buf =
-            BufferObj::create_storage_buffer(&app_view.device, constraints.as_bytes(), Some("constraint_buf"));
+        let particle_buf = BufferObj::create_storage_buffer(
+            &app_view.device,
+            particles.as_bytes(),
+            Some("particle_buf"),
+        );
+        let constraint_buf = BufferObj::create_storage_buffer(
+            &app_view.device,
+            constraints.as_bytes(),
+            Some("constraint_buf"),
+        );
 
-        let predict_and_reset_shader =
-            idroid::shader::create_shader_module(&app_view.device, "pbd/line_predict_and_reset", None);
+        let predict_and_reset_shader = idroid::shader::create_shader_module(
+            &app_view.device,
+            "pbd/line_predict_and_reset",
+            None,
+        );
         let predict_and_reset = ComputeNode::new(
             &app_view.device,
             group_count,
@@ -77,8 +88,11 @@ impl Line {
             &predict_and_reset_shader,
         );
 
-        let constraint_solver_shader =
-            idroid::shader::create_shader_module(&app_view.device, "pbd/line_constraint_solver", None);
+        let constraint_solver_shader = idroid::shader::create_shader_module(
+            &app_view.device,
+            "pbd/line_constraint_solver",
+            None,
+        );
         let constraint_solver = ComputeNode::new_with_push_constants(
             &app_view.device,
             (group_count.0, 1, 1),
@@ -105,29 +119,40 @@ impl Line {
             }
         }
 
-        let display_shader = idroid::shader::create_shader_module(&app_view.device, "pbd/line_display", None);
-        let display_node_builder = ViewNodeBuilder::<PosParticleIndex>::new(vec![], &display_shader)
-            .with_uniform_buffers(vec![&mvp_buf, &uniform_buf])
-            .with_storage_buffers(vec![&particle_buf])
-            .with_shader_stages(vec![
-                wgpu::ShaderStages::VERTEX,
-                wgpu::ShaderStages::VERTEX,
-                wgpu::ShaderStages::VERTEX,
-            ])
-            .with_vertices_and_indices((vertex_data, index_data))
-            .with_primitive_topology(wgpu::PrimitiveTopology::LineStrip);
+        let display_shader =
+            idroid::shader::create_shader_module(&app_view.device, "pbd/line_display", None);
+        let display_node_builder =
+            ViewNodeBuilder::<PosParticleIndex>::new(vec![], &display_shader)
+                .with_uniform_buffers(vec![&mvp_buf, &uniform_buf])
+                .with_storage_buffers(vec![&particle_buf])
+                .with_shader_stages(vec![
+                    wgpu::ShaderStages::VERTEX,
+                    wgpu::ShaderStages::VERTEX,
+                    wgpu::ShaderStages::VERTEX,
+                ])
+                .with_vertices_and_indices((vertex_data, index_data))
+                .with_primitive_topology(wgpu::PrimitiveTopology::LineStrip);
 
         let display_node = display_node_builder.build(&app_view.device);
         app_view.queue.submit(Some(encoder.finish()));
 
-        Self { particle_buf, constraint_buf, predict_and_reset, constraint_solver, display_node, group_count }
+        Self {
+            particle_buf,
+            constraint_buf,
+            predict_and_reset,
+            constraint_solver,
+            display_node,
+            group_count,
+        }
     }
     pub fn enter_frame(&mut self, app_view: &mut AppView) {
-        let mut encoder =
-            app_view.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: Some("cloth encoder") });
+        let mut encoder = app_view.device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
+            label: Some("cloth encoder"),
+        });
         self.predict_and_reset.compute(&mut encoder);
         {
-            let mut cpass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor { label: None });
+            let mut cpass =
+                encoder.begin_compute_pass(&wgpu::ComputePassDescriptor { label: None });
             cpass.set_pipeline(&self.constraint_solver.pipeline);
             cpass.set_bind_group(0, &self.constraint_solver.bg_setting.bind_group, &[]);
             for _ in 0..20 {
@@ -146,7 +171,7 @@ impl Line {
             }
         }
 
-        let (_frame, frame_view) = app_view.get_current_frame_view();
+        let (frame, frame_view) = app_view.get_current_frame_view();
 
         {
             let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
@@ -154,12 +179,16 @@ impl Line {
                 color_attachments: &[wgpu::RenderPassColorAttachment {
                     view: &frame_view,
                     resolve_target: None,
-                    ops: wgpu::Operations { load: wgpu::LoadOp::Clear(idroid::utils::alpha_color()), store: true },
+                    ops: wgpu::Operations {
+                        load: wgpu::LoadOp::Clear(idroid::utils::alpha_color()),
+                        store: true,
+                    },
                 }],
                 depth_stencil_attachment: None,
             });
             self.display_node.draw_render_pass(&mut rpass);
         }
         app_view.queue.submit(Some(encoder.finish()));
+        frame.present();
     }
 }

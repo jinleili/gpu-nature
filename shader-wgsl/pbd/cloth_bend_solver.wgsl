@@ -19,14 +19,14 @@ struct BendConstraintGoupBuf {
 };
 
 [[group(0), binding(0)]] var<uniform> cloth: ClothUniform;
-[[group(0), binding(1)]] var<storage, read_write> particles: Particles;
+[[group(0), binding(1)]] var<storage, read_write> particles: ParticlesBuffer;
 [[group(0), binding(2)]] var<storage, read_write> constraints: BendConstraintBuf;
 [[group(0), binding(3)]] var<storage, read_write> reorder_constraints: BendConstraintGoupBuf;
 
 [[group(1), binding(0)]] var<uniform> dy_uniform: DynamicUniform;
 
 
-fn is_movable_particle(particle: ParticleObj) -> bool {
+fn is_movable_particle(particle: Particle) -> bool {
   if (particle.uv_mass.z < 0.001) {
     return false;
   }
@@ -34,14 +34,9 @@ fn is_movable_particle(particle: ParticleObj) -> bool {
 }
 // 初始双面角 ϕ0
 let phi0 = 3.1415926535;
-
-[[stage(compute), workgroup_size(8, 8)]]
-fn main([[builtin(global_invocation_id)]] global_invocation_id: vec3<u32>) {
-    let uv = vec2<i32>(global_invocation_id.xy);
-    if (uv.x >= dy_uniform.max_num_x) {
-        return;
-    }
-    var field_index = uv.y * dy_uniform.max_num_x + uv.x;
+[[stage(compute), workgroup_size(32, 1)]]
+fn main([[builtin(global_invocation_id)]] global_invocation_id: vec3<u32>) {  
+    var field_index = i32(global_invocation_id.x);
     if (field_index >= dy_uniform.group_len) {
         return;
     }

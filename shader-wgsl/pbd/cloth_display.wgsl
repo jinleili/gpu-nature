@@ -12,7 +12,7 @@ struct MVPMatUniform {
 
 [[group(0), binding(0)]] var<uniform> mvp_mat: MVPMatUniform;
 [[group(0), binding(1)]] var<uniform> cloth: ClothUniform;
-[[group(0), binding(2)]] var<storage, read_write> particles: Particles;
+[[group(0), binding(2)]] var<storage, read_write> particles: ParticlesBuffer;
 // [[group(0), binding(3)]] var<storage, read_write> collisions: CollisionObjBuf;
 
 struct VertexOutput {

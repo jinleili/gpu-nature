@@ -74,7 +74,7 @@ fn main() {
             Event::RedrawRequested(_) => {
                 // 减慢渲染速度
                 frame_index += 1;
-                if frame_index % 10000 > 0 {
+                if frame_index % 1000 > 0 {
                     return ();
                 }
                 current_index += 1;

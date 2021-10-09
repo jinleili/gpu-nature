@@ -13,7 +13,7 @@ struct TriangleObjBuf {
 };
 
 
-struct ConstraintObj {
+struct Constraint {
    rest_length: f32;
    lambda: f32;
    particle0: i32;
@@ -21,7 +21,7 @@ struct ConstraintObj {
 };
 [[block]]
 struct ConstraintObjBuf {
-    data: [[stride(16)]] array<ConstraintObj>;
+    data: [[stride(16)]] array<Constraint>;
 };
 
 struct BendingConstraintObj {
@@ -120,7 +120,7 @@ fn linearize_bin_index2(x: i32, y: i32, z: i32) -> i32 {
    return (bin.bin_num.x * bin.bin_num.y) * z + bin.bin_num.x * y + x; 
 }
 
-fn is_movable_particle(particle: ParticleObj) -> bool {
+fn is_movable_particle(particle: Particle) -> bool {
   if (particle.uv_mass.z < 0.001) {
     return false;
   }

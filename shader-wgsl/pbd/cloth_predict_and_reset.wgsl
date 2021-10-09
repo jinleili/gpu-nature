@@ -11,7 +11,7 @@ fn main([[builtin(global_invocation_id)]] global_invocation_id: vec3<u32>) {
     if (field_index >= total) {
       return;
     }
-    var particle: ParticleObj = particles.data[field_index];
+    var particle: Particle = particles.data[field_index];
     if (is_movable_particle(particle)) {
       let temp_pos = particle.pos;
       // 预估新的位置

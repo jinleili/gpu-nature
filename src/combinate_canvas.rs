@@ -26,7 +26,7 @@ impl CombinateCanvas {
             Some("canvas_buf"),
         );
         let player = Self::create_player(&app_view, canvas_size, &canvas_buf, &setting);
-         if let Some(callback) = app_view.callback_to_app {
+        if let Some(callback) = app_view.callback_to_app {
             callback(0);
         }
         CombinateCanvas { app_view, canvas_size, canvas_buf, setting, player }
@@ -130,13 +130,13 @@ impl SurfaceView for CombinateCanvas {
     }
 
     fn enter_frame(&mut self) {
-        let (_frame, frame_view) = self.app_view.get_current_frame_view();
+        let (frame, frame_view) = self.app_view.get_current_frame_view();
         self.player.enter_frame(
             &self.app_view.device,
             &self.app_view.queue,
             &frame_view,
             &mut self.setting,
         );
-       
+        frame.present();
     }
 }

@@ -74,15 +74,15 @@ pub fn generate_cloth_particles(
     Vec<ParticleBufferObj>,
     Vec<ConstraintBufferObj>,
     Vec<MeshColoringObj>,
-    Vec<[i32; 3]>,
-    Vec<[i32; 3]>,
+    Vec<[i32; 8]>,
+    Vec<[i32; 8]>,
     Vec<MeshColoringObj>,
     Vec<BendConstraintBufferObj>,
     Vec<[i32; 3]>,
 ) {
     let mut particles = Vec::with_capacity(horizontal_num * vertical_num);
-    let mut constraints = Vec::with_capacity(horizontal_num * vertical_num * 3);
-    let mut stretch_constraints: Vec<[i32; 3]> = Vec::with_capacity(horizontal_num * vertical_num);
+    let mut constraints = Vec::with_capacity(horizontal_num * vertical_num * 8);
+    let mut stretch_constraints: Vec<[i32; 8]> = Vec::with_capacity(horizontal_num * vertical_num);
 
     let horizontal_step = horizontal_pixel / (horizontal_num - 1) as f32 * a_pixel_on_ndc;
     let vertical_step = vertical_pixel / (vertical_num - 1) as f32 * a_pixel_on_ndc;
@@ -127,7 +127,7 @@ pub fn generate_cloth_particles(
             let particle0 = &mut particles[index0];
 
             // 将每个粒子对应的全部约束的索引装进单独的数组里
-            let mut group: [i32; 3] = [-1; 3];
+            let mut group: [i32; 8] = [-1; 8];
             let p0: Point3D = Point3D::new(particle0.pos[0], particle0.pos[1], particle0.pos[2]);
             if w < horizontal_num - 1 {
                 group[0] = constraints.len() as i32;
@@ -362,30 +362,15 @@ fn cal_bend_constraints(
 
     let mut mesh_colorings: Vec<MeshColoringObj> = vec![];
     let mut offset = 0;
-    let step: u32 = 8;
     for a_group in bending_groups.iter_mut() {
         println!("bend group len: {}", a_group.len());
         let group_len = a_group.len() as u32;
-        let mut max_num_x: u32 = 0;
-        let mut max_num_y: u32 = 0;
-        for i in 1..100 {
-            max_num_x = i * step;
-            if max_num_x * max_num_y >= group_len {
-                max_num_x = cal_real_max_num(max_num_x, max_num_y, group_len);
-                break;
-            }
-            max_num_y = i * step;
-            if max_num_x * max_num_y >= group_len {
-                max_num_y = cal_real_max_num(max_num_y, max_num_x, group_len);
-                break;
-            }
-        }
         mesh_colorings.push(MeshColoringObj {
             offset,
-            max_num_x,
-            max_num_y,
+            max_num_x: 0,
+            max_num_y: 0,
             group_len,
-            thread_group: ((max_num_x + 7) / step, (max_num_y + 7) / step),
+            thread_group: (((group_len + 31) as f32 / 32.0).floor() as u32, 1),
         });
         reorder_bendings.append(a_group);
         offset += group_len;
@@ -394,9 +379,9 @@ fn cal_bend_constraints(
 }
 
 fn group_distance_constraints(
-    constraints: &[ConstraintBufferObj], particle_constraints: &Vec<[i32; 3]>,
-) -> (Vec<MeshColoringObj>, Vec<[i32; 3]>) {
-    let mut groups: Vec<Vec<[i32; 3]>> = vec![vec![]];
+    constraints: &[ConstraintBufferObj], particle_constraints: &Vec<[i32; 8]>,
+) -> (Vec<MeshColoringObj>, Vec<[i32; 8]>) {
+    let mut groups: Vec<Vec<[i32; 8]>> = vec![vec![]];
 
     'outer: for pcs in particle_constraints.iter() {
         'inner: for a_group in groups.iter_mut() {
@@ -407,7 +392,7 @@ fn group_distance_constraints(
                 continue 'outer;
             }
         }
-        let mut a_group: Vec<[i32; 3]> = vec![];
+        let mut a_group: Vec<[i32; 8]> = vec![];
         a_group.push(pcs.clone());
         groups.push(a_group);
     }
@@ -431,7 +416,7 @@ fn group_distance_constraints(
     // }
 
     let mut mesh_colorings: Vec<MeshColoringObj> = vec![];
-    let mut reorder_constraints: Vec<[i32; 3]> = vec![];
+    let mut reorder_constraints: Vec<[i32; 8]> = vec![];
     println!("组数： {}", groups.len());
     let mut offset = 0;
     for a_group in groups.iter_mut() {
@@ -452,8 +437,8 @@ fn group_distance_constraints(
 }
 
 fn iter_groups(
-    index: usize, constraints: &[ConstraintBufferObj], particle_constraints: &Vec<[i32; 3]>,
-    groups: &mut Vec<Vec<[i32; 3]>>,
+    index: usize, constraints: &[ConstraintBufferObj], particle_constraints: &Vec<[i32; 8]>,
+    groups: &mut Vec<Vec<[i32; 8]>>,
 ) {
     let pcs = &particle_constraints[index];
     let mut need_new_group = true;
@@ -467,7 +452,7 @@ fn iter_groups(
         }
     }
     if need_new_group {
-        let mut a_group: Vec<[i32; 3]> = vec![];
+        let mut a_group: Vec<[i32; 8]> = vec![];
         a_group.push(pcs.clone());
         groups.push(a_group);
     }
@@ -487,7 +472,7 @@ fn cal_real_max_num(max_num: u32, other: u32, group_len: u32) -> u32 {
 }
 
 fn is_group_contain_pcs(
-    constraints: &[ConstraintBufferObj], a_group: &Vec<[i32; 3]>, pcs: &[i32],
+    constraints: &[ConstraintBufferObj], a_group: &Vec<[i32; 8]>, pcs: &[i32],
 ) -> bool {
     let mut is_contain = false;
     'outer: for c in pcs.iter() {

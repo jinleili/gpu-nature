@@ -439,7 +439,7 @@ impl Cloth3 {
         });
         self.step_solver(&mut encoder);
 
-        let (_frame, frame_view) = app_view.get_current_frame_view();
+        let (frame, frame_view) = app_view.get_current_frame_view();
 
         {
             let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
@@ -462,6 +462,7 @@ impl Cloth3 {
             // self.normal_line_node.draw_render_pass(&mut rpass);
         }
         app_view.queue.submit(Some(encoder.finish()));
+        frame.present();
 
         app_view.queue.write_buffer(
             &self.frame_uniform_buf.buffer,

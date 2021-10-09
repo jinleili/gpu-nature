@@ -14,6 +14,7 @@ pub struct ParticleRenderNode {
     frame_index: u32,
 }
 
+#[allow(dead_code)]
 impl ParticleRenderNode {
     pub fn new(app_view: &idroid::AppView, point_size: f32, canvas_size: Size<u32>) -> Self {
         let device = &app_view.device;

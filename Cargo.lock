@@ -2157,7 +2157,7 @@ dependencies = [
 [[package]]
 name = "wgpu"
 version = "0.10.1"
-source = "git+https://github.com/gfx-rs/wgpu?rev=089294fc#089294fc5145299c1f9f5d537ce9fdd019c4063c"
+source = "git+https://github.com/gfx-rs/wgpu?rev=5092fb7e#5092fb7ea5d3e0dedd87da0cd30e0ecdeb3603d2"
 dependencies = [
  "arrayvec 0.7.1",
  "js-sys",
@@ -2176,7 +2176,7 @@ dependencies = [
 [[package]]
 name = "wgpu-core"
 version = "0.10.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=089294fc#089294fc5145299c1f9f5d537ce9fdd019c4063c"
+source = "git+https://github.com/gfx-rs/wgpu?rev=5092fb7e#5092fb7ea5d3e0dedd87da0cd30e0ecdeb3603d2"
 dependencies = [
  "arrayvec 0.7.1",
  "bitflags",
@@ -2197,7 +2197,7 @@ dependencies = [
 [[package]]
 name = "wgpu-hal"
 version = "0.10.1"
-source = "git+https://github.com/gfx-rs/wgpu?rev=089294fc#089294fc5145299c1f9f5d537ce9fdd019c4063c"
+source = "git+https://github.com/gfx-rs/wgpu?rev=5092fb7e#5092fb7ea5d3e0dedd87da0cd30e0ecdeb3603d2"
 dependencies = [
  "arrayvec 0.7.1",
  "ash",
@@ -2219,6 +2219,7 @@ dependencies = [
  "naga",
  "objc",
  "parking_lot",
+ "profiling",
  "range-alloc",
  "raw-window-handle",
  "renderdoc-sys",
@@ -2230,7 +2231,7 @@ dependencies = [
 [[package]]
 name = "wgpu-types"
 version = "0.10.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=089294fc#089294fc5145299c1f9f5d537ce9fdd019c4063c"
+source = "git+https://github.com/gfx-rs/wgpu?rev=5092fb7e#5092fb7ea5d3e0dedd87da0cd30e0ecdeb3603d2"
 dependencies = [
  "bitflags",
 ]

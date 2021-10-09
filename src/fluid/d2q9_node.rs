@@ -29,6 +29,7 @@ pub struct D2Q9Node {
     pub reset_node: ComputeNode,
 }
 
+#[allow(dead_code)]
 impl D2Q9Node {
     pub fn new(app_view: &idroid::AppView, canvas_size: Size<u32>, setting: &SettingObj) -> Self {
         let device = &app_view.device;
