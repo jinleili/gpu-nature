@@ -12,6 +12,11 @@ fn main([[builtin(global_invocation_id)]] global_invocation_id: vec3<u32>) {
   }
   field_index = field_index + dy_uniform.offset;
   var particle_constraints = reorder_constraints.data[field_index];
+  
+  // 避免 particle 被错误地覆盖
+  if (particle_constraints.list[0] < 0) {
+    return;
+  }
 
   var particle0_index = 0;
   var particle: Particle;
@@ -37,7 +42,7 @@ fn main([[builtin(global_invocation_id)]] global_invocation_id: vec3<u32>) {
     var particle1 = particles.data[constraint.particle1];
     let invert_mass1 = particle1.uv_mass.z;
     let sum_mass = invert_mass0 + invert_mass1;
-    if (sum_mass <= 0.001) {
+    if (sum_mass < 0.01) {
       continue;
     }
     let p0_minus_p1 = particle.pos - particle1.pos;

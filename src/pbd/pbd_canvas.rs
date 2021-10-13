@@ -1,17 +1,17 @@
-use super::{Cloth, Cloth3, Line};
+use super::{Cloth, ClothX};
 
 use idroid::{math::TouchPoint, SurfaceView};
 use uni_view::AppView;
 
 pub struct PBDCanvas {
     pub app_view: AppView,
-    pub pbd_node: Cloth,
+    pub pbd_node: ClothX,
 }
 
 #[allow(dead_code)]
 impl PBDCanvas {
     pub fn new(app_view: AppView) -> Self {
-        let pbd_node = Cloth::new(&app_view);
+        let pbd_node = ClothX::new(&app_view);
         // let pbd_node = Line::new(&app_view);
 
         Self { app_view, pbd_node }

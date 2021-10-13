@@ -1,20 +1,16 @@
 mod particle;
 pub use particle::generate_cloth_particles;
-mod particle3;
-pub use particle3::generate_cloth_particles3;
+
+mod cal_bend_constraints;
+use cal_bend_constraints::cal_bend_constraints2;
 
 mod cloth;
 pub use cloth::Cloth;
-mod cloth3;
-pub use cloth3::Cloth3;
+mod cloth_x;
+pub use cloth_x::ClothX;
 
 mod pbd_canvas;
 pub use pbd_canvas::PBDCanvas;
-
-mod line_particle;
-pub use line_particle::generate_line_particles;
-mod line;
-pub use line::Line;
 
 use zerocopy::{AsBytes, FromBytes};
 
@@ -67,6 +63,22 @@ pub struct StretchConstraintObj {
     pub particle0: i32,
     pub particle1: i32,
 }
+
+impl StretchConstraintObj {
+    pub fn is_contain_particles(&self, other: &StretchConstraintObj) -> bool {
+        if self.particle0 == other.particle0
+            || self.particle0 == other.particle1
+            || self.particle1 == other.particle0
+            || self.particle1 == other.particle1
+        {
+            // print!("({}, {}, {}, {}) ;;", self.particle0, self.particle1, other.particle0, other.particle1);
+            true
+        } else {
+            false
+        }
+    }
+}
+
 // 弯曲约束
 #[repr(C)]
 #[derive(Copy, Clone, AsBytes, FromBytes)]
@@ -77,9 +89,24 @@ pub struct BendingConstraintObj {
     pub h0: f32,
 }
 
+impl BendingConstraintObj {
+    pub fn is_contain(&self, other: &BendingConstraintObj) -> bool {
+        let list0 = [self.v, self.b0, self.b1];
+        let list1 = [other.v, other.b0, other.b1];
+        for i in list0.iter() {
+            for j in list1.iter() {
+                if i.clone() == j.clone() {
+                    return true;
+                }
+            }
+        }
+        false
+    }
+}
+
 #[repr(C)]
 #[derive(Copy, Clone, AsBytes, FromBytes, Debug)]
-pub struct BendingPushConstants {
+pub struct BendingDynamicUniform {
     offset: i32,
     max_num_x: i32,
     // 当前 mesh coloring 分组的数据长度
@@ -103,8 +130,8 @@ impl MeshColoringObj {
         vec![self.offset, self.max_num_x, self.max_num_y, self.group_len]
     }
 
-    pub fn get_bending_push_constants_data(&self, iter_count: i32) -> BendingPushConstants {
-        BendingPushConstants {
+    pub fn get_bending_dynamic_uniform(&self, iter_count: i32) -> BendingDynamicUniform {
+        BendingDynamicUniform {
             offset: self.offset as i32,
             max_num_x: self.max_num_x as i32,
             group_len: self.group_len as i32,

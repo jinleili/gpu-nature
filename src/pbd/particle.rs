@@ -1,10 +1,10 @@
-use super::MeshColoringObj;
+use super::{MeshColoringObj, BendingConstraintObj, StretchConstraintObj, cal_bend_constraints2};
 use idroid::math::Point3D;
 use zerocopy::{AsBytes, FromBytes};
 
 // 粒子对象
 #[repr(C)]
-#[derive(Copy, Clone, Debug, AsBytes, FromBytes)]
+#[derive(Copy, Clone, AsBytes, FromBytes)]
 pub struct ParticleBufferObj {
     pub pos: [f32; 4],
     pub old_pos: [f32; 4],
@@ -15,56 +15,6 @@ pub struct ParticleBufferObj {
     // 与之相连的4个粒子的索引，用于计算法线
     pub connect: [i32; 4],
 }
-// 约束对象
-#[repr(C)]
-#[derive(Copy, Clone, AsBytes, FromBytes)]
-pub struct ConstraintBufferObj {
-    pub rest_length: f32,
-    pub lambda: f32,
-    pub particle0: i32,
-    pub particle1: i32,
-}
-
-impl ConstraintBufferObj {
-    pub fn is_contain_particles(&self, other: &ConstraintBufferObj) -> bool {
-        if self.particle0 == other.particle0
-            || self.particle0 == other.particle1
-            || self.particle1 == other.particle0
-            || self.particle1 == other.particle1
-        {
-            // print!("({}, {}, {}, {}) ;;", self.particle0, self.particle1, other.particle0, other.particle1);
-            true
-        } else {
-            false
-        }
-    }
-}
-
-// 约束对象
-#[repr(C)]
-#[derive(Copy, Clone, AsBytes, FromBytes)]
-pub struct BendConstraintBufferObj {
-    pub p0: i32,
-    pub p1: i32,
-    pub p2: i32,
-    pub p3: i32,
-}
-
-impl BendConstraintBufferObj {
-    pub fn is_contain(&self, other: &BendConstraintBufferObj) -> bool {
-        let list0 = [self.p0, self.p1, self.p1, self.p3];
-        let list1 = [other.p0, other.p1, other.p1, other.p3];
-
-        for i in list0.iter() {
-            for j in list1.iter() {
-                if i.clone() == j.clone() {
-                    return true;
-                }
-            }
-        }
-        false
-    }
-}
 
 pub fn generate_cloth_particles(
     horizontal_num: usize, vertical_num: usize, horizontal_pixel: f32, vertical_pixel: f32,
@@ -72,17 +22,17 @@ pub fn generate_cloth_particles(
 ) -> (
     (f32, f32),
     Vec<ParticleBufferObj>,
-    Vec<ConstraintBufferObj>,
+    Vec<StretchConstraintObj>,
     Vec<MeshColoringObj>,
-    Vec<[i32; 8]>,
-    Vec<[i32; 8]>,
+    Vec<[i32; 3]>,
+    Vec<[i32; 3]>,
     Vec<MeshColoringObj>,
-    Vec<BendConstraintBufferObj>,
+    Vec<BendingConstraintObj>,
     Vec<[i32; 3]>,
 ) {
     let mut particles = Vec::with_capacity(horizontal_num * vertical_num);
-    let mut constraints = Vec::with_capacity(horizontal_num * vertical_num * 8);
-    let mut stretch_constraints: Vec<[i32; 8]> = Vec::with_capacity(horizontal_num * vertical_num);
+    let mut constraints = Vec::with_capacity(horizontal_num * vertical_num * 3);
+    let mut stretch_constraints: Vec<[i32; 3]> = Vec::with_capacity(horizontal_num * vertical_num);
 
     let horizontal_step = horizontal_pixel / (horizontal_num - 1) as f32 * a_pixel_on_ndc;
     let vertical_step = vertical_pixel / (vertical_num - 1) as f32 * a_pixel_on_ndc;
@@ -98,9 +48,9 @@ pub fn generate_cloth_particles(
                 [tl_x + horizontal_step * w as f32, tl_y - vertical_step * h as f32, 0.0, 0.0];
             // 上边两个角固定：粒子质量为 无穷大
             // 每个顶点的质量等于与之相连的每个三角形质量的 1/3 之后
-            // if (h == 0 && w == 0) || (h == 0 && w == horizontal_num - 1) {
-            // 上边整个固定，避免上边出现布料边缘的垂下效果
-            if h == 0 {
+            if (h == 0 && w == 0) || (h == 0 && w == horizontal_num - 1) {
+                // 上边整个固定，避免上边出现布料边缘的垂下效果
+                // if h == 0 {
                 invert_mass = 0.0;
             } else if w == 0 || w == (horizontal_num - 1) || h == (vertical_num - 1) {
                 // 边界上的点，只有两个三角形与之相连
@@ -112,11 +62,12 @@ pub fn generate_cloth_particles(
                 pos: p,
                 old_pos: p,
                 // 重力加速度不能太小，会导致布料飘来飘去，没有重量感
+                // accelerate: [0.0, 0.0, 0.0, 0.0],
                 accelerate: [0.0, -3.98, 0.0, 0.0],
                 // webgpu 的纹理坐标是左上角为 0，0
                 uv_mass: [uv_x_step * w as f32, uv_y_step * h as f32, invert_mass, 0.0],
                 connect: [0; 4],
-            });
+            })
         }
     }
     // 与粒子直接相邻的其它粒子
@@ -127,25 +78,15 @@ pub fn generate_cloth_particles(
             let particle0 = &mut particles[index0];
 
             // 将每个粒子对应的全部约束的索引装进单独的数组里
-            let mut group: [i32; 8] = [-1; 8];
+            let mut group: [i32; 3] = [-1; 3];
             let p0: Point3D = Point3D::new(particle0.pos[0], particle0.pos[1], particle0.pos[2]);
             if w < horizontal_num - 1 {
                 group[0] = constraints.len() as i32;
-                constraints.push(get_constraint(
-                    &particles,
-                    &p0,
-                    index0,
-                    w + 1 + h * horizontal_num,
-                ));
+                constraints.push(get_constraint(&particles, &p0, index0, index0 + 1));
             }
-            if h < vertical_num - 1 {
+            if h < vertical_num - 1{
                 group[1] = constraints.len() as i32;
-                constraints.push(get_constraint(
-                    &particles,
-                    &p0,
-                    index0,
-                    w + (h + 1) * horizontal_num,
-                ));
+                constraints.push(get_constraint(&particles, &p0, index0, index0 + horizontal_num));
             }
             // shear constraint
             if w < horizontal_num - 1 && h < vertical_num - 1 {
@@ -154,7 +95,7 @@ pub fn generate_cloth_particles(
                     &particles,
                     &p0,
                     index0,
-                    w + 1 + (h + 1) * horizontal_num,
+                    index0 + horizontal_num + 1,
                 ));
             }
             stretch_constraints.push(group);
@@ -168,31 +109,31 @@ pub fn generate_cloth_particles(
     let mut step_y = -vertical_step;
     let max_y = tl_y - 0.1;
 
-    // for h in 0..vertical_num {
-    //     py += h as f32 * step_y;
-    //     pz += step_z;
-    //     if py < max_y || py > (tl_y - vertical_step) {
-    //         step_y *= -1.0;
-    //     }
-    //     for w in 0..horizontal_num {
-    //         let index = h * horizontal_num + w;
-    //         let mut pos = particles[index].pos;
-    //         pos[1] = py;
-    //         pos[2] = pz;
-    //         particles[index].pos = pos;
-    //         particles[index].old_pos = pos;
-    //     }
-    // }
-    // for particle in particles.iter_mut() {
-    //     particle.pos[1] = tl_y;
-    //     particle.old_pos[1] = tl_y;
-    // }
+    for h in 0..vertical_num {
+        py += h as f32 * step_y;
+        pz += step_z;
+        if py < max_y || py > (tl_y - vertical_step) {
+            step_y *= -1.0;
+        }
+        for w in 0..horizontal_num {
+            let index = h * horizontal_num + w;
+            let mut pos = particles[index].pos;
+            pos[1] = py;
+            pos[2] = pz;
+            particles[index].pos = pos;
+            particles[index].old_pos = pos;
+        }
+    }
+    for particle in particles.iter_mut() {
+        particle.pos[1] = tl_y;
+        particle.old_pos[1] = tl_y;
+    }
 
     let (mesh_coloring, reorder_constraints) =
         group_distance_constraints(&constraints, &stretch_constraints);
 
     let (bend_mesh_coloring, bend_constraint, reorder_bendings) =
-        cal_bend_constraints(horizontal_num, vertical_num);
+        cal_bend_constraints2(horizontal_num, vertical_num);
     // println!("{:?}", particle_constraints);
     (
         (tl_x, tl_y),
@@ -280,11 +221,11 @@ fn cal_connected_particles(
 
 fn get_constraint(
     particles: &Vec<ParticleBufferObj>, p0: &Point3D, index0: usize, index1: usize,
-) -> ConstraintBufferObj {
+) -> StretchConstraintObj {
     let particle1 = &particles[index1];
     let p1: Point3D = Point3D::new(particle1.pos[0], particle1.pos[1], particle1.pos[2]);
     let rest_length: f32 = p0.minus(&p1).length();
-    ConstraintBufferObj {
+    StretchConstraintObj {
         rest_length,
         lambda: 0.0,
         particle1: index1 as i32,
@@ -292,43 +233,45 @@ fn get_constraint(
     }
 }
 
-// 计算弯曲约束，每一个顶点有三对约束,
+// 计算弯曲约束，每一个顶点有三对约束?
+// 按横向遍历再纵向遍历创建约束，可避免重复
 fn cal_bend_constraints(
     horizontal_num: usize, vertical_num: usize,
-) -> (Vec<MeshColoringObj>, Vec<BendConstraintBufferObj>, Vec<[i32; 3]>) {
+) -> (Vec<MeshColoringObj>, Vec<BendingConstraintObj>, Vec<[i32; 3]>) {
     // 共享同一顶点的三个三角形对
     let mut index_groups: Vec<[i32; 3]> = vec![];
-    let mut bendings: Vec<BendConstraintBufferObj> =
-        Vec::with_capacity(horizontal_num * vertical_num * 3);
+    let mut bendings: Vec<BendingConstraintObj> = Vec::with_capacity(horizontal_num * vertical_num * 3);
     let mut reorder_bendings: Vec<[i32; 3]> = vec![];
     // 按没有共同顶点的约束分组，再基于此生成 reorder_bendings
     let mut bending_groups: Vec<Vec<[i32; 3]>> = vec![vec![]];
 
+    let h0: f32 = 0.0;
     for h in 0..vertical_num {
         for w in 0..horizontal_num {
-            let p0 = (h * horizontal_num + w) as i32;
+            let v = (h * horizontal_num + w) as i32;
             let mut a_group: [i32; 3] = [-1; 3];
-            if w > 0 && w < (horizontal_num - 1) && h < (vertical_num - 1) {
-                let p1 = p0 + horizontal_num as i32;
-                let p2 = p0 - 1;
-                let p3 = p1 + 1;
+            if w > 0 && w < (horizontal_num - 1) {
+                // 水平约束
+                let b0 = v - 1;
+                let b1 = v + 1;
                 a_group[0] = bendings.len() as i32;
-                bendings.push(BendConstraintBufferObj { p0, p1, p2, p3 });
+                bendings.push(BendingConstraintObj { v, b0, b1, h0 });
             }
-            if w < (horizontal_num - 1) && h < (vertical_num - 1) {
-                let p1 = p0 + horizontal_num as i32 + 1;
-                let p2 = p1 - 1;
-                let p3 = p0 + 1;
+            if h > 0 && h < (vertical_num - 1) {
+                // 垂直约束
+                let b0 = v - horizontal_num as i32;
+                let b1 = v + horizontal_num as i32;
                 a_group[1] = bendings.len() as i32;
-                bendings.push(BendConstraintBufferObj { p0, p1, p2, p3 });
-                if h > 0 {
-                    let p1 = p0 + 1;
-                    let p2 = p1 + horizontal_num as i32;
-                    let p3 = p0 - horizontal_num as i32;
-                    a_group[2] = bendings.len() as i32;
-                    bendings.push(BendConstraintBufferObj { p0, p1, p2, p3 });
-                }
+                bendings.push(BendingConstraintObj { v, b0, b1, h0 });
             }
+            if w > 0 && w < (horizontal_num - 1) && h > 0 && h < (vertical_num - 1) {
+                // 斜向约束
+                let b0 = v + 1 - horizontal_num as i32;
+                let b1 = v - 1 + horizontal_num as i32;
+                a_group[2] = bendings.len() as i32;
+                bendings.push(BendingConstraintObj { v, b0, b1, h0 });
+            }
+
             index_groups.push(a_group);
         }
     }
@@ -362,13 +305,28 @@ fn cal_bend_constraints(
 
     let mut mesh_colorings: Vec<MeshColoringObj> = vec![];
     let mut offset = 0;
+    let step: u32 = 8;
     for a_group in bending_groups.iter_mut() {
         println!("bend group len: {}", a_group.len());
         let group_len = a_group.len() as u32;
+        let mut max_num_x: u32 = 0;
+        let mut max_num_y: u32 = 0;
+        for i in 1..100 {
+            max_num_x = i * step;
+            if max_num_x * max_num_y >= group_len {
+                max_num_x = cal_real_max_num(max_num_x, max_num_y, group_len);
+                break;
+            }
+            max_num_y = i * step;
+            if max_num_x * max_num_y >= group_len {
+                max_num_y = cal_real_max_num(max_num_y, max_num_x, group_len);
+                break;
+            }
+        }
         mesh_colorings.push(MeshColoringObj {
             offset,
-            max_num_x: 0,
-            max_num_y: 0,
+            max_num_x,
+            max_num_y,
             group_len,
             thread_group: (((group_len + 31) as f32 / 32.0).floor() as u32, 1),
         });
@@ -379,9 +337,9 @@ fn cal_bend_constraints(
 }
 
 fn group_distance_constraints(
-    constraints: &[ConstraintBufferObj], particle_constraints: &Vec<[i32; 8]>,
-) -> (Vec<MeshColoringObj>, Vec<[i32; 8]>) {
-    let mut groups: Vec<Vec<[i32; 8]>> = vec![vec![]];
+    constraints: &[StretchConstraintObj], particle_constraints: &Vec<[i32; 3]>,
+) -> (Vec<MeshColoringObj>, Vec<[i32; 3]>) {
+    let mut groups: Vec<Vec<[i32; 3]>> = vec![vec![]];
 
     'outer: for pcs in particle_constraints.iter() {
         'inner: for a_group in groups.iter_mut() {
@@ -392,7 +350,7 @@ fn group_distance_constraints(
                 continue 'outer;
             }
         }
-        let mut a_group: Vec<[i32; 8]> = vec![];
+        let mut a_group: Vec<[i32; 3]> = vec![];
         a_group.push(pcs.clone());
         groups.push(a_group);
     }
@@ -416,11 +374,11 @@ fn group_distance_constraints(
     // }
 
     let mut mesh_colorings: Vec<MeshColoringObj> = vec![];
-    let mut reorder_constraints: Vec<[i32; 8]> = vec![];
+    let mut reorder_constraints: Vec<[i32; 3]> = vec![];
     println!("组数： {}", groups.len());
     let mut offset = 0;
     for a_group in groups.iter_mut() {
-        println!("group len: {}", a_group.len());
+        println!("group len: {}, offset: {}", a_group.len(), offset);
 
         let group_len = a_group.len() as u32;
         mesh_colorings.push(MeshColoringObj {
@@ -437,8 +395,8 @@ fn group_distance_constraints(
 }
 
 fn iter_groups(
-    index: usize, constraints: &[ConstraintBufferObj], particle_constraints: &Vec<[i32; 8]>,
-    groups: &mut Vec<Vec<[i32; 8]>>,
+    index: usize, constraints: &[StretchConstraintObj], particle_constraints: &Vec<[i32; 3]>,
+    groups: &mut Vec<Vec<[i32; 3]>>,
 ) {
     let pcs = &particle_constraints[index];
     let mut need_new_group = true;
@@ -452,7 +410,7 @@ fn iter_groups(
         }
     }
     if need_new_group {
-        let mut a_group: Vec<[i32; 8]> = vec![];
+        let mut a_group: Vec<[i32; 3]> = vec![];
         a_group.push(pcs.clone());
         groups.push(a_group);
     }
@@ -472,7 +430,7 @@ fn cal_real_max_num(max_num: u32, other: u32, group_len: u32) -> u32 {
 }
 
 fn is_group_contain_pcs(
-    constraints: &[ConstraintBufferObj], a_group: &Vec<[i32; 8]>, pcs: &[i32],
+    constraints: &[StretchConstraintObj], a_group: &Vec<[i32; 3]>, pcs: &[i32],
 ) -> bool {
     let mut is_contain = false;
     'outer: for c in pcs.iter() {

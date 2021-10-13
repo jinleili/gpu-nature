@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use uni_view::{fs::FileSystem, AppView, GPUContext};
 use zerocopy::AsBytes;
 
-pub struct Cloth {
+pub struct ClothX {
     particle_buf: BufferObj,
     constraint_buf: BufferObj,
     group_constraints_buf: BufferObj,
@@ -23,9 +23,11 @@ pub struct Cloth {
     display_node: ViewNode,
     depth_texture_view: wgpu::TextureView,
     frame_count: usize,
+    // 迭代次数
+    pbd_iter_count: usize,
 }
 
-impl Cloth {
+impl ClothX {
     pub fn new(app_view: &AppView) -> Self {
         let mut encoder =
             app_view.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
@@ -57,14 +59,16 @@ impl Cloth {
         //  0.00002f,       // 0.2  x 10^(-3) (M^2/N) Muscle
         //  0.0001f,        // 1.0  x 10^(-3) (M^2/N) Fat
         //};
+        let pbd_iter_count = 15;
+        let delta_time = 0.016 / pbd_iter_count as f32;
         let uniform_buf = BufferObj::create_uniform_buffer(
             &app_view.device,
             &ClothUniform {
                 num_x: particle_x_num as i32,
                 num_y: particle_y_num as i32,
                 triangle_num: 0,
-                compliance: 0.00000000016 / (0.016 * 0.016),
-                dt: 0.016,
+                compliance: 0.0000000016 / (delta_time * delta_time),
+                dt: delta_time,
             },
             Some("cloth uniform"),
         );
@@ -106,16 +110,34 @@ impl Cloth {
 
         let bend_coloring_buf = BufferObj::create_empty_dynamic_uniform_buffer(
             &app_view.device,
-            bend_mesh_coloring.len() as u64 * dynamic_offset,
+            bend_mesh_coloring.len() as u64 * dynamic_offset * pbd_iter_count as u64,
             None,
             Some("bend_coloring_buf"),
         );
         offset = 0;
-        for mc in bend_mesh_coloring.iter() {
+        for i in 0..pbd_iter_count {
+            for mc in bend_mesh_coloring.iter() {
+                app_view.queue.write_buffer(
+                    &bend_coloring_buf.buffer,
+                    offset,
+                    mc.get_bending_dynamic_uniform(i).as_bytes(),
+                );
+                offset += dynamic_offset;
+            }
+        }
+        
+
+        let predict_dynamic_buf = BufferObj::create_empty_dynamic_uniform_buffer(
+            &app_view.device,
+            2 * dynamic_offset,
+            None,
+            Some("predict_dynamic_buf"),
+        );
+        for i in 0..2 {
             app_view.queue.write_buffer(
-                &bend_coloring_buf.buffer,
-                offset,
-                mc.get_push_constants_data().as_bytes(),
+                &predict_dynamic_buf.buffer,
+                i * dynamic_offset,
+                vec![i].as_bytes(),
             );
             offset += dynamic_offset;
         }
@@ -148,15 +170,13 @@ impl Cloth {
             &reorder_bendings,
             Some("reorder_bendings_buf"),
         );
-        let predict_and_reset_shader = idroid::shader::create_shader_module(
-            &app_view.device,
-            "pbd/cloth_predict_and_reset",
-            None,
-        );
-        let predict_and_reset = ComputeNode::new(
+        let predict_and_reset_shader =
+            idroid::shader::create_shader_module(&app_view.device, "pbd/xxpbd/cloth_predict", None);
+        let predict_and_reset = ComputeNode::new_with_dynamic_uniforms(
             &app_view.device,
             (((particle_x_num * particle_y_num + 31) as f32 / 32.0).floor() as u32, 1, 1),
             vec![&uniform_buf],
+            vec![&predict_dynamic_buf],
             vec![&particle_buf, &constraint_buf, &group_constraints_buf, &reorder_constraints_buf],
             vec![],
             &predict_and_reset_shader,
@@ -164,7 +184,7 @@ impl Cloth {
 
         let constraint_solver_shader = idroid::shader::create_shader_module(
             &app_view.device,
-            "pbd/cloth_stretch_solver",
+            "pbd/xxpbd/cloth_stretch_solver",
             None,
         );
         let stretch_solver = ComputeNode::new_with_dynamic_uniforms(
@@ -178,7 +198,7 @@ impl Cloth {
         );
 
         let bend_solver_shader =
-            idroid::shader::create_shader_module(&app_view.device, "pbd/cloth_bend_solver", None);
+            idroid::shader::create_shader_module(&app_view.device, "pbd/xxpbd/cloth_bending_solver", None);
         let size = particle_x_num * particle_y_num * 4 * 16;
         let debug_buf = BufferObj::create_empty_storage_buffer(
             &app_view.device,
@@ -191,7 +211,7 @@ impl Cloth {
             (0, 0, 0),
             vec![&uniform_buf],
             vec![&bend_coloring_buf],
-            vec![&particle_buf, &bend_constraints_buf, &reorder_bendings_buf, &debug_buf],
+            vec![&particle_buf, &bend_constraints_buf, &reorder_bendings_buf],
             vec![],
             &bend_solver_shader,
         );
@@ -240,28 +260,6 @@ impl Cloth {
 
         let display_node = display_node_builder.build(&app_view.device);
 
-        // 初始化为卷起的状态
-        let half_height = tl_y;
-        let roll_lentgh = half_height * 2.0;
-        let start_radius = roll_lentgh / (3.14 * 3.0) / 2.0;
-        let roll_to = -start_radius * 2.0;
-        let roll_uniform_buf = BufferObj::create_uniforms_buffer(
-            &app_view.device,
-            &vec![roll_to, half_height * 2.0, start_radius, half_height],
-            None,
-        );
-        // let roll_shader =
-        //     idroid::shader::create_shader_module("pbd/cloth_roll_init", &app_view.device);
-        // let roll_init = ComputeNode::new(
-        //     &app_view.device,
-        //     ((particle_x_num + 15) / 16, (particle_y_num + 15) / 16),
-        //     vec![&uniform_buf, &roll_uniform_buf],
-        //     vec![&particle_buf],
-        //     vec![],
-        //     &roll_shader,
-        // );
-        // roll_init.compute(&mut encoder);
-
         let size = wgpu::Extent3d {
             width: app_view.config.width,
             height: app_view.config.height,
@@ -283,10 +281,8 @@ impl Cloth {
             display_node,
             depth_texture_view,
             frame_count: 0,
+            pbd_iter_count: pbd_iter_count as usize,
         };
-
-        // instance.step_solver(&mut encoder);
-        // app_view.queue.submit(Some(encoder.finish()));
 
         instance
     }
@@ -299,10 +295,13 @@ impl Cloth {
         // 64*64，8 约束，迭代20 ：Xs Max, 12ms -> 8ms
         let mut cpass =
             encoder.begin_compute_pass(&wgpu::ComputePassDescriptor { label: Some("solver pass") });
-        self.predict_and_reset.dispatch(&mut cpass);
 
         let dynamic_offset = 256;
-        for _ in 0..25 {
+        for i in 0..self.pbd_iter_count {
+            // 下一次迭代的开始，先更新粒子速度
+            let offset = if i == 0 { 256 } else { 0 };
+            self.predict_and_reset.dispatch_by_offsets(&mut cpass, Some(vec![vec![offset]]));
+
             cpass.set_pipeline(&self.stretch_solver.pipeline);
             cpass.set_bind_group(0, &self.stretch_solver.bg_setting.bind_group, &[]);
             let mut index = 0;
@@ -314,16 +313,17 @@ impl Cloth {
                 index += 1;
             }
 
-            // cpass.set_pipeline(&self.bend_solver.pipeline);
-            // cpass.set_bind_group(0, &self.bend_solver.bg_setting.bind_group, &[]);
-            // index = 0;
-            // for mc in self.bend_mesh_coloring.iter() {
-            //     if let Some(bg) = &self.bend_solver.dy_uniform_bg {
-            //         cpass.set_bind_group(1, &bg.bind_group, &[index * dynamic_offset]);
-            //     }
-            //     cpass.dispatch(mc.thread_group.0, mc.thread_group.1, 1);
-            //     index += 1;
-            // }
+            let bending_dynamic_uniform_offset = (i * self.bend_mesh_coloring.len() * dynamic_offset as usize) as wgpu::DynamicOffset;
+            cpass.set_pipeline(&self.bend_solver.pipeline);
+            cpass.set_bind_group(0, &self.bend_solver.bg_setting.bind_group, &[]);
+            index = 0;
+            for mc in self.bend_mesh_coloring.iter() {
+                if let Some(bg) = &self.bend_solver.dy_uniform_bg {
+                    cpass.set_bind_group(1, &bg.bind_group, &[bending_dynamic_uniform_offset + index * dynamic_offset]);
+                }
+                cpass.dispatch(mc.thread_group.0, mc.thread_group.1, 1);
+                index += 1;
+            }
         }
 
         self.frame_count += 1;

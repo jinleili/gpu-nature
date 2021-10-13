@@ -14,11 +14,11 @@ struct ConstraintsBuffer {
 
 // 这个粒子关联的所有约束
 struct ParticleConstraints {
-  list: [[stride(4)]] array<i32, 8>;
+  list: [[stride(4)]] array<i32, 3>;
 };
 [[block]]
 struct ParticleConstraintsBuffer {
-    data: [[stride(32)]] array<ParticleConstraints>;
+    data: [[stride(12)]] array<ParticleConstraints>;
 };
 
 [[group(0), binding(0)]] var<uniform> cloth: ClothUniform;
