@@ -249,7 +249,7 @@ impl AAD2Q9Node {
         }
     }
 
-    pub fn dispatch<'c, 'b: 'c>(&'b self, cpass: &mut wgpu::ComputePass<'c>, swap_index: usize) {
+    pub fn dispatch<'c, 'b: 'c>(&'b self, cpass: &mut wgpu::ComputePass<'c>, _swap_index: usize) {
         self.collide_stream_node.dispatch_by_offsets(cpass, Some(vec![vec![0], vec![256]]));
     }
 }

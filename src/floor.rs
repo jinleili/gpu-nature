@@ -40,7 +40,7 @@ impl Floor {
         marble_node.compute(&mut encoder);
         app_view.queue.submit(Some(encoder.finish()));
 
-        let (p_matrix, mut mv_matrix, factor) =
+        let (p_matrix, _mv_matrix, _factor) =
             idroid::utils::matrix_helper::perspective_mvp((&app_view.config).into());
         // mv_matrix = glm::translate(&mv_matrix, &glm::vec3(0.0, -1.1 * factor.1, -1.1));
         // let scale = factor.0 * 1.2;
@@ -96,6 +96,7 @@ impl Floor {
             vec![],
             &noise_shader,
             None,
+            false,
         );
         Floor { display_node, noise_display }
     }

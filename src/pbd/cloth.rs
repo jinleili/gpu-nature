@@ -1,10 +1,10 @@
 use idroid::node::ComputeNode;
 use idroid::node::{ViewNode, ViewNodeBuilder};
-use idroid::{math::Size, vertex::PosParticleIndex, BufferObj, MVPUniform2};
+use idroid::{math::Size, vertex::PosParticleIndex, BufferObj};
 
 use super::{generate_cloth_particles, ClothUniform, MeshColoringObj};
-use std::path::PathBuf;
-use uni_view::{fs::FileSystem, AppView, GPUContext};
+
+use uni_view::{AppView, GPUContext};
 use zerocopy::AsBytes;
 
 pub struct Cloth {
@@ -27,7 +27,7 @@ pub struct Cloth {
 
 impl Cloth {
     pub fn new(app_view: &AppView) -> Self {
-        let mut encoder =
+        let _encoder =
             app_view.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
         let viewport_size: Size<f32> = (&app_view.config).into();
         let (proj_mat, mv_mat, factor) =
@@ -69,7 +69,7 @@ impl Cloth {
             Some("cloth uniform"),
         );
         let (
-            (tl_x, tl_y),
+            (_tl_x, tl_y),
             particles,
             constraints,
             stretch_mesh_coloring,
@@ -245,7 +245,7 @@ impl Cloth {
         let roll_lentgh = half_height * 2.0;
         let start_radius = roll_lentgh / (3.14 * 3.0) / 2.0;
         let roll_to = -start_radius * 2.0;
-        let roll_uniform_buf = BufferObj::create_uniforms_buffer(
+        let _roll_uniform_buf = BufferObj::create_uniforms_buffer(
             &app_view.device,
             &vec![roll_to, half_height * 2.0, start_radius, half_height],
             None,
@@ -270,7 +270,7 @@ impl Cloth {
         let depth_texture_view =
             idroid::depth_stencil::create_depth_texture_view(size, &app_view.device);
 
-        let mut instance = Self {
+        let instance = Self {
             particle_buf,
             constraint_buf,
             group_constraints_buf,

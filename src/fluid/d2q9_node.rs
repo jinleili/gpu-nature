@@ -10,7 +10,7 @@ use idroid::{
     node::{BindingGroupSetting, ComputeNode},
     AnyTexture, BufferObj,
 };
-use wgpu::{TextureFormat, TextureView};
+use wgpu::{TextureFormat};
 use zerocopy::AsBytes;
 
 pub struct D2Q9Node {

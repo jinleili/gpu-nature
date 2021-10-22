@@ -19,7 +19,7 @@ struct VertexOutput {
     [[builtin(position)]] position: vec4<f32>;
     [[location(0)]] uv: vec2<f32>;
     [[location(1)]] normal: vec3<f32>;
-    [[location(2)]] frag_pos: vec3<f32>;
+    [[location(2)]] ec_pos: vec3<f32>;
     [[location(3)]] collision_area: f32;
 };
 
@@ -42,10 +42,10 @@ fn main(
     var output: VertexOutput;
     // normal = normalize(cross(particle1.pos.xyz - particle.pos.xyz, particle2.pos.xyz - particle.pos.xyz) +
     //                    cross(particle3.pos.xyz - particle.pos.xyz, particle4.pos.xyz - particle.pos.xyz));
-    output.normal = normalize(cross(particle2.pos.xyz - particle.pos.xyz, particle1.pos.xyz - particle.pos.xyz) +
-                        cross(particle4.pos.xyz - particle.pos.xyz, particle3.pos.xyz - particle.pos.xyz));
+    output.normal = (cross(particle2.pos.xyz - particle.pos.xyz, particle1.pos.xyz - particle.pos.xyz) +
+                        cross(particle4.pos.xyz - particle.pos.xyz, particle3.pos.xyz - particle.pos.xyz)) / 2.0;
     output.position = mvp_mat.proj * mv_pos;
-    output.frag_pos = mv_pos.xyz;
+    output.ec_pos = mv_pos.xyz;
     output.uv = particle.uv_mass.xy;
     output.collision_area = 0.0;
     // let collesion = collisions.data[field_index];
@@ -63,7 +63,7 @@ fn main(
 
 let light_color = vec3<f32>(0.9, 0.9, 0.9);
 let light_pos = vec3<f32>(-0.0, -0.0, 0.6);
-let view_pos = vec3<f32>(0.0, 0.0, 0.4);
+let view_pos = vec3<f32>(0.0, 0.0, 1.0);
 let ambient_strength = 0.75;
 let specular_strength = 0.05;
 
@@ -77,18 +77,20 @@ fn main(in: VertexOutput) -> [[location(0)]] vec4<f32> {
     let bg_color = color.rgb;
     let d = dot(view_pos, norm);
     if (d < 0.0) {
-        // bg_color = vec3(0.9, 0.99, 0.95);
         norm = -norm;
     }
 
-    let lightDir = normalize(light_pos.xyz - in.frag_pos);
-    let diffuse = max(dot(norm, lightDir), 0.0) * color.rgb;
-    // Specular
-    let reflectDir = reflect(-lightDir, norm);
-    // 2, 4, 8, 16, 32,取值大，高光区越聚集
-    let spec = pow(max(dot(normalize(view_pos.xyz - in.frag_pos), reflectDir), 0.0), 2.0);
-    let specular = specular_strength * spec * light_color.rgb;
+    let light_dir = normalize(light_pos - in.ec_pos);
+    // 0.5 ambient
+    let diffuse = clamp(abs(dot(norm, light_dir)), 0.5, 1.0) * color.rgb;
+    return vec4<f32>(diffuse, color.a);
 
-    return vec4<f32>((ambient + diffuse + specular) * (color.rgb * 0.5 + bg_color * 0.5), color.a);
+    // // Specular
+    // let reflectDir = reflect(-lightDir, norm);
+    // // 2, 4, 8, 16, 32,取值大，高光区越聚集
+    // let spec = pow(max(dot(normalize(view_pos.xyz - in.ec_pos), reflectDir), 0.0), 2.0);
+    // let specular = specular_strength * spec * light_color.rgb;
+
+    // return vec4<f32>((ambient + diffuse + specular) * (color.rgb * 0.5 + bg_color * 0.5), color.a);
     // return vec4<f32>(1.0);
 }

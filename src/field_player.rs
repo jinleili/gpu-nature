@@ -19,7 +19,7 @@ pub struct FieldPlayer {
 
 impl FieldPlayer {
     pub fn new(
-        device: &wgpu::Device, queue: &wgpu::Queue, canvas_format: wgpu::TextureFormat,
+        device: &wgpu::Device, _queue: &wgpu::Queue, canvas_format: wgpu::TextureFormat,
         canvas_size: Size<u32>, canvas_buf: &BufferObj, setting: &SettingObj,
     ) -> Self {
         let pixel_distance = 4;
@@ -83,8 +83,9 @@ impl FieldPlayer {
             vec![],
             &render_shader,
             None,
+            false,
         );
-        let mut instance = FieldPlayer {
+        let instance = FieldPlayer {
             canvas_size,
             field_uniform_data,
             field_uniform,

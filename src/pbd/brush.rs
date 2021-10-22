@@ -1,24 +1,33 @@
-use idroid::node::ComputeNode;
-use idroid::node::{ViewNode, ViewNodeBuilder};
-use idroid::{math::Size, vertex::PosParticleIndex, BufferObj};
+use idroid::node::{BufferlessFullscreenNode, ComputeNode, ViewNode, ViewNodeBuilder};
+use idroid::{math::Size, vertex::VertexEmpty, BufferObj};
 
-use super::{generate_cloth_particles, ClothUniform, MeshColoringObj};
-
+use super::{
+    bristle::{generate_bristles, BristleParticle},
+    MeshColoringObj,
+};
+use nalgebra_glm as glm;
 use uni_view::{AppView, GPUContext};
+
 use zerocopy::AsBytes;
 
-pub struct ClothX {
+pub struct MaoBrush {
+    mvp_buf: BufferObj,
+    translate_z: f32,
+    proj_mat: glm::TMat4<f32>,
     particle_buf: BufferObj,
-    constraint_buf: BufferObj,
-    bend_constraints_buf: BufferObj,
+    predict_solver: ComputeNode,
 
+    stretch_constraints_buf: BufferObj,
+    stretch_constraints_group_buf: BufferObj,
     stretch_mesh_coloring: Vec<MeshColoringObj>,
-    bend_mesh_coloring: Vec<MeshColoringObj>,
-
-    // 预测位置并重置约束的 lambda 等参数
-    predict_and_reset: ComputeNode,
     stretch_solver: ComputeNode,
+
+    bend_constraints_buf: BufferObj,
+    bend_mesh_coloring: Vec<MeshColoringObj>,
     bend_solver: ComputeNode,
+
+    debug_plane: BufferlessFullscreenNode,
+
     display_node: ViewNode,
     depth_texture_view: wgpu::TextureView,
     frame_count: usize,
@@ -26,27 +35,30 @@ pub struct ClothX {
     pbd_iter_count: usize,
 }
 
-impl ClothX {
+impl MaoBrush {
     pub fn new(app_view: &AppView) -> Self {
-        let _encoder =
-            app_view.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
         let viewport_size: Size<f32> = (&app_view.config).into();
-        let (proj_mat, mv_mat, factor) =
+        let (proj_mat, _mv_mat, factor) =
             idroid::utils::matrix_helper::perspective_mvp(viewport_size);
+        // change mv_mat's z to 0
+        let translate_z = factor.2 - 0.6;
+        let mut model_rotate_mat = glm::rotate_x(&glm::Mat4::identity(), -0.8);
+        model_rotate_mat = glm::rotate_y(&model_rotate_mat, -0.8);
+        let translate_mat =
+            glm::translate(&glm::TMat4::<f32>::identity(), &glm::vec3(0.0, 0.0, translate_z));
+        // let new_mv_mat = translate_mat * model_rotate_mat;
+        let new_mv_mat = translate_mat;
+
         let mvp_buf = BufferObj::create_uniform_buffer(
             &app_view.device,
             &crate::MVPMatUniform {
-                mv: mv_mat.into(),
+                mv: new_mv_mat.into(),
                 proj: proj_mat.into(),
-                mvp: (proj_mat * mv_mat).into(),
-                normal: mv_mat.into(),
+                mvp: (proj_mat * new_mv_mat).into(),
+                normal: new_mv_mat.into(),
             },
             None,
         );
-        // （32， 64） 这个组合，约束分组后为 9 组，且没有极小数据量的分组
-        // 为何 （32， 64）导致在 particle buffer 里开始部分数据顺序乱了？
-        let particle_x_num = 32_u32;
-        let particle_y_num = 58_u32;
 
         //static const float MODE_COMPLIANCE[eModeMax] = {
         //  0.0f,            // Miles Macklin's blog (http://blog.mmacklin.com/2016/10/12/xpbd-slides-and-stiffness/)
@@ -58,36 +70,35 @@ impl ClothX {
         //  0.00002f,       // 0.2  x 10^(-3) (M^2/N) Muscle
         //  0.0001f,        // 1.0  x 10^(-3) (M^2/N) Fat
         //};
-        let pbd_iter_count = 15;
+
+        // 由于一个粒子只有 上， 右 两个 stretch 约束，迭代次数小于 20 会出现严重的位置错误
+        let pbd_iter_count = 20;
         let delta_time = 0.016 / pbd_iter_count as f32;
         let uniform_buf = BufferObj::create_uniform_buffer(
             &app_view.device,
-            &ClothUniform {
-                num_x: particle_x_num as i32,
-                num_y: particle_y_num as i32,
-                triangle_num: 0,
-                compliance: 0.0000000016 / (delta_time * delta_time),
-                dt: delta_time,
-            },
-            Some("cloth uniform"),
+            &[0.0000000016 / (delta_time * delta_time), delta_time],
+            Some("brush uniform"),
         );
         let (
-            (_tl_x, _tl_y),
             particles,
-            constraints,
+            index_data,
+            stretches,
+            reorder_streches,
             stretch_mesh_coloring,
-            _particle_constraints,
-            reorder_constraints,
-            bend_mesh_coloring,
-            bend_constraints,
+            bending_constraints,
             reorder_bendings,
-        ) = generate_cloth_particles(
-            particle_x_num as usize,
-            particle_y_num as usize,
-            app_view.config.width as f32,
-            app_view.config.width as f32 / 1863.0 * 3312.0,
-            factor.0 / viewport_size.width,
-        );
+            bend_mesh_coloring,
+        ) = generate_bristles(0.0);
+        let particles = particles
+            .iter()
+            .map(|&x| {
+                let invert_mass = x.pos[3];
+                let mut pos: [f32; 4] =
+                    (model_rotate_mat * glm::vec4(x.pos[0], x.pos[1], x.pos[2], 1.0)).into();
+                pos[3] = invert_mass;
+                BristleParticle { pos: pos, old_pos: pos, connect: x.connect }
+            })
+            .collect::<Vec<_>>();
         // dynamit uniform
         let dynamic_offset =
             app_view.device.limits().min_uniform_buffer_offset_alignment as wgpu::BufferAddress;
@@ -106,7 +117,6 @@ impl ClothX {
             );
             offset += dynamic_offset;
         }
-
         let bend_coloring_buf = BufferObj::create_empty_dynamic_uniform_buffer(
             &app_view.device,
             bend_mesh_coloring.len() as u64 * dynamic_offset * pbd_iter_count as u64,
@@ -125,6 +135,14 @@ impl ClothX {
             }
         }
 
+        let particle_buf = BufferObj::create_buffer(
+            &app_view.device,
+            Some(&particles),
+            None,
+            wgpu::BufferUsages::STORAGE,
+            Some("particle_buffer"),
+        );
+
         let predict_dynamic_buf = BufferObj::create_empty_dynamic_uniform_buffer(
             &app_view.device,
             2 * dynamic_offset,
@@ -139,45 +157,31 @@ impl ClothX {
             );
             offset += dynamic_offset;
         }
-        let particle_buf =
-            BufferObj::create_storage_buffer(&app_view.device, &particles, Some("particle buf"));
-
-        let constraint_buf = BufferObj::create_storage_buffer(
+        let predict_shader =
+            idroid::shader::create_shader_module(&app_view.device, "pbd/brush/predict", None);
+        let predict_solver = ComputeNode::new_with_dynamic_uniforms(
             &app_view.device,
-            &constraints,
-            Some("constraint_buf"),
-        );
-
-        let reorder_constraints_buf = BufferObj::create_storage_buffer(
-            &app_view.device,
-            &reorder_constraints,
-            Some("reorder_constraints_buf"),
-        );
-        let bend_constraints_buf = BufferObj::create_storage_buffer(
-            &app_view.device,
-            &bend_constraints,
-            Some("bend_constraints_buf"),
-        );
-        let reorder_bendings_buf = BufferObj::create_storage_buffer(
-            &app_view.device,
-            &reorder_bendings,
-            Some("reorder_bendings_buf"),
-        );
-        let predict_and_reset_shader =
-            idroid::shader::create_shader_module(&app_view.device, "pbd/xxpbd/cloth_predict", None);
-        let predict_and_reset = ComputeNode::new_with_dynamic_uniforms(
-            &app_view.device,
-            (((particle_x_num * particle_y_num + 31) as f32 / 32.0).floor() as u32, 1, 1),
+            (((20 * 13 + 31) as f32 / 32.0).floor() as u32, 1, 1),
             vec![&uniform_buf],
             vec![&predict_dynamic_buf],
-            vec![&particle_buf, &constraint_buf, &reorder_constraints_buf],
+            vec![&particle_buf],
             vec![],
-            &predict_and_reset_shader,
+            &predict_shader,
         );
 
-        let constraint_solver_shader = idroid::shader::create_shader_module(
+        let stretch_constraints_buf = BufferObj::create_storage_buffer(
             &app_view.device,
-            "pbd/xxpbd/cloth_stretch_solver",
+            &stretches,
+            Some("stretch_constraints_buf"),
+        );
+        let stretch_constraints_group_buf = BufferObj::create_storage_buffer(
+            &app_view.device,
+            &reorder_streches,
+            Some("stretch_constraints_group_buf"),
+        );
+        let stretch_solver_shader = idroid::shader::create_shader_module(
+            &app_view.device,
+            "pbd/brush/stretch_solver",
             None,
         );
         let stretch_solver = ComputeNode::new_with_dynamic_uniforms(
@@ -185,22 +189,25 @@ impl ClothX {
             (0, 0, 0),
             vec![&uniform_buf],
             vec![(&stretch_coloring_buf)],
-            vec![&particle_buf, &constraint_buf, &reorder_constraints_buf],
+            vec![&particle_buf, &stretch_constraints_buf, &stretch_constraints_group_buf],
             vec![],
-            &constraint_solver_shader,
+            &stretch_solver_shader,
         );
 
+        let bend_constraints_buf = BufferObj::create_storage_buffer(
+            &app_view.device,
+            &bending_constraints,
+            Some("bend_constraints_buf"),
+        );
+        let reorder_bendings_buf = BufferObj::create_storage_buffer(
+            &app_view.device,
+            &reorder_bendings,
+            Some("reorder_bendings_buf"),
+        );
         let bend_solver_shader = idroid::shader::create_shader_module(
             &app_view.device,
-            "pbd/xxpbd/cloth_bending_solver",
+            "pbd/brush/bending_solver",
             None,
-        );
-        let size = particle_x_num * particle_y_num * 4 * 16;
-        let _debug_buf = BufferObj::create_empty_storage_buffer(
-            &app_view.device,
-            size as wgpu::BufferAddress,
-            false,
-            Some("debug_buf"),
         );
         let bend_solver = ComputeNode::new_with_dynamic_uniforms(
             &app_view.device,
@@ -212,47 +219,37 @@ impl ClothX {
             &bend_solver_shader,
         );
 
-        let mut vertex_data: Vec<PosParticleIndex> = Vec::new();
-        let mut index_data: Vec<u32> = Vec::new();
-        // 按行遍历
-        for h in 0..particle_y_num {
-            for w in 0..particle_x_num {
-                vertex_data.push(PosParticleIndex::new([w, h, 0]));
-                if h > 0 && w > 0 {
-                    let current: u32 = particle_x_num * h + w;
-                    // 找到上一行同一行位置的索引
-                    let top: u32 = current - particle_x_num;
-                    let mut lines: Vec<u32> =
-                        vec![current, top, top - 1, current, top - 1, current - 1];
-                    index_data.append(&mut lines);
-                }
-            }
-        }
-        // 1863*3312
-        // let img_path = PathBuf::from(&base_path).join("assets/paper/3.png");
-
-        let (texture, _) = idroid::load_texture::from_path(
-            "dragon.png",
-            app_view,
-            wgpu::TextureUsages::COPY_DST | wgpu::TextureUsages::TEXTURE_BINDING,
-            false,
+        let bufferless_shader = idroid::shader::create_shader_module(
+            &app_view.device,
+            "pbd/brush/debug_plane",
+            Some("bufferless"),
         );
+        let debug_plane = BufferlessFullscreenNode::new(
+            &app_view.device,
+            app_view.config.format,
+            vec![&mvp_buf],
+            vec![],
+            vec![],
+            vec![],
+            &bufferless_shader,
+            None,
+            true,
+        );
+
         let display_shader =
-            idroid::shader::create_shader_module(&app_view.device, "pbd/cloth_display", None);
-        let display_node_builder =
-            ViewNodeBuilder::<PosParticleIndex>::new(vec![(&texture, None)], &display_shader)
-                .with_uniform_buffers(vec![&mvp_buf, &uniform_buf])
-                .with_storage_buffers(vec![&particle_buf])
-                .with_use_depth_stencil(true)
-                .with_cull_mode(None)
-                .with_shader_stages(vec![
-                    wgpu::ShaderStages::VERTEX,
-                    wgpu::ShaderStages::VERTEX,
-                    wgpu::ShaderStages::VERTEX,
-                    wgpu::ShaderStages::FRAGMENT,
-                    wgpu::ShaderStages::FRAGMENT,
-                ])
-                .with_vertices_and_indices((vertex_data, index_data));
+            idroid::shader::create_shader_module(&app_view.device, "pbd/brush/display", None);
+        let display_node_builder = ViewNodeBuilder::<VertexEmpty>::new(vec![], &display_shader)
+            .with_uniform_buffers(vec![&mvp_buf, &uniform_buf])
+            .with_storage_buffers(vec![&particle_buf])
+            .with_vertices_and_indices((vec![VertexEmpty {}], index_data))
+            .with_use_depth_stencil(true)
+            .with_cull_mode(None)
+            .with_shader_stages(vec![
+                wgpu::ShaderStages::VERTEX,
+                wgpu::ShaderStages::VERTEX,
+                wgpu::ShaderStages::VERTEX,
+            ])
+            .with_primitive_topology(wgpu::PrimitiveTopology::LineStrip);
 
         let display_node = display_node_builder.build(&app_view.device);
 
@@ -265,15 +262,20 @@ impl ClothX {
             idroid::depth_stencil::create_depth_texture_view(size, &app_view.device);
 
         let instance = Self {
+            mvp_buf,
+            translate_z,
+            proj_mat,
             particle_buf,
-            constraint_buf,
+            predict_solver,
+            stretch_constraints_buf,
+            stretch_constraints_group_buf,
             stretch_mesh_coloring,
-            bend_mesh_coloring,
-            bend_constraints_buf,
-            predict_and_reset,
             stretch_solver,
+            bend_constraints_buf,
+            bend_mesh_coloring,
             bend_solver,
             display_node,
+            debug_plane,
             depth_texture_view,
             frame_count: 0,
             pbd_iter_count: pbd_iter_count as usize,
@@ -282,20 +284,37 @@ impl ClothX {
         instance
     }
 
+    pub fn rotate(&mut self, app_view: &idroid::AppView, x: f32, y: f32) {
+        let mut model_rotate_mat = glm::rotate_x(&glm::Mat4::identity(), 0.8 * x);
+        model_rotate_mat = glm::rotate_y(&model_rotate_mat, 0.8 * y);
+
+        let translate_mat =
+            glm::translate(&glm::TMat4::<f32>::identity(), &glm::vec3(0.0, 0.0, self.translate_z));
+        let new_mv_mat = translate_mat * model_rotate_mat;
+
+        let normal: [[f32; 4]; 4] = glm::inverse_transpose(new_mv_mat).into();
+        let mvp_uniform = crate::MVPMatUniform {
+            mv: new_mv_mat.into(),
+            proj: self.proj_mat.into(),
+            mvp: (self.proj_mat * new_mv_mat).into(),
+            normal: normal,
+        };
+        app_view.queue.write_buffer(&self.mvp_buf.buffer, 0, &mvp_uniform.as_bytes());
+    }
+
     fn step_solver(&mut self, encoder: &mut wgpu::CommandEncoder) {
         // if self.frame_count >= 1 {
         //     return;
         // }
-        // 重用 cpass 在 macOS 上不能提升性能， 但是在 iOS 上提升明显
-        // 64*64，8 约束，迭代20 ：Xs Max, 12ms -> 8ms
+
         let mut cpass =
             encoder.begin_compute_pass(&wgpu::ComputePassDescriptor { label: Some("solver pass") });
 
         let dynamic_offset = 256;
         for i in 0..self.pbd_iter_count {
-            // 下一次迭代的开始，先更新粒子速度
+            // 下一次迭代的开始，先更新粒子偏移
             let offset = if i == 0 { 256 } else { 0 };
-            self.predict_and_reset.dispatch_by_offsets(&mut cpass, Some(vec![vec![offset]]));
+            self.predict_solver.dispatch_by_offsets(&mut cpass, Some(vec![vec![offset]]));
 
             cpass.set_pipeline(&self.stretch_solver.pipeline);
             cpass.set_bind_group(0, &self.stretch_solver.bg_setting.bind_group, &[]);
@@ -332,13 +351,14 @@ impl ClothX {
 
     pub fn enter_frame(&mut self, app_view: &mut AppView) {
         let mut encoder = app_view.device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
-            label: Some("cloth encoder"),
+            label: Some("MaoBrush encoder"),
         });
         self.step_solver(&mut encoder);
+
         let (frame, frame_view) = app_view.get_current_frame_view();
         {
             let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-                label: Some("cloth render pass"),
+                label: Some("MaoBrush render pass"),
                 color_attachments: &[wgpu::RenderPassColorAttachment {
                     view: &frame_view,
                     resolve_target: None,
@@ -353,9 +373,15 @@ impl ClothX {
                 )),
             });
             self.display_node.draw_render_pass(&mut rpass);
+
+            let w = app_view.config.width as f32;
+            let h = app_view.config.height as f32;
+            let x = (w - 200.0) / 2.0;
+            let y = (h - 200.0) / 2.0;
+            rpass.set_viewport(x, y, 200.0, 200.0, 0.0, 0.0);
+            self.debug_plane.draw_rpass(&mut rpass);
         }
         app_view.queue.submit(Some(encoder.finish()));
         frame.present();
     }
-    pub fn rotate(&mut self, _app_view: &idroid::AppView, _x: f32, _y: f32) {}
 }

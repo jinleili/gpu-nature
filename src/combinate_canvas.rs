@@ -4,7 +4,7 @@ use idroid::{
     BufferObj, SurfaceView,
 };
 use uni_view::{AppView, GPUContext};
-use zerocopy::AsBytes;
+
 
 pub struct CombinateCanvas {
     pub app_view: AppView,

@@ -51,8 +51,8 @@ pub fn cal_bend_constraints2(
         let mut w = 1;
         while w < (horizontal_num - 1) {
             let v = (h * horizontal_num + w) as i32;
-            let b0 = v + 1 - horizontal_num as i32;
-            let b1 = v - 1 + horizontal_num as i32;
+            let b0 = v + 1 + horizontal_num as i32;
+            let b1 = v - 1 - horizontal_num as i32;
             four_groups[4 + offset % 2].push([bendings.len() as i32, -1, -1]);
             bendings.push(BendingConstraintObj { v, b0, b1, h0 });
             w += 2;

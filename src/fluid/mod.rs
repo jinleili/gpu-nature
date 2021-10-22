@@ -4,10 +4,10 @@ mod lattice;
 use lattice::*;
 
 mod particle_render_node;
-use particle_render_node::ParticleRenderNode;
+
 
 mod d2q9_node;
-use d2q9_node::D2Q9Node;
+
 mod aa_d2q9_node;
 use aa_d2q9_node::AAD2Q9Node;
 mod d3q15_node;

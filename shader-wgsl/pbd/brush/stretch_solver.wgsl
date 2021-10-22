@@ -1,6 +1,32 @@
-#include "pbd/cloth_layout.wgsl"
-#include "pbd/struct/dynamic_uniform.wgsl"
+#include "pbd/brush/struct/particle.wgsl"
+#include "pbd/brush/struct/brush_uniform.wgsl"
 
+struct Constraint {
+   rest_length: f32;
+   particle0: i32;
+   particle1: i32;
+};
+[[block]]
+struct ConstraintsBuffer {
+    data: [[stride(12)]] array<Constraint>;
+};
+
+// 这个粒子关联的所有 stretch 约束
+struct ParticleConstraints {
+    list: [[stride(4)]] array<i32, 3>;
+};
+[[block]]
+struct ParticleConstraintsBuffer {
+    data: [[stride(12)]] array<ParticleConstraints>;
+};
+
+[[group(0), binding(0)]] var<uniform> brush: BrushUniform;
+[[group(0), binding(1)]] var<storage, read_write> particles: ParticlesBuffer;
+[[group(0), binding(2)]] var<storage, read_write> constraints: ConstraintsBuffer;
+[[group(0), binding(3)]] var<storage, read_write> reorder_constraints: ParticleConstraintsBuffer;
+
+let EPSILON: f32 = 0.0000001;
+#include "pbd/struct/dynamic_uniform.wgsl"
 [[group(1), binding(0)]] var<uniform> dy_uniform: DynamicUniform;
 
 // mesh coloring 分组之后，最后一组往往约束组数量很小（64*64粒子，最小约束组长度是 94）
@@ -20,7 +46,7 @@ fn main([[builtin(global_invocation_id)]] global_invocation_id: vec3<u32>) {
     // new_compliance 直接在 uniform 里计算好
     // float new_compliance = compliance / (dt * dt);
     // 遍历所有约束
-    for (var i = 0; i < 3; i = i + 1) {
+    for (var i = 0; i < 1; i = i + 1) {
         let constraint_index = particle_constraints.list[i];
         if (constraint_index < 0) {
             continue;
@@ -31,11 +57,11 @@ fn main([[builtin(global_invocation_id)]] global_invocation_id: vec3<u32>) {
         if (invert_mass0 < 0.0) {
             particle0_index = constraint.particle0;
             particle = particles.data[particle0_index];
-            invert_mass0 = particle.uv_mass.z;
+            invert_mass0 = particle.pos.w;
         }
 
         var particle1 = particles.data[constraint.particle1];
-        let invert_mass1 = particle1.uv_mass.z;
+        let invert_mass1 = particle1.pos.w;
         let sum_mass = invert_mass0 + invert_mass1;
         if (sum_mass < 0.01) {
             continue;
@@ -47,7 +73,7 @@ fn main([[builtin(global_invocation_id)]] global_invocation_id: vec3<u32>) {
 
         var correction_vector: vec4<f32>;
         // eq.18
-        let dlambda = -distance / (sum_mass + cloth.compliance);
+        let dlambda = -distance / (sum_mass + brush.compliance);
         // eq.17
         correction_vector = dlambda * p0_minus_p1 / (dis + EPSILON);
 

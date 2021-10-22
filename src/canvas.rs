@@ -1,6 +1,6 @@
-use crate::noise::*;
+
 use crate::Diffraction;
-use idroid::node::{BufferlessFullscreenNode, ComputeNode, ViewNode, ViewNodeBuilder};
+
 use idroid::{math::Position, math::TouchPoint, SurfaceView};
 use uni_view::{AppView, GPUContext};
 pub struct Canvas {

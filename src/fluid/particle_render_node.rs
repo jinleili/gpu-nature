@@ -195,8 +195,8 @@ impl ParticleRenderNode {
     }
 
     pub fn draw_rpass<'a, 'b: 'a>(
-        &'b self, rpass: &mut wgpu::RenderPass<'b>, particles_buf: &'b BufferObj,
-        particle_count: i32,
+        &'b self, rpass: &mut wgpu::RenderPass<'b>, _particles_buf: &'b BufferObj,
+        _particle_count: i32,
     ) {
         // compose
         rpass.set_pipeline(&self.compose_pipeline);

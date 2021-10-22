@@ -202,7 +202,7 @@ fn get_particles_data(
 
     let mut particles = init_trajectory_particles(canvas_size, particles_size, life_time);
     if MAX_PARTICLE_COUNT > particles.len() {
-        for i in 0..(MAX_PARTICLE_COUNT - particles.len()) {
+        for _i in 0..(MAX_PARTICLE_COUNT - particles.len()) {
             particles.push(TrajectoryParticle::zero());
         }
     }

@@ -9,7 +9,7 @@ impl D3NoiseTexture {
     pub fn create(app_view: &idroid::AppView) -> Self {
         let device_features = app_view.device.features();
         // compressed texture format investigation: https://github.com/gpuweb/gpuweb/issues/144
-        let tex_format = if device_features.contains(wgpu::Features::TEXTURE_COMPRESSION_ASTC_LDR) {
+        let _tex_format = if device_features.contains(wgpu::Features::TEXTURE_COMPRESSION_ASTC_LDR) {
             // iOS，19% vulkan device
             wgpu::TextureFormat::Astc4x4RgbaUnormSrgb
         } else if device_features.contains(wgpu::Features::TEXTURE_COMPRESSION_ETC2) {

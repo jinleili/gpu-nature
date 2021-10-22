@@ -1,4 +1,4 @@
-use super::{MeshColoringObj, BendingConstraintObj, StretchConstraintObj, cal_bend_constraints2};
+use super::{cal_bend_constraints2, BendingConstraintObj, MeshColoringObj, StretchConstraintObj};
 use idroid::math::Point3D;
 use zerocopy::{AsBytes, FromBytes};
 
@@ -44,7 +44,7 @@ pub fn generate_cloth_particles(
     let mut invert_mass = 0.1;
     for h in 0..vertical_num {
         for w in 0..horizontal_num {
-            let mut p =
+            let p =
                 [tl_x + horizontal_step * w as f32, tl_y - vertical_step * h as f32, 0.0, 0.0];
             // 上边两个角固定：粒子质量为 无穷大
             // 每个顶点的质量等于与之相连的每个三角形质量的 1/3 之后
@@ -84,7 +84,7 @@ pub fn generate_cloth_particles(
                 group[0] = constraints.len() as i32;
                 constraints.push(get_constraint(&particles, &p0, index0, index0 + 1));
             }
-            if h < vertical_num - 1{
+            if h < vertical_num - 1 {
                 group[1] = constraints.len() as i32;
                 constraints.push(get_constraint(&particles, &p0, index0, index0 + horizontal_num));
             }
@@ -104,8 +104,8 @@ pub fn generate_cloth_particles(
     // 将默认位置折叠在最顶边
     let mut py = tl_y;
     let mut pz = 0.0_f32;
-    let mut step_z = 0.005;
-    let max_z = 0.029;
+    let step_z = 0.005;
+    let _max_z = 0.029;
     let mut step_y = -vertical_step;
     let max_y = tl_y - 0.1;
 
@@ -240,7 +240,8 @@ fn cal_bend_constraints(
 ) -> (Vec<MeshColoringObj>, Vec<BendingConstraintObj>, Vec<[i32; 3]>) {
     // 共享同一顶点的三个三角形对
     let mut index_groups: Vec<[i32; 3]> = vec![];
-    let mut bendings: Vec<BendingConstraintObj> = Vec::with_capacity(horizontal_num * vertical_num * 3);
+    let mut bendings: Vec<BendingConstraintObj> =
+        Vec::with_capacity(horizontal_num * vertical_num * 3);
     let mut reorder_bendings: Vec<[i32; 3]> = vec![];
     // 按没有共同顶点的约束分组，再基于此生成 reorder_bendings
     let mut bending_groups: Vec<Vec<[i32; 3]>> = vec![vec![]];

@@ -1,14 +1,16 @@
-use nature::PBDCanvas;
 use idroid::math::{Position, TouchPoint};
 use idroid::SurfaceView;
+use nature::PBDCanvas;
 use uni_view::AppView;
 
-use std::cell::RefCell;
-use std::rc::Rc;
+
+
 // use serde::{Deserialize, Serialize};
 
 fn main() {
-    use winit::event::{ElementState, Event, KeyboardInput, MouseScrollDelta, VirtualKeyCode, WindowEvent};
+    use winit::event::{
+        ElementState, Event, KeyboardInput, MouseScrollDelta, VirtualKeyCode, WindowEvent,
+    };
     use winit::{
         event_loop::{ControlFlow, EventLoop},
         window::Window,
@@ -16,9 +18,10 @@ fn main() {
 
     env_logger::init();
     let events_loop = EventLoop::new();
-    let (window, size) = {
+    let (window, _size) = {
         let window = Window::new(&events_loop).unwrap();
-        let size = winit::dpi::Size::Logical(winit::dpi::LogicalSize { width: 400.0, height: 800.0 });
+        let size =
+            winit::dpi::Size::Logical(winit::dpi::LogicalSize { width: 400.0, height: 800.0 });
         // 设置 set_inner_size 后，窗口尺寸会在前几帧有变化
         window.set_inner_size(size);
         window.set_max_inner_size(Some(size));
@@ -36,10 +39,16 @@ fn main() {
 
     let mut current_index: usize = 0;
     // 窗口在刚出来的几帧，view port 的尺寸是在变化调整中的，不是最终值
-    let mut init_index: usize = 6;
+    let _init_index: usize = 6;
     let mut frame_index = 0;
+    let mut last_touch_point: Position = Position::zero();
+
     events_loop.run(move |event, _, control_flow| {
-        *control_flow = if cfg!(feature = "metal-auto-capture") { ControlFlow::Exit } else { ControlFlow::Poll };
+        *control_flow = if cfg!(feature = "metal-auto-capture") {
+            ControlFlow::Exit
+        } else {
+            ControlFlow::Poll
+        };
         match event {
             Event::MainEventsCleared => surface_view.app_view.view.request_redraw(),
             Event::WindowEvent { event: WindowEvent::Resized(_size), .. } => {
@@ -49,7 +58,9 @@ fn main() {
                 WindowEvent::KeyboardInput {
                     input:
                         KeyboardInput {
-                            virtual_keycode: Some(VirtualKeyCode::Escape), state: ElementState::Pressed, ..
+                            virtual_keycode: Some(VirtualKeyCode::Escape),
+                            state: ElementState::Pressed,
+                            ..
                         },
                     ..
                 }
@@ -63,11 +74,15 @@ fn main() {
                     _ => (),
                 },
                 WindowEvent::Touch(touch) => {
-                    println!("{:?}", touch);
+                    println!("{:?}", touch.force);
                 }
-                WindowEvent::CursorMoved { position, .. } => {
-                    // let point = TouchPoint { pos: Position::new(position.x as f32, position.y as f32), force: 0.0 };
-                    // surface_view.touch_moved(point);
+                WindowEvent::TouchpadPressure { device_id: _, pressure, stage: _ } => {
+                    println!("{:?}", pressure);
+                }
+                WindowEvent::CursorMoved { position, modifiers: _, .. } => {
+                    last_touch_point = Position::new(position.x as f32, position.y as f32);
+                    let point = TouchPoint::new_by_pos(last_touch_point);
+                    surface_view.touch_moved(point);
                 }
                 _ => {}
             },
@@ -78,7 +93,7 @@ fn main() {
                     return ();
                 }
                 current_index += 1;
-                if current_index <= 1000 {
+                if current_index <= 1000000 {
                     surface_view.enter_frame();
                 }
             }

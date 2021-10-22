@@ -9,6 +9,10 @@ pub use cloth::Cloth;
 mod cloth_x;
 pub use cloth_x::ClothX;
 
+mod bristle;
+mod brush;
+pub use brush::MaoBrush;
+
 mod pbd_canvas;
 pub use pbd_canvas::PBDCanvas;
 

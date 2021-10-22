@@ -80,4 +80,3 @@ pub fn create_gradient_buf(device: &wgpu::Device) -> idroid::BufferObj {
     buf.read_only = true;
     return buf;
 }
-

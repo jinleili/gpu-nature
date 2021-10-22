@@ -24,8 +24,7 @@ struct ParticleConstraintsBuffer {
 [[group(0), binding(0)]] var<uniform> cloth: ClothUniform;
 [[group(0), binding(1)]] var<storage, read_write> particles: ParticlesBuffer;
 [[group(0), binding(2)]] var<storage, read_write> constraints: ConstraintsBuffer;
-[[group(0), binding(3)]] var<storage, read_write> particle_constraints: ParticleConstraintsBuffer;
-[[group(0), binding(4)]] var<storage, read_write> reorder_constraints: ParticleConstraintsBuffer;
+[[group(0), binding(3)]] var<storage, read_write> reorder_constraints: ParticleConstraintsBuffer;
 
 let EPSILON: f32 = 0.0000001;
 

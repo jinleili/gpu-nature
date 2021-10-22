@@ -1,4 +1,4 @@
-use super::{AAD2Q9Node, D2Q9Node, ParticleRenderNode, OBSTACLE_RADIUS};
+use super::{AAD2Q9Node, OBSTACLE_RADIUS};
 use crate::{fluid::LbmUniform, setting_obj::SettingObj, FieldAnimationType, Player};
 use idroid::{
     math::{Position, Size},
@@ -78,6 +78,7 @@ impl FluidPlayer {
             vec![&sampler],
             &render_shader,
             None,
+            false,
         );
         println!("abc2");
 
@@ -110,6 +111,7 @@ impl FluidPlayer {
             vec![],
             &particle_shader,
             None,
+            false,
         );
         println!("abc4");
 
