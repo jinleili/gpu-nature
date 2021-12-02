@@ -58,7 +58,7 @@ impl D3ParticleRenderNode {
             wgpu::BindGroupLayoutEntry {
                 binding: 2,
                 visibility: wgpu::ShaderStages::FRAGMENT,
-                ty: wgpu::BindingType::Sampler { comparison: false, filtering: true },
+                ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
                 count: None,
             },
         ];
@@ -293,5 +293,6 @@ fn generate_pipeline(
             }
         },
         multisample: wgpu::MultisampleState::default(),
+        multiview: None,
     })
 }
