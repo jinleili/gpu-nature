@@ -6,7 +6,7 @@ struct Constraint {
    particle0: i32;
    particle1: i32;
 };
-[[block]]
+
 struct ConstraintsBuffer {
     data: [[stride(12)]] array<Constraint>;
 };
@@ -15,7 +15,7 @@ struct ConstraintsBuffer {
 struct ParticleConstraints {
     list: [[stride(4)]] array<i32, 3>;
 };
-[[block]]
+
 struct ParticleConstraintsBuffer {
     data: [[stride(12)]] array<ParticleConstraints>;
 };
@@ -31,7 +31,7 @@ let EPSILON: f32 = 0.0000001;
 
 // mesh coloring 分组之后，最后一组往往约束组数量很小（64*64粒子，最小约束组长度是 94）
 [[stage(compute), workgroup_size(32, 1)]]
-fn main([[builtin(global_invocation_id)]] global_invocation_id: vec3<u32>) {  
+fn cs_main([[builtin(global_invocation_id)]] global_invocation_id: vec3<u32>) {  
     var field_index = i32(global_invocation_id.x);
     if (field_index >= dy_uniform.group_len) {
         return;

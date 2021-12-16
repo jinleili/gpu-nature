@@ -1,4 +1,4 @@
-[[block]]
+
 struct DynamicUniform {
   offset: i32;
   max_num_x: i32;

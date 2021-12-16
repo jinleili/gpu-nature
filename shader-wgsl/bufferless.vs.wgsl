@@ -4,7 +4,7 @@ struct VertexOutput {
 };
 
 [[stage(vertex)]]
-fn main([[builtin(vertex_index)]] vertexIndex: u32) -> VertexOutput {
+fn vs_main([[builtin(vertex_index)]] vertexIndex: u32) -> VertexOutput {
     let uv: vec2<f32> = vec2<f32>(f32((vertexIndex << 1u) & 2u), f32(vertexIndex & 2u));
     var out: VertexOutput;
     out.position = vec4<f32>(uv * 2.0 - 1.0, 0.0, 1.0);

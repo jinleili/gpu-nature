@@ -1,4 +1,4 @@
-[[block]]
+
 struct ParticleUniform {
     // particle uniform color
     color: vec4<f32>;
@@ -23,7 +23,7 @@ struct TrajectoryParticle {
     // alpha value:[1.0, 0.0]
     fade: f32;
 };
-[[block]]
+
 struct ParticleBuffer {
     particles: [[stride(24)]] array<TrajectoryParticle>;
 };

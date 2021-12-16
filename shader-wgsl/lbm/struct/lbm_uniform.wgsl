@@ -1,4 +1,4 @@
-[[block]]
+
 struct LbmUniform {
   // τ represents the viscosity of the fluid, given by τ = 0.5 * (1.0 + 6niu )
     tau: f32;

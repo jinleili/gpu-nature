@@ -10,7 +10,7 @@ struct CollisionObj {
   padding2: i32;
 };
 
-[[block]]
+
 struct CollisionObjBuf {
   data: [[stride(176)]] array<CollisionObj>;
 };

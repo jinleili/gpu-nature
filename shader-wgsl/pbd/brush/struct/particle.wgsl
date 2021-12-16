@@ -4,7 +4,7 @@ struct Particle {
   // 与之相连的4个粒子的索引，用于计算法线
    connect: vec4<i32>;
 };
-[[block]]
+
 struct ParticlesBuffer {
     data: [[stride(48)]] array<Particle>;
 };

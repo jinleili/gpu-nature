@@ -7,7 +7,7 @@ struct Constraint {
    particle0: i32;
    particle1: i32;
 };
-[[block]]
+
 struct ConstraintsBuffer {
     data: [[stride(16)]] array<Constraint>;
 };
@@ -16,7 +16,7 @@ struct ConstraintsBuffer {
 struct ParticleConstraints {
   list: [[stride(4)]] array<i32, 3>;
 };
-[[block]]
+
 struct ParticleConstraintsBuffer {
     data: [[stride(12)]] array<ParticleConstraints>;
 };

@@ -1,6 +1,6 @@
 #include "3d_lbm/struct/3d_particle.wgsl"
 
-[[block]]
+
 struct TrajectoryUniform {
     screen_factor: vec2<f32>;
     // which view particles position will drawing to. 

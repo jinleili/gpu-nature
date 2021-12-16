@@ -1,6 +1,6 @@
 #include "func/color_space_convert.wgsl"
 
-[[block]]
+
 struct MVPMatUniform {
     mv: mat4x4<f32>;
     proj: mat4x4<f32>;
@@ -10,7 +10,7 @@ struct MVPMatUniform {
 
 [[group(0), binding(0)]] var<uniform> mvp_mat: MVPMatUniform;
 
-[[block]]
+
 struct Uniforms {
     light_x: f32;
     light_y: f32;
@@ -53,7 +53,7 @@ struct VertexOutput {
 };
 
 [[stage(vertex)]]
-fn main(
+fn vs_main(
     [[location(0)]] pos: vec3<f32>,
     [[location(1)]] tangent: vec4<f32>,
 ) -> VertexOutput {
@@ -92,6 +92,6 @@ fn main(
 
 
 [[stage(fragment)]]
-fn main(in: VertexOutput) -> [[location(0)]] vec4<f32> {
+fn fs_main(in: VertexOutput) -> [[location(0)]] vec4<f32> {
     return vec4<f32>(in.color, 1.0);
 }

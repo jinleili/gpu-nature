@@ -9,7 +9,7 @@ struct BendingConstraint {
     h0: f32;
 };
 
-[[block]]
+
 struct BendingConstraintsBuffer {
     data: [[stride(16)]] array<BendingConstraint>;
 };
@@ -18,7 +18,7 @@ struct BendingConstraintsBuffer {
 struct BendingConstraintsGroup {
     list: [[stride(4)]] array<i32, 2>;
 };
-[[block]]
+
 struct BendingConstraintsGroupBuffer {
     data: [[stride(8)]] array<BendingConstraintsGroup>;
 };
@@ -28,7 +28,7 @@ struct BendingConstraintsGroupBuffer {
 [[group(0), binding(2)]] var<storage, read_write> constraints: BendingConstraintsBuffer;
 [[group(0), binding(3)]] var<storage, read_write> reorder_constraints: BendingConstraintsGroupBuffer;
 
-[[block]]
+
 struct DynamicUniform {
     offset: i32;
     max_num_x: i32;
@@ -41,7 +41,7 @@ struct DynamicUniform {
 
 
 [[stage(compute), workgroup_size(32, 1)]]
-fn main([[builtin(global_invocation_id)]] global_invocation_id: vec3<u32>) {  
+fn cs_main([[builtin(global_invocation_id)]] global_invocation_id: vec3<u32>) {  
     var field_index = i32(global_invocation_id.x);
     if (field_index >= dy_uniform.group_len) {
         return;

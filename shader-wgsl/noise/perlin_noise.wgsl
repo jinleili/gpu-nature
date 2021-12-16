@@ -2,11 +2,11 @@
 
 #include "bufferless.vs.wgsl"
 
-[[block]]
+
 struct Permutation {
     data: [[stride(16)]] array<vec4<i32>>;
 };
-[[block]]
+
 struct Gradient {
     data: [[stride(16)]] array<vec4<f32>>;
 };
@@ -29,7 +29,7 @@ fn turbulence(octaves: i32, P: vec3<f32>, lacunarity: f32, gain: f32) -> f32 {
 }
 
 [[stage(fragment)]] 
-fn main([[builtin(position)]] coord : vec4<f32>) -> [[location(0)]] vec4<f32> {
+fn fs_main([[builtin(position)]] coord : vec4<f32>) -> [[location(0)]] vec4<f32> {
     let p = vec3<f32>(coord.xy / 105.0, 0.5) ; 
     // noise self
     // return vec4<f32>(vec3<f32>(noise(p)), 1.0);

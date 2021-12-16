@@ -1,7 +1,7 @@
 #include "pbd/brush/struct/particle.wgsl"
 #include "pbd/brush/struct/brush_uniform.wgsl"
 
-[[block]]
+
 struct MVPMatUniform {
     mv: mat4x4<f32>;
     proj: mat4x4<f32>;
@@ -20,7 +20,7 @@ struct VertexOutput {
 };
 
 [[stage(vertex)]]
-fn main([[builtin(vertex_index)]] vertex_index: u32) -> VertexOutput {
+fn vs_main([[builtin(vertex_index)]] vertex_index: u32) -> VertexOutput {
     // 1，找出对应编号的粒子，
     // 2，使用粒子的位置来计算顶点位置
     let p0 = particles.data[vertex_index];
@@ -47,7 +47,7 @@ let light_pos = vec3<f32>(-0.0, -0.0, 0.6);
 let view_pos = vec3<f32>(0.0, 0.0, 1.0);
 
 [[stage(fragment)]]
-fn main(in: VertexOutput) -> [[location(0)]] vec4<f32> {
+fn fs_main(in: VertexOutput) -> [[location(0)]] vec4<f32> {
     let color: vec4<f32> = vec4<f32>(1.0);
     var norm = normalize(in.normal);
     // 利用 faceforward 函数的方法，判断面相对于光线的朝向，如果背面朝向光源，则要反转法线

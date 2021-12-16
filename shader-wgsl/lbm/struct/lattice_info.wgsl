@@ -7,7 +7,7 @@ struct LatticeInfo {
   vy: f32;
 };
 
-[[block]]
+
 struct StoreInfo {
     data: [[stride(16)]] array<LatticeInfo>;
 };

@@ -1,4 +1,4 @@
-[[block]]
+
 struct TrajectoryUniform {
     screen_factor: vec2<f32>;
     // which view particles position will drawing to. 

@@ -1,9 +1,9 @@
 
-[[block]]
+
 struct Permutation {
     data: [[stride(16)]] array<vec4<i32>>;
 };
-[[block]]
+
 struct Gradient {
     data: [[stride(16)]] array<vec4<f32>>;
 };
@@ -16,7 +16,7 @@ struct Gradient {
 
 
 [[stage(compute), workgroup_size(8, 8, 8)]]
-fn main([[builtin(global_invocation_id)]] global_invocation_id: vec3<u32>) {
+fn cs_main([[builtin(global_invocation_id)]] global_invocation_id: vec3<u32>) {
     let p = vec2<f32>(global_invocation_id.xyz) / 8.0 ; 
     let val = noise(p);
     

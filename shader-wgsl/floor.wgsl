@@ -1,5 +1,5 @@
 
-[[block]]
+
 struct MVPMatUniform {
     mv: mat4x4<f32>;
     proj: mat4x4<f32>;
@@ -17,7 +17,7 @@ struct VertexOutput {
 };
 
 [[stage(vertex)]]
-fn main(
+fn vs_main(
     [[location(0)]] pos: vec3<f32>,
     [[location(1)]] uv: vec2<f32>,
 ) -> VertexOutput {
@@ -36,7 +36,7 @@ fn main(
 [[group(0), binding(4)]] var noise_sampler: sampler;
 
 [[stage(fragment)]]
-fn main(in: VertexOutput) -> [[location(0)]] vec4<f32> {
+fn fs_main(in: VertexOutput) -> [[location(0)]] vec4<f32> {
     let color: vec4<f32> = textureSample(tex, tex_sampler, in.uv);
 
     let nv: vec4<f32> = textureSample(noise, noise_sampler, in.mc_pos);

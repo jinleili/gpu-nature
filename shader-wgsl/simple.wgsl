@@ -1,5 +1,5 @@
 
-[[block]]
+
 struct MVPMatUniform {
     mv: mat4x4<f32>;
     proj: mat4x4<f32>;
@@ -14,7 +14,7 @@ struct VertexOutput {
 };
 
 [[stage(vertex)]]
-fn main(
+fn vs_main(
     [[location(0)]] pos: vec3<f32>,
     [[location(1)]] tangent: vec4<f32>,
 ) -> VertexOutput {
@@ -25,7 +25,7 @@ fn main(
 
 
 [[stage(fragment)]]
-fn main() -> [[location(0)]] vec4<f32> {
+fn fs_main() -> [[location(0)]] vec4<f32> {
     var frag_color = vec4<f32>(vec3<f32>(0.95), 0.65);
     return frag_color;
 }

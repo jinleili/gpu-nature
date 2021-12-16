@@ -1,5 +1,5 @@
 
-[[block]]
+
 struct ClothUniform {
   // 粒子个数
    num_x: i32;

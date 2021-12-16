@@ -2,7 +2,7 @@
 #include "lbm/struct/lattice_info.wgsl"
 #include "struct/field.wgsl"
 
-[[block]]
+
 struct StoreFloat {
     data: [[stride(4)]] array<f32>;
 };

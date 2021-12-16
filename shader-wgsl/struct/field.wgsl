@@ -1,4 +1,4 @@
-[[block]]
+
 struct FieldUniform {
   // field lattice number
   lattice_size: vec4<i32>;
@@ -14,7 +14,7 @@ struct FieldUniform {
   speed_ty: i32;
 };
 
-[[block]]
+
 struct FieldBuffer {
     data: [[stride(16)]] array<vec4<f32>>;
 };

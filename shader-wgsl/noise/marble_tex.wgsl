@@ -1,9 +1,9 @@
 
-[[block]]
+
 struct Permutation {
     data: [[stride(16)]] array<vec4<i32>>;
 };
-[[block]]
+
 struct Gradient {
     data: [[stride(16)]] array<vec4<f32>>;
 };
@@ -27,7 +27,7 @@ fn turbulence(octaves: i32, P: vec3<f32>, lacunarity: f32, gain: f32) -> f32 {
 }
 
 [[stage(compute), workgroup_size(16, 16)]]
-fn main([[builtin(global_invocation_id)]] global_invocation_id: vec3<u32>) {
+fn cs_main([[builtin(global_invocation_id)]] global_invocation_id: vec3<u32>) {
     let xy = vec2<f32>(global_invocation_id.xy);
     let p = vec3<f32>(xy / 105.0, 0.5) ; 
     // marble

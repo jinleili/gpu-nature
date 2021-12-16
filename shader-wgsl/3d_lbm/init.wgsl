@@ -2,7 +2,7 @@
 
 
 [[stage(compute), workgroup_size(64, 1, 1)]]
-fn main([[builtin(global_invocation_id)]] global_invocation_id: vec3<u32>) {
+fn cs_main([[builtin(global_invocation_id)]] global_invocation_id: vec3<u32>) {
   let uv = vec3<i32>(global_invocation_id.xyz);
 
   let field_index = fieldIndex(uv);

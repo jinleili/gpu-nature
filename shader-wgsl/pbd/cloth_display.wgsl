@@ -2,7 +2,7 @@
 #include "pbd/struct/collision.wgsl"
 #include "pbd/struct/cloth_uniform.wgsl"
 
-[[block]]
+
 struct MVPMatUniform {
     mv: mat4x4<f32>;
     proj: mat4x4<f32>;
@@ -24,7 +24,7 @@ struct VertexOutput {
 };
 
 [[stage(vertex)]]
-fn main(
+fn vs_main(
     [[location(0)]] particle_index: vec3<u32>,
 ) -> VertexOutput {
     let field_index = particle_index.x + particle_index.y * u32(cloth.num_x);
@@ -68,7 +68,7 @@ let ambient_strength = 0.75;
 let specular_strength = 0.05;
 
 [[stage(fragment)]]
-fn main(in: VertexOutput) -> [[location(0)]] vec4<f32> {
+fn fs_main(in: VertexOutput) -> [[location(0)]] vec4<f32> {
     let color: vec4<f32> = textureSample(tex, tex_sampler, in.uv);
     let ambient = ambient_strength * light_color.rgb;
     // Diffuse

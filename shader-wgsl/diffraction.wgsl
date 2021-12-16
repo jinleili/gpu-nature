@@ -1,5 +1,5 @@
 
-[[block]]
+
 struct MVPMatUniform {
     mv: mat4x4<f32>;
     proj: mat4x4<f32>;
@@ -16,7 +16,7 @@ struct VertexOutput {
 };
 
 [[stage(vertex)]]
-fn main(
+fn vs_main(
     [[location(0)]] pos: vec3<f32>,
     [[location(1)]] tangent: vec4<f32>,
 ) -> VertexOutput {
@@ -28,7 +28,7 @@ fn main(
     return output;
 }
 
-[[block]]
+
 struct Uniforms {
     light_x: f32;
     light_y: f32;
@@ -66,7 +66,7 @@ fn rainbow(t: f32) -> vec3<f32> {
 #include "func/color_space_convert.wgsl"
 
 [[stage(fragment)]]
-fn main(in: VertexOutput) -> [[location(0)]] vec4<f32> {
+fn fs_main(in: VertexOutput) -> [[location(0)]] vec4<f32> {
     let to_light = normalize(vec3<f32>(params.light_x, params.light_y, params.light_z) - in.ec_pos);
     let to_eye = normalize(vec3<f32>(0.0) - in.ec_pos);
 
