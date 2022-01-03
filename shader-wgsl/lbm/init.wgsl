@@ -31,7 +31,7 @@ fn cs_main([[builtin(global_invocation_id)]] global_invocation_id: vec3<u32>) {
       collide_cell.data[field_index + soaOffset(i)] =  0.0;
       stream_cell.data[field_index + soaOffset(i)] = 0.0;
     }
-  } elseif (isPoiseuilleFlow()) {
+  } else if (isPoiseuilleFlow()) {
     for (var i: i32 = 0; i < 9; i = i + 1) {
       collide_cell.data[field_index + soaOffset(i)] =  w(i);
       stream_cell.data[field_index + soaOffset(i)] = 0.0;

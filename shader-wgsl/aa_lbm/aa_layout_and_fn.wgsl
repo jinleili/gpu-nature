@@ -45,12 +45,12 @@ fn streaming_out(uv : vec2<i32>, direction : i32)->i32 {
     var target_uv : vec2<i32> = uv + vec2<i32>(e(direction));
     if (target_uv.x < 0) {
       target_uv.x = field.lattice_size.x - 1;
-    } elseif (target_uv.x >= field.lattice_size.x) {
+    } else if (target_uv.x >= field.lattice_size.x) {
       target_uv.x = 0;
     }
     if (target_uv.y < 0) {
       target_uv.y = field.lattice_size.y - 1;
-    } elseif (target_uv.y >= field.lattice_size.y) {
+    } else if (target_uv.y >= field.lattice_size.y) {
       target_uv.y = 0;
     }
     return latticeIndex(target_uv, direction);

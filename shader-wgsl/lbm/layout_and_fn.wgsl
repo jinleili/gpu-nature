@@ -17,34 +17,34 @@ struct StoreFloat {
 #include "lbm/d2q9_fn.wgsl"
 
 // push scheme
-fn streaming_out(uv : vec2<i32>, direction : i32)->i32 {
+fn streaming_out(uv: vec2<i32>, direction: i32) -> i32 {
   // https://pdfs.semanticscholar.org/e626/ca323a9a8a4ad82fb16ccbbbd93ba5aa98e0.pdf
   // along current direction streaming to neighbour lattice same direction
     var target_uv : vec2<i32> = uv + vec2<i32>(e(direction));
     if (target_uv.x < 0) {
       target_uv.x = field.lattice_size.x - 1;
-    } elseif (target_uv.x >= field.lattice_size.x) {
+    } else if (target_uv.x >= field.lattice_size.x) {
       target_uv.x = 0;
     }
     if (target_uv.y < 0) {
       target_uv.y = field.lattice_size.y - 1;
-    } elseif (target_uv.y >= field.lattice_size.y) {
+    } else if (target_uv.y >= field.lattice_size.y) {
       target_uv.y = 0;
     }
     return latticeIndex(target_uv, direction);
 }
 
 // pull scheme
-fn streaming_in(uv : vec2<i32>, direction : i32)->i32 {
+fn streaming_in(uv: vec2<i32>, direction: i32) -> i32 {
     var target_uv : vec2<i32> = uv + vec2<i32>(e(fluid.inversed_direction[direction].x));  
     if (target_uv.x < 0) {
       target_uv.x = field.lattice_size.x - 1;
-    } elseif (target_uv.x >= field.lattice_size.x) {
+    } else if (target_uv.x >= field.lattice_size.x) {
       target_uv.x = 0;
     }
     if (target_uv.y < 0) {
       target_uv.y = field.lattice_size.y - 1;
-    } elseif (target_uv.y >= field.lattice_size.y) {
+    } else if (target_uv.y >= field.lattice_size.y) {
       target_uv.y = 0;
     } 
     return latticeIndex(target_uv, direction);

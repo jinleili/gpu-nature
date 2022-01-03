@@ -66,7 +66,7 @@ fn cs_main([[builtin(global_invocation_id)]] global_invocation_id: vec3<u32>) {
       var temp_val: f32 = f_i[i] - fluid.omega * (f_i[i] - equilibrium(velocity, rho, i, usqr)) + F[i];
       if (temp_val > MAX_VALUE[i] || isInf(temp_val)) {
         temp_val = MAX_VALUE[i];
-      } elseif (temp_val < 0.0) {
+      } else if (temp_val < 0.0) {
         temp_val = 0.0;
       }
       // stream_cell.data[streaming_out(uv, i)] = temp_val;

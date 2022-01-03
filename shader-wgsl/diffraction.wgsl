@@ -53,9 +53,9 @@ fn rainbow(t: f32) -> vec3<f32> {
     var color: vec3<f32>;
     if (t >= 0.75) {
         color = vec3<f32>(1., 1. - 4. * (t - 0.75), 0.);
-    } elseif (t >= 0.5) {
+    } else if (t >= 0.5) {
         color = vec3<f32>(1. - 4. * (t - 0.5), 1., 0.);
-    } elseif (t >= 0.25) {
+    } else if (t >= 0.25) {
         color = vec3<f32>(0., 1., 1. - 4. * (t - 0.25));
     } else {
         color = vec3<f32>(0., 4. * t,  1.);

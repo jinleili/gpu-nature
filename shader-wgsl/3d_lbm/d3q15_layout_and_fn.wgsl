@@ -54,21 +54,21 @@ fn isOutletCell(material: i32) -> bool { return material == 5; }
 fn isBulkFluidCell(material: i32) -> bool { return material == 1 || material == 5 || material == 6; }
 
 // pull scheme
-fn streaming_in(uv : vec3<i32>, direction : i32) -> i32 {
+fn streaming_in(uv: vec3<i32>, direction: i32) -> i32 {
     var target_uv : vec3<i32> = uv + vec3<i32>(e(REVERSED_DERECTION[direction]));
      if (target_uv.x < 0) {
       target_uv.x = field.lattice_size.x - 1;
-    } elseif (target_uv.x >= field.lattice_size.x) {
+    } else if (target_uv.x >= field.lattice_size.x) {
       target_uv.x = 0;
     }
     if (target_uv.y < 0) {
       target_uv.y = field.lattice_size.y - 1;
-    } elseif (target_uv.y >= field.lattice_size.y) {
+    } else if (target_uv.y >= field.lattice_size.y) {
       target_uv.y = 0;
     } 
     if (target_uv.z < 0) {
       target_uv.z = field.lattice_size.z - 1;
-    } elseif (target_uv.z >= field.lattice_size.z) {
+    } else if (target_uv.z >= field.lattice_size.z) {
       target_uv.z = 0;
     } 
     return latticeIndex(target_uv, direction);

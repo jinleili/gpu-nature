@@ -31,7 +31,7 @@ fn fs_main([[builtin(position)]] coord: vec4<f32>) -> [[location(0)]] vec4<f32> 
                 speed =  min(velocity / 0.25, 1.15);
             }
             frag_color = vec4<f32>(hsv2rgb(0.05 + speed * 0.75, 0.9, 1.0), p.alpha);
-        } elseif (particle_uniform.color_ty == 1) {
+        } else if (particle_uniform.color_ty == 1) {
             // moving angle as color
             let angle = atan2(p.velocity_y, p.velocity_x) / (2.0 * PI);
             frag_color = vec4<f32>(hsv2rgb(angle + 0.5, 0.9, 1.0), p.alpha);

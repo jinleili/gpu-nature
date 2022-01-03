@@ -15,7 +15,7 @@ fn cs_main([[builtin(global_invocation_id)]] global_invocation_id: vec3<u32>) {
         // A-A pattern not need warry about boundray cell
         aa_cell.data[field_index + soaOffset(i)] =  0.0;
     }
-  } elseif (isPoiseuilleFlow()) {
+  } else if (isPoiseuilleFlow()) {
     for (var i: i32 = 0; i < 9; i = i + 1) {
       aa_cell.data[field_index + soaOffset(i)] =  w(i);
     }
