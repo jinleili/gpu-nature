@@ -6,20 +6,20 @@ struct TrajectoryUniform {
     bg_view_index: i32;
 };
 
-[[group(0), binding(0)]] var<uniform> params: TrajectoryUniform;
-[[group(0), binding(1)]] var macro_info: texture_3d<f32>;
-[[group(0), binding(2)]] var tex_sampler: sampler;
+@group(0) @binding(0) var<uniform> params: TrajectoryUniform;
+@group(0) @binding(1) var macro_info: texture_3d<f32>;
+@group(0) @binding(2) var tex_sampler: sampler;
 
 struct VertexOutput {
-    [[location(0)]] uv: vec3<f32>;
-    [[builtin(position)]] position: vec4<f32>;
+    @location(0) uv: vec3<f32>;
+    @builtin(position) position: vec4<f32>;
 };
 
-[[stage(vertex)]]
+@stage(vertex)
 fn vs_compose(
-    [[location(0)]] particle_pos: vec4<f32>,
-    [[location(1)]] particle_pos_initial: vec4<f32>,
-    [[location(2)]] position: vec2<f32>,
+    @location(0) particle_pos: vec4<f32>,
+    @location(1) particle_pos_initial: vec4<f32>,
+    @location(2) position: vec2<f32>,
 ) -> VertexOutput {
     let pos = vec4<f32>(particle_pos.xy + position * params.screen_factor, particle_pos.z, particle_pos.w);
     var output: VertexOutput;
@@ -32,8 +32,8 @@ fn vs_compose(
 
 let PI: f32 = 3.1415926535;
 
-[[stage(fragment)]] 
-fn fs_compose(in : VertexOutput) -> [[location(0)]] vec4<f32> {
+@stage(fragment) 
+fn fs_compose(in : VertexOutput) -> @location(0) vec4<f32> {
     let macro: vec4<f32> = textureSample(macro_info, tex_sampler, in.uv.xyz);
     let speed = abs(macro.x) + abs(macro.y);
 

@@ -2,14 +2,14 @@
 #include "struct/field.wgsl"
 #include "lbm/struct/lattice_info.wgsl"
 
-[[group(0), binding(0)]] var<uniform> fluid: LbmUniform;
-[[group(0), binding(1)]] var<uniform> field: FieldUniform;
-[[group(0), binding(2)]] var<storage, read_write> lattice_info: StoreInfo;
-[[group(0), binding(3)]] var fb: texture_2d<f32>;
-[[group(0), binding(4)]] var curl_info: texture_storage_2d<rgba16float, write>;
+@group(0) @binding(0) var<uniform> fluid: LbmUniform;
+@group(0) @binding(1) var<uniform> field: FieldUniform;
+@group(0) @binding(2) var<storage, read_write> lattice_info: StoreInfo;
+@group(0) @binding(3) var fb: texture_2d<f32>;
+@group(0) @binding(4) var curl_info: texture_storage_2d<rgba16float, write>;
 
-[[stage(compute), workgroup_size(64, 4)]]
-fn cs_main([[builtin(global_invocation_id)]] global_invocation_id: vec3<u32>) {
+@stage(compute) @workgroup_size(64, 4)
+fn cs_main(@builtin(global_invocation_id) global_invocation_id: vec3<u32>) {
     let uv = vec2<i32>(global_invocation_id.xy);
     if (uv.x >= field.lattice_size.x || uv.y >= field.lattice_size.y) {
       return;

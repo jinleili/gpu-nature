@@ -6,5 +6,5 @@ struct Particle3D {
 };
 
 struct ParticleBuffer {
-    particles: [[stride(32)]] array<Particle3D>;
+    particles: @stride(32) array<Particle3D>;
 };

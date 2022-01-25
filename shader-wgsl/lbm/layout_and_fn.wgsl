@@ -4,15 +4,15 @@
 
 
 struct StoreFloat {
-    data: [[stride(4)]] array<f32>;
+    data: @stride(4) array<f32>;
 };
 
-[[group(0), binding(0)]] var<uniform> fluid: LbmUniform;
-[[group(0), binding(1)]] var<uniform> field: FieldUniform;
-[[group(0), binding(2)]] var<storage, read> collide_cell: StoreFloat;
-[[group(0), binding(3)]] var<storage, read_write> stream_cell: StoreFloat;
-[[group(0), binding(4)]] var<storage, read_write> lattice_info: StoreInfo;
-[[group(0), binding(5)]] var macro_info: texture_storage_2d<rgba16float, write>;
+@group(0) @binding(0) var<uniform> fluid: LbmUniform;
+@group(0) @binding(1) var<uniform> field: FieldUniform;
+@group(0) @binding(2) var<storage, read> collide_cell: StoreFloat;
+@group(0) @binding(3) var<storage, read_write> stream_cell: StoreFloat;
+@group(0) @binding(4) var<storage, read_write> lattice_info: StoreInfo;
+@group(0) @binding(5) var macro_info: texture_storage_2d<rgba16float, write>;
 
 #include "lbm/d2q9_fn.wgsl"
 

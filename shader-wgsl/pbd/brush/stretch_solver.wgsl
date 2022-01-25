@@ -8,30 +8,30 @@ struct Constraint {
 };
 
 struct ConstraintsBuffer {
-    data: [[stride(12)]] array<Constraint>;
+    data: @stride(12) array<Constraint>;
 };
 
 // 这个粒子关联的所有 stretch 约束
 struct ParticleConstraints {
-    list: [[stride(4)]] array<i32, 3>;
+    list: @stride(4) array<i32, 3>;
 };
 
 struct ParticleConstraintsBuffer {
-    data: [[stride(12)]] array<ParticleConstraints>;
+    data: @stride(12) array<ParticleConstraints>;
 };
 
-[[group(0), binding(0)]] var<uniform> brush: BrushUniform;
-[[group(0), binding(1)]] var<storage, read_write> particles: ParticlesBuffer;
-[[group(0), binding(2)]] var<storage, read_write> constraints: ConstraintsBuffer;
-[[group(0), binding(3)]] var<storage, read_write> reorder_constraints: ParticleConstraintsBuffer;
+@group(0) @binding(0) var<uniform> brush: BrushUniform;
+@group(0) @binding(1) var<storage, read_write> particles: ParticlesBuffer;
+@group(0) @binding(2) var<storage, read_write> constraints: ConstraintsBuffer;
+@group(0) @binding(3) var<storage, read_write> reorder_constraints: ParticleConstraintsBuffer;
 
 let EPSILON: f32 = 0.0000001;
 #include "pbd/struct/dynamic_uniform.wgsl"
-[[group(1), binding(0)]] var<uniform> dy_uniform: DynamicUniform;
+@group(1) @binding(0) var<uniform> dy_uniform: DynamicUniform;
 
 // mesh coloring 分组之后，最后一组往往约束组数量很小（64*64粒子，最小约束组长度是 94）
-[[stage(compute), workgroup_size(32, 1)]]
-fn cs_main([[builtin(global_invocation_id)]] global_invocation_id: vec3<u32>) {  
+@stage(compute) @workgroup_size(32, 1)
+fn cs_main(@builtin(global_invocation_id) global_invocation_id: vec3<u32>) {  
     var field_index = i32(global_invocation_id.x);
     if (field_index >= dy_uniform.group_len) {
         return;

@@ -10,22 +10,22 @@ struct MVPMatUniform {
     normal: mat4x4<f32>;
 };
 
-[[group(0), binding(0)]] var<uniform> mvp_mat: MVPMatUniform;
-[[group(0), binding(1)]] var<uniform> cloth: ClothUniform;
-[[group(0), binding(2)]] var<storage, read_write> particles: ParticlesBuffer;
-// [[group(0), binding(3)]] var<storage, read_write> collisions: CollisionObjBuf;
+@group(0) @binding(0) var<uniform> mvp_mat: MVPMatUniform;
+@group(0) @binding(1) var<uniform> cloth: ClothUniform;
+@group(0) @binding(2) var<storage, read_write> particles: ParticlesBuffer;
+// @group(0) @binding(3) var<storage, read_write> collisions: CollisionObjBuf;
 
 struct VertexOutput {
-    [[builtin(position)]] position: vec4<f32>;
-    [[location(0)]] uv: vec2<f32>;
-    [[location(1)]] normal: vec3<f32>;
-    [[location(2)]] ec_pos: vec3<f32>;
-    [[location(3)]] collision_area: f32;
+    @builtin(position) position: vec4<f32>;
+    @location(0) uv: vec2<f32>;
+    @location(1) normal: vec3<f32>;
+    @location(2) ec_pos: vec3<f32>;
+    @location(3) collision_area: f32;
 };
 
-[[stage(vertex)]]
+@stage(vertex)
 fn vs_main(
-    [[location(0)]] particle_index: vec3<u32>,
+    @location(0) particle_index: vec3<u32>,
 ) -> VertexOutput {
     let field_index = particle_index.x + particle_index.y * u32(cloth.num_x);
     // 1，找出对应编号的粒子，
@@ -58,8 +58,8 @@ fn vs_main(
     return output;
 }
 
-[[group(0), binding(3)]] var tex: texture_2d<f32>;
-[[group(0), binding(4)]] var tex_sampler: sampler;
+@group(0) @binding(3) var tex: texture_2d<f32>;
+@group(0) @binding(4) var tex_sampler: sampler;
 
 let light_color = vec3<f32>(0.9, 0.9, 0.9);
 let light_pos = vec3<f32>(-0.0, -0.0, 0.6);
@@ -67,8 +67,8 @@ let view_pos = vec3<f32>(0.0, 0.0, 1.0);
 let ambient_strength = 0.75;
 let specular_strength = 0.05;
 
-[[stage(fragment)]]
-fn fs_main(in: VertexOutput) -> [[location(0)]] vec4<f32> {
+@stage(fragment)
+fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
     let color: vec4<f32> = textureSample(tex, tex_sampler, in.uv);
     let ambient = ambient_strength * light_color.rgb;
     // Diffuse

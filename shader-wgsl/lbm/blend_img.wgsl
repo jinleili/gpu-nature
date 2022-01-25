@@ -1,15 +1,15 @@
 #include "bufferless.vs.wgsl"
 
-[[group(0), binding(0)]] var macro_info: texture_2d<f32>;
-[[group(0), binding(1)]] var tex_sampler: sampler;
+@group(0) @binding(0) var macro_info: texture_2d<f32>;
+@group(0) @binding(1) var tex_sampler: sampler;
 
 #include "func/color_space_convert.wgsl"
 
 let PI: f32 = 3.1415926;
 let PI_2: f32 = 1.570796;
 
-[[stage(fragment)]]
-fn fs_main(in : VertexOutput) -> [[location(0)]] vec4<f32> {
+@stage(fragment)
+fn fs_main(in : VertexOutput) -> @location(0) vec4<f32> {
   let macro: vec4<f32> = textureSample(macro_info, tex_sampler, in.uv);
   // 角度
   let angle = (atan2(macro.x, macro.y) + PI) / (2.0 * PI);

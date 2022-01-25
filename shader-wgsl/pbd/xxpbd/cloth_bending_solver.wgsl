@@ -11,22 +11,22 @@ struct BendingConstraint {
 
 
 struct BendingConstraintsBuffer {
-    data: [[stride(16)]] array<BendingConstraint>;
+    data: @stride(16) array<BendingConstraint>;
 };
 
 // 这个粒子关联的所有弯曲约束
 struct BendingConstraintsGroup {
-    list: [[stride(4)]] array<i32, 3>;
+    list: @stride(4) array<i32, 3>;
 };
 
 struct BendingConstraintsGroupBuffer {
-    data: [[stride(12)]] array<BendingConstraintsGroup>;
+    data: @stride(12) array<BendingConstraintsGroup>;
 };
 
-[[group(0), binding(0)]] var<uniform> cloth: ClothUniform;
-[[group(0), binding(1)]] var<storage, read_write> particles: ParticlesBuffer;
-[[group(0), binding(2)]] var<storage, read_write> constraints: BendingConstraintsBuffer;
-[[group(0), binding(3)]] var<storage, read_write> reorder_constraints: BendingConstraintsGroupBuffer;
+@group(0) @binding(0) var<uniform> cloth: ClothUniform;
+@group(0) @binding(1) var<storage, read_write> particles: ParticlesBuffer;
+@group(0) @binding(2) var<storage, read_write> constraints: BendingConstraintsBuffer;
+@group(0) @binding(3) var<storage, read_write> reorder_constraints: BendingConstraintsGroupBuffer;
 
 
 struct DynamicUniform {
@@ -37,7 +37,7 @@ struct DynamicUniform {
     // 迭代計數的倒數
     invert_iter: f32;
 };
-[[group(1), binding(0)]] var<uniform> dy_uniform: DynamicUniform;
+@group(1) @binding(0) var<uniform> dy_uniform: DynamicUniform;
 
 fn is_movable_particle(particle: Particle) -> bool {
     if (particle.uv_mass.z < 0.001) {
@@ -47,8 +47,8 @@ fn is_movable_particle(particle: Particle) -> bool {
 }
 
 
-[[stage(compute), workgroup_size(32, 1)]]
-fn cs_main([[builtin(global_invocation_id)]] global_invocation_id: vec3<u32>) {  
+@stage(compute) @workgroup_size(32, 1)
+fn cs_main(@builtin(global_invocation_id) global_invocation_id: vec3<u32>) {  
     var field_index = i32(global_invocation_id.x);
     if (field_index >= dy_uniform.group_len) {
         return;

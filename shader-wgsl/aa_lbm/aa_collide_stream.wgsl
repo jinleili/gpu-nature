@@ -3,10 +3,10 @@
 
 struct TickTockUniforms {
   // A-A pattern lattice offset
-  read_offset: [[stride(4)]] array<i32, 9>;
-  write_offset: [[stride(4)]] array<i32, 9>;
+  read_offset: @stride(4) array<i32, 9>;
+  write_offset: @stride(4) array<i32, 9>;
 };
-[[group(1), binding(0)]] var<uniform> params: TickTockUniforms;
+@group(1) @binding(0) var<uniform> params: TickTockUniforms;
 
 struct EqResults {
   val0: f32;
@@ -26,8 +26,8 @@ fn equilibrium2(velocity: vec2<f32>, rho: f32, direction: i32, usqr: f32) -> f32
   return rho * w(direction) * (1.0 + 3.0 * e_dot_u + 4.5 * (e_dot_u * e_dot_u) - usqr);
 }
 
-[[stage(compute), workgroup_size(64, 4)]]
-fn cs_main([[builtin(global_invocation_id)]] global_invocation_id: vec3<u32>) {
+@stage(compute) @workgroup_size(64, 4)
+fn cs_main(@builtin(global_invocation_id) global_invocation_id: vec3<u32>) {
     let uv = vec2<i32>(global_invocation_id.xy);
     if (uv.x >= field.lattice_size.x || uv.y >= field.lattice_size.y) {
       return;

@@ -4,15 +4,15 @@
 
 
 struct Permutation {
-    data: [[stride(16)]] array<vec4<i32>>;
+    data: @stride(16) array<vec4<i32>>;
 };
 
 struct Gradient {
-    data: [[stride(16)]] array<vec4<f32>>;
+    data: @stride(16) array<vec4<f32>>;
 };
 
-[[group(0), binding(0)]] var<storage, read> permutation : Permutation;
-[[group(0), binding(1)]] var<storage, read> gradient : Gradient;
+@group(0) @binding(0) var<storage, read> permutation : Permutation;
+@group(0) @binding(1) var<storage, read> gradient : Gradient;
 
 #include "noise/fn_perlin_noise.wgsl"
 
@@ -28,8 +28,8 @@ fn turbulence(octaves: i32, P: vec3<f32>, lacunarity: f32, gain: f32) -> f32 {
   return abs(sum);
 }
 
-[[stage(fragment)]] 
-fn fs_main([[builtin(position)]] coord : vec4<f32>) -> [[location(0)]] vec4<f32> {
+@stage(fragment) 
+fn fs_main(@builtin(position) coord : vec4<f32>) -> @location(0) vec4<f32> {
     let p = vec3<f32>(coord.xy / 105.0, 0.5) ; 
     // noise self
     // return vec4<f32>(vec3<f32>(noise(p)), 1.0);

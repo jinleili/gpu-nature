@@ -26,10 +26,10 @@ fn main() {
     // LBM Player
     let setting = SettingObj::new(
         FieldType::Fluid,
-        FieldAnimationType::LidDrivenCavity,
-        ParticleColorType::Speed,
-        20000,
-        120.0,
+        FieldAnimationType::Poiseuille,
+        ParticleColorType::MovementAngle,
+        200000,
+        60.0,
     );
 
     // field player

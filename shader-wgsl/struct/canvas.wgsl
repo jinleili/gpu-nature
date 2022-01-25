@@ -5,5 +5,5 @@ struct Pixel {
 };
 
 struct CanvasBuffer {
-    pixels: [[stride(12)]] array<Pixel>;
+    pixels: @stride(12) array<Pixel>;
 };

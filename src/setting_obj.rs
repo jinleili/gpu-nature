@@ -40,7 +40,7 @@ impl SettingObj {
             particles_uniform_data: ParticleUniform {
                 color: [1.0; 4],
                 num: [0; 2],
-                point_size: 2,
+                point_size: 1,
                 life_time: 60.0,
                 fade_out_factor: 0.96,
                 speed_factor: if field_type == FieldType::Field { 0.15 } else { 8.15 },

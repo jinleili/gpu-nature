@@ -9,22 +9,22 @@ struct Constraint {
 };
 
 struct ConstraintsBuffer {
-    data: [[stride(16)]] array<Constraint>;
+    data: @stride(16) array<Constraint>;
 };
 
 // 这个粒子关联的所有约束
 struct ParticleConstraints {
-  list: [[stride(4)]] array<i32, 3>;
+  list: @stride(4) array<i32, 3>;
 };
 
 struct ParticleConstraintsBuffer {
-    data: [[stride(12)]] array<ParticleConstraints>;
+    data: @stride(12) array<ParticleConstraints>;
 };
 
-[[group(0), binding(0)]] var<uniform> cloth: ClothUniform;
-[[group(0), binding(1)]] var<storage, read_write> particles: ParticlesBuffer;
-[[group(0), binding(2)]] var<storage, read_write> constraints: ConstraintsBuffer;
-[[group(0), binding(3)]] var<storage, read_write> reorder_constraints: ParticleConstraintsBuffer;
+@group(0) @binding(0) var<uniform> cloth: ClothUniform;
+@group(0) @binding(1) var<storage, read_write> particles: ParticlesBuffer;
+@group(0) @binding(2) var<storage, read_write> constraints: ConstraintsBuffer;
+@group(0) @binding(3) var<storage, read_write> reorder_constraints: ParticleConstraintsBuffer;
 
 let EPSILON: f32 = 0.0000001;
 

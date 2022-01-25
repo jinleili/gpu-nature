@@ -810,8 +810,7 @@ checksum = "8452105ba047068f40ff7093dd1d9da90898e63dd61736462e9cdda6a90ad3c3"
 [[package]]
 name = "metal"
 version = "0.23.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e0514f491f4cc03632ab399ee01e2c1c1b12d3e1cf2d667c1ff5f87d6dcd2084"
+source = "git+https://github.com/gfx-rs/metal-rs?rev=140c8f4#140c8f4e39001ae154f153ffc767da6c0c9d7f06"
 dependencies = [
  "bitflags",
  "block",
@@ -861,7 +860,7 @@ dependencies = [
 [[package]]
 name = "naga"
 version = "0.8.0"
-source = "git+https://github.com/gfx-rs/naga?rev=8df5421#8df5421e2e9d33e092c19779adfdc42e7f8a74e6"
+source = "git+https://github.com/gfx-rs/naga?rev=81dc674#81dc67402a743b4dc6b2d24c0d306cd18799238b"
 dependencies = [
  "bit-set",
  "bitflags",
@@ -1953,7 +1952,7 @@ dependencies = [
 [[package]]
 name = "wgpu"
 version = "0.12.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=55cbbdea#55cbbdea625b9fffa770fa617db1848c45d5808f"
+source = "git+https://github.com/gfx-rs/wgpu?rev=39a0256b#39a0256bcb98876d9138fd01f25b48fc0d62a3c0"
 dependencies = [
  "arrayvec",
  "js-sys",
@@ -1973,7 +1972,7 @@ dependencies = [
 [[package]]
 name = "wgpu-core"
 version = "0.12.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=55cbbdea#55cbbdea625b9fffa770fa617db1848c45d5808f"
+source = "git+https://github.com/gfx-rs/wgpu?rev=39a0256b#39a0256bcb98876d9138fd01f25b48fc0d62a3c0"
 dependencies = [
  "arrayvec",
  "bitflags",
@@ -1995,7 +1994,7 @@ dependencies = [
 [[package]]
 name = "wgpu-hal"
 version = "0.12.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=55cbbdea#55cbbdea625b9fffa770fa617db1848c45d5808f"
+source = "git+https://github.com/gfx-rs/wgpu?rev=39a0256b#39a0256bcb98876d9138fd01f25b48fc0d62a3c0"
 dependencies = [
  "arrayvec",
  "ash",
@@ -2032,7 +2031,7 @@ dependencies = [
 [[package]]
 name = "wgpu-types"
 version = "0.12.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=55cbbdea#55cbbdea625b9fffa770fa617db1848c45d5808f"
+source = "git+https://github.com/gfx-rs/wgpu?rev=39a0256b#39a0256bcb98876d9138fd01f25b48fc0d62a3c0"
 dependencies = [
  "bitflags",
 ]

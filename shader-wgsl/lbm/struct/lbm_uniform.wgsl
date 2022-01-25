@@ -7,6 +7,6 @@ struct LbmUniform {
     // structure of array (put the same direction of all lattice together ) lattice data offset
     soa_offset: i32;
     // lattice direction + direction weight + max value
-    e_w_max: [[stride(16)]] array<vec4<f32>, 9>;
-    inversed_direction: [[stride(16)]] array<vec4<i32>, 9>;
+    e_w_max: @stride(16) array<vec4<f32>, 9>;
+    inversed_direction: @stride(16) array<vec4<i32>, 9>;
 };

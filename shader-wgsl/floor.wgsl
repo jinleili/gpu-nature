@@ -7,19 +7,19 @@ struct MVPMatUniform {
     normal: mat4x4<f32>;
 };
 
-[[group(0), binding(0)]] var<uniform> mvp_mat: MVPMatUniform;
+@group(0) @binding(0) var<uniform> mvp_mat: MVPMatUniform;
 
 struct VertexOutput {
-    [[builtin(position)]] position: vec4<f32>;
-    [[location(0)]] uv: vec2<f32>;
-    [[location(1)]] ec_pos: vec3<f32>;
-    [[location(2)]] mc_pos: vec3<f32>;
+    @builtin(position) position: vec4<f32>;
+    @location(0) uv: vec2<f32>;
+    @location(1) ec_pos: vec3<f32>;
+    @location(2) mc_pos: vec3<f32>;
 };
 
-[[stage(vertex)]]
+@stage(vertex)
 fn vs_main(
-    [[location(0)]] pos: vec3<f32>,
-    [[location(1)]] uv: vec2<f32>,
+    @location(0) pos: vec3<f32>,
+    @location(1) uv: vec2<f32>,
 ) -> VertexOutput {
     var output: VertexOutput;
     output.position = mvp_mat.mvp * vec4<f32>(pos, 1.0);
@@ -30,13 +30,13 @@ fn vs_main(
 }
 
 
-[[group(0), binding(1)]] var tex: texture_2d<f32>;
-[[group(0), binding(2)]] var noise: texture_3d<f32>;
-[[group(0), binding(3)]] var tex_sampler: sampler;
-[[group(0), binding(4)]] var noise_sampler: sampler;
+@group(0) @binding(1) var tex: texture_2d<f32>;
+@group(0) @binding(2) var noise: texture_3d<f32>;
+@group(0) @binding(3) var tex_sampler: sampler;
+@group(0) @binding(4) var noise_sampler: sampler;
 
-[[stage(fragment)]]
-fn fs_main(in: VertexOutput) -> [[location(0)]] vec4<f32> {
+@stage(fragment)
+fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
     let color: vec4<f32> = textureSample(tex, tex_sampler, in.uv);
 
     let nv: vec4<f32> = textureSample(noise, noise_sampler, in.mc_pos);

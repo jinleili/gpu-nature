@@ -8,19 +8,19 @@ struct TrajectoryUniform {
     bg_view_index: i32;
 };
 
-[[group(0), binding(0)]] var<uniform> params: TrajectoryUniform;
-[[group(0), binding(1)]] var macro_info: texture_3d<f32>;
-[[group(0), binding(2)]] var tex_sampler: sampler;
-[[group(0), binding(3)]] var<storage, read_write> pb: ParticleBuffer;
+@group(0) @binding(0) var<uniform> params: TrajectoryUniform;
+@group(0) @binding(1) var macro_info: texture_3d<f32>;
+@group(0) @binding(2) var tex_sampler: sampler;
+@group(0) @binding(3) var<storage, read_write> pb: ParticleBuffer;
 
 struct VertexOutput {
-    [[location(0)]] particle_index: i32;
-    [[builtin(position)]] position: vec4<f32>;
+    @location(0) particle_index: i32;
+    @builtin(position) position: vec4<f32>;
 };
 
-[[stage(vertex)]]
+@stage(vertex)
 fn vs_update(
-      [[builtin(instance_index)]] inst_index: u32,
+      @builtin(instance_index) inst_index: u32,
 ) -> VertexOutput {
     var output: VertexOutput;
     output.position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
@@ -29,8 +29,8 @@ fn vs_update(
     // return vec4<f32>(1.0);
 }
 
-[[stage(fragment)]] 
-fn fs_update(in: VertexOutput) -> [[location(0)]] vec4<f32> {
+@stage(fragment) 
+fn fs_update(in: VertexOutput) -> @location(0) vec4<f32> {
     var particle: Particle3D = pb.particles[in.particle_index];
     let uv = (particle.pos.xyz + 1.0) / 2.0;
     let macro: vec4<f32> = textureSample(macro_info, tex_sampler, uv);

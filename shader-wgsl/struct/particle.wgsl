@@ -25,5 +25,5 @@ struct TrajectoryParticle {
 };
 
 struct ParticleBuffer {
-    particles: [[stride(24)]] array<TrajectoryParticle>;
+    particles: @stride(24) array<TrajectoryParticle>;
 };

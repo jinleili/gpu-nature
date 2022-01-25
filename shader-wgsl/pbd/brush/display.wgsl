@@ -9,18 +9,18 @@ struct MVPMatUniform {
     normal: mat4x4<f32>;
 };
 
-[[group(0), binding(0)]] var<uniform> mvp_mat: MVPMatUniform;
-[[group(0), binding(1)]] var<uniform> brush: BrushUniform;
-[[group(0), binding(2)]] var<storage, read_write> particles: ParticlesBuffer;
+@group(0) @binding(0) var<uniform> mvp_mat: MVPMatUniform;
+@group(0) @binding(1) var<uniform> brush: BrushUniform;
+@group(0) @binding(2) var<storage, read_write> particles: ParticlesBuffer;
 
 struct VertexOutput {
-    [[builtin(position)]] position: vec4<f32>;
-    [[location(1)]] normal: vec3<f32>;
-    [[location(2)]] ec_pos: vec3<f32>;
+    @builtin(position) position: vec4<f32>;
+    @location(1) normal: vec3<f32>;
+    @location(2) ec_pos: vec3<f32>;
 };
 
-[[stage(vertex)]]
-fn vs_main([[builtin(vertex_index)]] vertex_index: u32) -> VertexOutput {
+@stage(vertex)
+fn vs_main(@builtin(vertex_index) vertex_index: u32) -> VertexOutput {
     // 1，找出对应编号的粒子，
     // 2，使用粒子的位置来计算顶点位置
     let p0 = particles.data[vertex_index];
@@ -46,8 +46,8 @@ let light_color = vec3<f32>(0.9, 0.9, 0.9);
 let light_pos = vec3<f32>(-0.0, -0.0, 0.6);
 let view_pos = vec3<f32>(0.0, 0.0, 1.0);
 
-[[stage(fragment)]]
-fn fs_main(in: VertexOutput) -> [[location(0)]] vec4<f32> {
+@stage(fragment)
+fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
     let color: vec4<f32> = vec4<f32>(1.0);
     var norm = normalize(in.normal);
     // 利用 faceforward 函数的方法，判断面相对于光线的朝向，如果背面朝向光源，则要反转法线
