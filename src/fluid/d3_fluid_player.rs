@@ -1,14 +1,9 @@
 use super::{D3Q15Node, OBSTACLE_RADIUS};
+use crate::util::BufferObj;
 use crate::{fluid::LbmUniform, setting_obj::SettingObj, FieldAnimationType, Player};
-use idroid::{
-    math::{Position, Size},
-    BufferObj,
-};
+use app_surface::math::{Position, Size};
 use wgpu::{CommandEncoderDescriptor, Device, Queue};
 use zerocopy::AsBytes;
-
-
-
 // 通用的流體模擬，產生外部依賴的流體量
 pub struct D3FluidPlayer {
     animation_ty: FieldAnimationType,
@@ -20,7 +15,7 @@ pub struct D3FluidPlayer {
     // particle_update_node: ComputeNode,
     // render_node: BufferlessFullscreenNode,
     particles_render: super::D3ParticleRenderNode,
-    depth_tex: idroid::AnyTexture,
+    depth_tex: crate::util::AnyTexture,
 }
 
 impl D3FluidPlayer {
@@ -49,7 +44,7 @@ impl D3FluidPlayer {
 
         // let render_shader =
         //     create_shader_module(device, "3d_lbm/present", Some("3d_lbm present shader"));
-        // let sampler = idroid::load_texture::bilinear_sampler(device);
+        // let sampler = crate::util::load_texture::bilinear_sampler(device);
         // let render_node = BufferlessFullscreenNode::new(
         //     device,
         //     canvas_format,
@@ -63,7 +58,7 @@ impl D3FluidPlayer {
         //     None,
         //     &render_shader,
         // );
-        let depth_tex = idroid::load_texture::empty(
+        let depth_tex = crate::util::load_texture::empty(
             device,
             wgpu::TextureFormat::Depth32Float,
             wgpu::Extent3d {
@@ -101,7 +96,7 @@ impl D3FluidPlayer {
 
 impl Player for D3FluidPlayer {
     fn on_click(
-        &mut self, _device: &wgpu::Device, queue: &wgpu::Queue, pos: idroid::math::Position,
+        &mut self, _device: &wgpu::Device, queue: &wgpu::Queue, pos: app_surface::math::Position,
     ) {
         if pos.x <= 0.0 || pos.y <= 0.0 {
             return;
@@ -123,7 +118,7 @@ impl Player for D3FluidPlayer {
         self.pre_pos = Position::new(0.0, 0.0);
     }
 
-    fn touch_move(&mut self, _device: &Device, queue: &Queue, pos: Position) {
+    fn touch_move(&mut self, _device: &Device, queue: &Queue, pos: app_surface::math::Position) {
         if pos.x <= 0.0 || pos.y <= 0.0 {
             self.pre_pos = Position::zero();
             return;

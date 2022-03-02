@@ -54,7 +54,7 @@ static GRADIENT: [[f32; 4]; 16] = [
     [0.0, -1.0, -1.0, 0.0],
 ];
 
-pub fn create_permulation_buf(device: &wgpu::Device) -> idroid::BufferObj {
+pub fn create_permulation_buf(device: &wgpu::Device) -> crate::util::BufferObj {
     let mut list: Vec<[i32; 4]> = vec![];
     // column
     for y in 0..256 {
@@ -70,13 +70,13 @@ pub fn create_permulation_buf(device: &wgpu::Device) -> idroid::BufferObj {
             list.push([aa, ab, ba, bb]);
         }
     }
-    let mut buf = idroid::BufferObj::create_storage_buffer(device, &list, None);
+    let mut buf = crate::util::BufferObj::create_storage_buffer(device, &list, None);
     buf.read_only = true;
     return buf;
 }
 
-pub fn create_gradient_buf(device: &wgpu::Device) -> idroid::BufferObj {
-    let mut buf = idroid::BufferObj::create_storage_buffer(device, &GRADIENT, None);
+pub fn create_gradient_buf(device: &wgpu::Device) -> crate::util::BufferObj {
+    let mut buf = crate::util::BufferObj::create_storage_buffer(device, &GRADIENT, None);
     buf.read_only = true;
     return buf;
 }

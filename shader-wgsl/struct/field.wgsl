@@ -16,5 +16,5 @@ struct FieldUniform {
 
 
 struct FieldBuffer {
-    data: @stride(16) array<vec4<f32>>;
+    data: array<vec4<f32>>;
 };

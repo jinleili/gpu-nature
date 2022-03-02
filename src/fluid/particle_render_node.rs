@@ -1,4 +1,5 @@
-use idroid::{math::Size, BufferObj};
+use crate::util::BufferObj;
+use app_surface::math::Size;
 use wgpu::util::DeviceExt;
 use zerocopy::AsBytes;
 
@@ -16,13 +17,15 @@ pub struct ParticleRenderNode {
 
 #[allow(dead_code)]
 impl ParticleRenderNode {
-    pub fn new(app_view: &idroid::AppView, point_size: f32, canvas_size: Size<u32>) -> Self {
+    pub fn new(
+        app_view: &app_surface::AppSurface, point_size: f32, canvas_size: Size<u32>,
+    ) -> Self {
         let device = &app_view.device;
-        let sampler = idroid::load_texture::bilinear_sampler(device);
+        let sampler = crate::util::load_texture::bilinear_sampler(device);
         // Render pipeline is incompatible with render pass
         // Incompatible color attachment: [Rgba8Unorm] != [Bgra8Unorm]
         let format = app_view.config.format;
-        let trajectory_tex = idroid::load_texture::empty(
+        let trajectory_tex = crate::util::load_texture::empty(
             device,
             format,
             wgpu::Extent3d {

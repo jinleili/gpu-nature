@@ -2,7 +2,7 @@
 
 ## DEMO
 
-currently, only runable on FireFox Nightly
+Running on FireFox Nightly
 [https://jinleili.github.io/gpu-nature.html](https://jinleili.github.io/gpu-nature.html)
 
 https://user-images.githubusercontent.com/1001342/120171869-0fdb0800-c235-11eb-8912-18a5b30e59cc.mov
@@ -10,16 +10,12 @@ https://user-images.githubusercontent.com/1001342/120171869-0fdb0800-c235-11eb-8
 ## Run on native
 
 ```sh
-RUST_BACKTRACE=full cargo run --example nature
+cargo run --example {nature|particle}
 ```
 
 ## Run on iOS 
 
-first, build to iOS target
-```sh
-PREPROCESS_SHADER=true cargo build --target aarch64-apple-ios
-```
-then, use Xcode to open ```iOS/wgpu_test.xcodeproj``` and connect iOS device to run.
+Please refer to [wgpu-on-app](https://github.com/jinleili/wgpu-on-app#ios)
 
 ## Run on browser
 
@@ -44,9 +40,9 @@ Third, compile to wasm and start run:
 ```sh
 npm install
 # only build
-RUSTFLAGS=--cfg=web_sys_unstable_apis WGPU_POWER_PREF=high npm run build
+RUSTFLAGS=--cfg=web_sys_unstable_apis npm run build
 # build then run on browser
-RUSTFLAGS=--cfg=web_sys_unstable_apis WGPU_POWER_PREF=high npm start
+RUSTFLAGS=--cfg=web_sys_unstable_apis npm start
 ```
 
 Nhat-Phuong Tran, Myungho Lee, and Sugwon Hong, ["Performance Optimization of 3D Lattice Boltzmann Flow Solver on a GPU"](https://www.hindawi.com/journals/sp/2017/1205892/), Scientific Programming, 2017.

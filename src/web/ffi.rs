@@ -1,6 +1,6 @@
 use crate::{CombinateCanvas, FieldAnimationType, FieldType, ParticleColorType, SettingObj};
-use idroid::{math::Position, math::TouchPoint, SurfaceView};
-use uni_view::{AppView, GPUContext};
+use crate::util::{SurfaceView};
+use app_surface::{AppSurface, Position, SurfaceFrame, Touch, TouchPhase};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::console;
@@ -106,7 +106,7 @@ pub fn run() {
     );
 
     wasm_bindgen_futures::spawn_local(async move {
-        let v = AppView::new(window, false).await;
+        let v = AppSurface::new(window, false).await;
         let mut surface_view = CombinateCanvas::new(v, setting);
 
         let container = document.get_element_by_id("canvas_container").unwrap();

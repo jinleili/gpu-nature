@@ -1,4 +1,5 @@
-use idroid::{math::Size, BufferObj};
+use crate::util::BufferObj;
+use app_surface::math::Size;
 use wgpu::util::DeviceExt;
 use zerocopy::AsBytes;
 
@@ -20,9 +21,10 @@ pub struct D3ParticleRenderNode {
 impl D3ParticleRenderNode {
     pub fn new(
         device: &wgpu::Device, canvas_format: wgpu::TextureFormat, point_size: f32,
-        canvas_size: Size<u32>, macro_tex: &idroid::AnyTexture, depth_tex: &idroid::AnyTexture,
+        canvas_size: Size<u32>, macro_tex: &crate::util::AnyTexture,
+        depth_tex: &crate::util::AnyTexture,
     ) -> Self {
-        let sampler = idroid::load_texture::bilinear_sampler(device);
+        let sampler = crate::util::load_texture::bilinear_sampler(device);
 
         let uniform_data = TrajectoryUniform {
             screen_factor: [2.0 / canvas_size.width as f32, 2.0 / canvas_size.height as f32],
@@ -230,7 +232,7 @@ fn generate_pipeline(
     device: &wgpu::Device, targets: Vec<wgpu::ColorTargetState>,
     pipeline_layout: &wgpu::PipelineLayout, shader: &wgpu::ShaderModule,
     entry_points: (&'static str, &'static str), is_update: bool,
-    depth_tex: Option<&idroid::AnyTexture>,
+    depth_tex: Option<&crate::util::AnyTexture>,
 ) -> wgpu::RenderPipeline {
     let attributes = wgpu::vertex_attr_array![0 => Float32x4, 1 => Float32x4];
     let buffers: Vec<wgpu::VertexBufferLayout> = if is_update {

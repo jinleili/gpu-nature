@@ -1,10 +1,13 @@
-use idroid::node::ComputeNode;
-use idroid::node::{ViewNode, ViewNodeBuilder};
-use idroid::{math::Size, vertex::PosParticleIndex, BufferObj};
+use crate::util::node::ComputeNode;
+use crate::util::node::{ViewNode, ViewNodeBuilder};
+use crate::util::{vertex::PosParticleIndex, BufferObj};
 
 use super::{generate_cloth_particles, ClothUniform, MeshColoringObj};
 
-use uni_view::{AppView, GPUContext};
+use app_surface::{
+    math::{Position, Size},
+    AppSurface, SurfaceFrame, Touch, TouchPhase,
+};
 use zerocopy::AsBytes;
 
 pub struct ClothX {
@@ -27,12 +30,12 @@ pub struct ClothX {
 }
 
 impl ClothX {
-    pub fn new(app_view: &AppView) -> Self {
+    pub fn new(app_view: &AppSurface) -> Self {
         let _encoder =
             app_view.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
         let viewport_size: Size<f32> = (&app_view.config).into();
         let (proj_mat, mv_mat, factor) =
-            idroid::utils::matrix_helper::perspective_mvp(viewport_size);
+            crate::util::utils::matrix_helper::perspective_mvp(viewport_size);
         let mvp_buf = BufferObj::create_uniform_buffer(
             &app_view.device,
             &crate::MVPMatUniform {
@@ -163,8 +166,11 @@ impl ClothX {
             &reorder_bendings,
             Some("reorder_bendings_buf"),
         );
-        let predict_and_reset_shader =
-            idroid::shader::create_shader_module(&app_view.device, "pbd/xxpbd/cloth_predict", None);
+        let predict_and_reset_shader = crate::util::shader::create_shader_module(
+            &app_view.device,
+            "pbd/xxpbd/cloth_predict",
+            None,
+        );
         let predict_and_reset = ComputeNode::new_with_dynamic_uniforms(
             &app_view.device,
             (((particle_x_num * particle_y_num + 31) as f32 / 32.0).floor() as u32, 1, 1),
@@ -175,7 +181,7 @@ impl ClothX {
             &predict_and_reset_shader,
         );
 
-        let constraint_solver_shader = idroid::shader::create_shader_module(
+        let constraint_solver_shader = crate::util::shader::create_shader_module(
             &app_view.device,
             "pbd/xxpbd/cloth_stretch_solver",
             None,
@@ -190,7 +196,7 @@ impl ClothX {
             &constraint_solver_shader,
         );
 
-        let bend_solver_shader = idroid::shader::create_shader_module(
+        let bend_solver_shader = crate::util::shader::create_shader_module(
             &app_view.device,
             "pbd/xxpbd/cloth_bending_solver",
             None,
@@ -231,14 +237,14 @@ impl ClothX {
         // 1863*3312
         // let img_path = PathBuf::from(&base_path).join("assets/paper/3.png");
 
-        let (texture, _) = idroid::load_texture::from_path(
+        let (texture, _) = crate::util::load_texture::from_path(
             "dragon.png",
             app_view,
             wgpu::TextureUsages::COPY_DST | wgpu::TextureUsages::TEXTURE_BINDING,
             false,
         );
         let display_shader =
-            idroid::shader::create_shader_module(&app_view.device, "pbd/cloth_display", None);
+            crate::util::shader::create_shader_module(&app_view.device, "pbd/cloth_display", None);
         let display_node_builder =
             ViewNodeBuilder::<PosParticleIndex>::new(vec![(&texture, None)], &display_shader)
                 .with_uniform_buffers(vec![&mvp_buf, &uniform_buf])
@@ -262,7 +268,7 @@ impl ClothX {
             depth_or_array_layers: 1,
         };
         let depth_texture_view =
-            idroid::depth_stencil::create_depth_texture_view(size, &app_view.device);
+            crate::util::depth_stencil::create_depth_texture_view(size, &app_view.device);
 
         let instance = Self {
             particle_buf,
@@ -330,7 +336,7 @@ impl ClothX {
         self.frame_count += 1;
     }
 
-    pub fn enter_frame(&mut self, app_view: &mut AppView) {
+    pub fn enter_frame(&mut self, app_view: &mut AppSurface) {
         let mut encoder = app_view.device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
             label: Some("cloth encoder"),
         });
@@ -343,19 +349,19 @@ impl ClothX {
                     view: &frame_view,
                     resolve_target: None,
                     ops: wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(idroid::utils::alpha_color()),
+                        load: wgpu::LoadOp::Clear(crate::util::utils::alpha_color()),
                         store: true,
                     },
                 }],
                 // depth_stencil_attachment: None,
-                depth_stencil_attachment: Some(idroid::utils::depth_stencil::create_attachment(
-                    &self.depth_texture_view,
-                )),
+                depth_stencil_attachment: Some(
+                    crate::util::utils::depth_stencil::create_attachment(&self.depth_texture_view),
+                ),
             });
             self.display_node.draw_render_pass(&mut rpass);
         }
         app_view.queue.submit(Some(encoder.finish()));
         frame.present();
     }
-    pub fn rotate(&mut self, _app_view: &idroid::AppView, _x: f32, _y: f32) {}
+    pub fn rotate(&mut self, _app_view: &app_surface::AppSurface, _x: f32, _y: f32) {}
 }

@@ -71,7 +71,7 @@ impl OneInOneOut {
             bind_group_layouts: &[&bind_group_layout],
         });
 
-        let shader = idroid::shader::Shader::new_by_compute(shader_name, device);
+        let shader = crate::util::shader::Shader::new_by_compute(shader_name, device);
         let pipeline = device.create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
             layout: Some(&pipeline_layout),
             module: &shader.vs_module,

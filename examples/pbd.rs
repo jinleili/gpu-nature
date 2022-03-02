@@ -1,9 +1,5 @@
-use idroid::math::{Position, TouchPoint};
-use idroid::SurfaceView;
+use app_surface::{AppSurface, Position, Touch, TouchPhase};
 use nature::PBDCanvas;
-use uni_view::AppView;
-
-
 
 // use serde::{Deserialize, Serialize};
 
@@ -29,7 +25,7 @@ fn main() {
         (window, size)
     };
 
-    let mut v = pollster::block_on(AppView::new(window, true));
+    let mut v = AppSurface::new(window);
     if cfg!(target_os = "macos") {
         let temporary_directory: &'static str =
             Box::leak(format!("{}/assets/", &env!("CARGO_MANIFEST_DIR")).into_boxed_str());

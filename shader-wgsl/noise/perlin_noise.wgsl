@@ -4,11 +4,11 @@
 
 
 struct Permutation {
-    data: @stride(16) array<vec4<i32>>;
+    data: array<vec4<i32>>;
 };
 
 struct Gradient {
-    data: @stride(16) array<vec4<f32>>;
+    data: array<vec4<f32>>;
 };
 
 @group(0) @binding(0) var<storage, read> permutation : Permutation;

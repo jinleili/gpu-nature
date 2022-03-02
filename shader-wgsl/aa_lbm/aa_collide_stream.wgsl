@@ -3,8 +3,8 @@
 
 struct TickTockUniforms {
   // A-A pattern lattice offset
-  read_offset: @stride(4) array<i32, 9>;
-  write_offset: @stride(4) array<i32, 9>;
+  read_offset: array<i32, 9>;
+  write_offset: array<i32, 9>;
 };
 @group(1) @binding(0) var<uniform> params: TickTockUniforms;
 

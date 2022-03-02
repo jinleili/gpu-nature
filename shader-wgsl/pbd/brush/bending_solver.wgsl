@@ -11,16 +11,16 @@ struct BendingConstraint {
 
 
 struct BendingConstraintsBuffer {
-    data: @stride(16) array<BendingConstraint>;
+    data: array<BendingConstraint>;
 };
 
 // 这个粒子关联的所有弯曲约束
 struct BendingConstraintsGroup {
-    list: @stride(4) array<i32, 2>;
+    list: array<i32, 2>;
 };
 
 struct BendingConstraintsGroupBuffer {
-    data: @stride(8) array<BendingConstraintsGroup>;
+    data: array<BendingConstraintsGroup>;
 };
 
 @group(0) @binding(0) var<uniform> brush: BrushUniform;

@@ -1,8 +1,7 @@
-use idroid::{math::Position, math::TouchPoint, SurfaceView};
+use app_surface::{math::Position, AppSurface, SurfaceFrame, Touch};
 use nature::{CombinateCanvas, FieldAnimationType, FieldType, ParticleColorType, SettingObj};
 #[cfg(not(target_arch = "wasm32"))]
 use std::time::{Duration, Instant};
-use uni_view::AppView;
 
 fn main() {
     use winit::event::{
@@ -22,14 +21,14 @@ fn main() {
     let builder = winit::window::WindowBuilder::new().with_inner_size(size).with_title("Particles");
     let window = builder.build(&events_loop).unwrap();
 
-    let v = pollster::block_on(AppView::new(window, false));
+    let v = AppSurface::new(window);
     // LBM Player
     let setting = SettingObj::new(
         FieldType::Fluid,
         FieldAnimationType::Poiseuille,
         ParticleColorType::MovementAngle,
-        200000,
-        60.0,
+        40000,
+        30.0,
     );
 
     // field player
@@ -64,7 +63,7 @@ fn main() {
                 }
             }
             Event::WindowEvent { event: WindowEvent::Resized(_size), .. } => {
-                surface_view.resize();
+                surface_view.resize_surface();
             }
             Event::WindowEvent { event, .. } => match event {
                 WindowEvent::KeyboardInput {
@@ -99,13 +98,13 @@ fn main() {
                 WindowEvent::MouseInput { device_id: _, state, button, .. } => {
                     match button {
                         MouseButton::Left => {
-                            let point = TouchPoint::new_by_pos(Position::new(0.0, 0.0));
+                            let point = Touch::touch_end(Position::new(0.0, 0.0));
 
                             if state == ElementState::Pressed {
                                 // surface_view.touch_start(point);
                                 surface_view.on_click(last_touch_point);
                             } else {
-                                surface_view.touch_end(point);
+                                surface_view.touch(point);
                             }
                         }
                         _ => (),
@@ -119,8 +118,8 @@ fn main() {
 
                     // }
                     last_touch_point = Position::new(position.x as f32, position.y as f32);
-                    let point = TouchPoint::new_by_pos(last_touch_point);
-                    surface_view.touch_moved(point);
+                    let point = Touch::touch_move(last_touch_point);
+                    surface_view.touch(point);
                 }
                 _ => {}
             },

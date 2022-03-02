@@ -5,7 +5,6 @@ use lattice::*;
 
 mod particle_render_node;
 
-
 mod d2q9_node;
 
 mod aa_d2q9_node;
@@ -74,7 +73,7 @@ pub struct TickTockUniforms {
     pub write_offset: [i32; 9],
 }
 
-fn is_sd_sphere(p: &idroid::math::Position, r: f32) -> bool {
+fn is_sd_sphere(p: &app_surface::math::Position, r: f32) -> bool {
     if p.length() > r {
         false
     } else {

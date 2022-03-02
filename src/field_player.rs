@@ -1,6 +1,7 @@
+use crate::util::node::{BufferlessFullscreenNode, ComputeNode};
+use crate::util::BufferObj;
 use crate::{setting_obj::SettingObj, FieldUniform, Player};
-use idroid::node::{BufferlessFullscreenNode, ComputeNode};
-use idroid::{math::Size, BufferObj};
+use app_surface::math::Size;
 use wgpu::{CommandEncoderDescriptor, Device, Queue};
 
 use crate::{create_shader_module, insert_code_then_create};
@@ -23,12 +24,12 @@ impl FieldPlayer {
         canvas_size: Size<u32>, canvas_buf: &BufferObj, setting: &SettingObj,
     ) -> Self {
         let pixel_distance = 4;
-        let field_size: idroid::math::Size<u32> =
+        let field_size: app_surface::math::Size<u32> =
             (canvas_size.width / pixel_distance, canvas_size.height / pixel_distance).into();
         println!("field_size: {:?} \n {:?}", field_size, canvas_size);
 
         let field_threadgroup = ((field_size.width + 15) / 16, (field_size.height + 15) / 16, 1);
-        let (_, sx, sy) = idroid::utils::matrix_helper::fullscreen_factor(
+        let (_, sx, sy) = crate::util::utils::matrix_helper::fullscreen_factor(
             (canvas_size.width as f32, canvas_size.height as f32).into(),
         );
         let field_uniform_data = FieldUniform {

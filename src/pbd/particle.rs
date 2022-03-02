@@ -1,5 +1,5 @@
 use super::{cal_bend_constraints2, BendingConstraintObj, MeshColoringObj, StretchConstraintObj};
-use idroid::math::Point3D;
+use crate::util::math::Point3D;
 use zerocopy::{AsBytes, FromBytes};
 
 // 粒子对象

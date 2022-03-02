@@ -10,5 +10,5 @@ struct Particle {
 };
 
 struct ParticlesBuffer {
-    data: @stride(80) array<Particle>;
+    data: array<Particle>;
 };

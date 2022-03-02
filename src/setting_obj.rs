@@ -1,7 +1,8 @@
+use crate::util::BufferObj;
 use crate::{
     get_particles_data, FieldAnimationType, FieldType, ParticleColorType, ParticleUniform,
 };
-use idroid::{math::Size, BufferObj};
+use app_surface::math::Size;
 use zerocopy::AsBytes;
 
 pub struct SettingObj {
@@ -26,7 +27,7 @@ impl SettingObj {
         particles_count: i32, particle_lifetime: f32,
     ) -> Self {
         SettingObj {
-            canvas_size: [0; 2].into(),
+            canvas_size: (0_u32, 0_u32).into(),
             field_type,
             animation_type,
             fluid_viscosity: 0.02,

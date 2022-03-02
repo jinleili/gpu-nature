@@ -18,7 +18,7 @@ impl LuminanceFilter {
     ) -> Self {
         let offset_stride = std::mem::size_of::<PicInfoUniform>() as wgpu::BufferAddress;
         let uniform_size = offset_stride * 1;
-        let output_view = idroid::load_texture::empty(
+        let output_view = crate::util::load_texture::empty(
             device,
             wgpu::TextureFormat::R16Float,
             extent,

@@ -1,6 +1,6 @@
 use super::{is_sd_sphere, OBSTACLE_RADIUS};
 use crate::FieldAnimationType;
-use idroid::math::Position;
+use app_surface::math::Position;
 use zerocopy::{AsBytes, FromBytes};
 
 #[repr(C)]
@@ -31,8 +31,8 @@ pub fn init_lattice_material(
     let (nx, ny, nz) =
         (lattice_size.width, lattice_size.height, lattice_size.depth_or_array_layers);
     let s0 = Position::new(nx as f32 / 7.0 - OBSTACLE_RADIUS, ny as f32 / 2.0);
-    let s1 = Position::new(nx as f32 / 5.0, ny as f32 / 3.0);
-    let s2 = Position::new(nx as f32 / 5.0, ny as f32 * 0.66);
+    let s1 = Position::new(nx as f32 / 5.0, ny as f32 / 4.0);
+    let s2 = Position::new(nx as f32 / 5.0, ny as f32 * 0.75);
     for z in 0..nz {
         for y in 0..ny {
             for x in 0..nx {

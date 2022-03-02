@@ -1,13 +1,12 @@
+use crate::util::BufferObj;
 use crate::{setting_obj::SettingObj, D3FluidPlayer, FieldPlayer, FieldType, FluidPlayer, Player};
-use idroid::{
-    math::{Size, TouchPoint},
-    BufferObj, SurfaceView,
+use app_surface::{
+    math::{Position, Size},
+    AppSurface, SurfaceFrame, Touch, TouchPhase,
 };
-use uni_view::{AppView, GPUContext};
-
 
 pub struct CombinateCanvas {
-    pub app_view: AppView,
+    pub app_view: AppSurface,
     canvas_size: Size<u32>,
     canvas_buf: BufferObj,
     setting: SettingObj,
@@ -15,11 +14,11 @@ pub struct CombinateCanvas {
 }
 
 impl CombinateCanvas {
-    pub fn new(app_view: AppView, setting: SettingObj) -> Self {
+    pub fn new(app_view: AppSurface, setting: SettingObj) -> Self {
         let canvas_size: Size<u32> = (&app_view.config).into();
         let mut setting = setting;
         setting.update_canvas_size(&app_view.device, &app_view.queue, canvas_size);
-        let canvas_buf = idroid::BufferObj::create_empty_storage_buffer(
+        let canvas_buf = crate::util::BufferObj::create_empty_storage_buffer(
             &app_view.device,
             (canvas_size.width * canvas_size.height * 12) as u64,
             false,
@@ -74,12 +73,12 @@ impl CombinateCanvas {
         self.player.reset(&self.app_view.device, &self.app_view.queue);
     }
 
-    pub fn on_click(&mut self, pos: idroid::math::Position) {
+    pub fn on_click(&mut self, pos: Position) {
         self.player.on_click(&self.app_view.device, &self.app_view.queue, pos);
     }
 
     fn create_player<'a>(
-        app_view: &AppView, canvas_size: Size<u32>, canvas_buf: &idroid::BufferObj,
+        app_view: &AppSurface, canvas_size: Size<u32>, canvas_buf: &crate::util::BufferObj,
         setting: &SettingObj,
     ) -> Box<dyn Player> {
         return match setting.field_type {
@@ -106,21 +105,25 @@ impl CombinateCanvas {
     }
 }
 
-impl SurfaceView for CombinateCanvas {
-    fn touch_start(&mut self, _point: TouchPoint) {
-        self.player.touch_begin(&self.app_view.device, &self.app_view.queue);
-    }
-    fn touch_moved(&mut self, p: TouchPoint) {
-        self.player.touch_move(&self.app_view.device, &self.app_view.queue, p.pos);
-    }
-    fn touch_end(&mut self, _point: TouchPoint) {
-        self.player.touch_end(&self.app_view.device, &self.app_view.queue);
+impl SurfaceFrame for CombinateCanvas {
+    fn touch(&mut self, touch: Touch) {
+        match touch.phase {
+            TouchPhase::Started => {
+                self.player.touch_begin(&self.app_view.device, &self.app_view.queue)
+            }
+            TouchPhase::Moved => {
+                self.player.touch_move(&self.app_view.device, &self.app_view.queue, touch.position);
+            }
+            TouchPhase::Ended | TouchPhase::Cancelled => {
+                self.player.touch_end(&self.app_view.device, &self.app_view.queue);
+            }
+        }
     }
 
-    fn resize(&mut self) {
+    fn resize_surface(&mut self) {
         self.app_view.resize_surface();
         self.canvas_size = (&self.app_view.config).into();
-        self.canvas_buf = idroid::BufferObj::create_empty_storage_buffer(
+        self.canvas_buf = crate::util::BufferObj::create_empty_storage_buffer(
             &self.app_view.device,
             (self.canvas_size.width * self.canvas_size.height * 12) as u64,
             false,

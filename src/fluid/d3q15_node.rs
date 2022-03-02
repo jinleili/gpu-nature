@@ -1,12 +1,13 @@
 use super::{init_lattice_material, is_sd_sphere, LatticeInfo, LatticeType, OBSTACLE_RADIUS};
+use crate::util::{
+    node::{BindingGroupSetting, ComputeNode},
+    AnyTexture, BufferObj,
+};
+use app_surface::math::{Position, Size};
+
 use crate::{
     create_shader_module, fluid::LbmUniform, setting_obj::SettingObj, FieldAnimationType,
     FieldUniform,
-};
-use idroid::{
-    math::{Position, Size},
-    node::{BindingGroupSetting, ComputeNode},
-    AnyTexture, BufferObj,
 };
 use wgpu::TextureFormat;
 use zerocopy::AsBytes;
@@ -46,7 +47,7 @@ impl D3Q15Node {
         let lbm_uniform_data =
             LbmUniform::new(tau, fluid_ty, (lattice.width * lattice.height) as i32);
 
-        let (_, sx, sy) = idroid::utils::matrix_helper::fullscreen_factor(
+        let (_, sx, sy) = crate::util::utils::matrix_helper::fullscreen_factor(
             (canvas_size.width as f32, canvas_size.height as f32).into(),
         );
         let field_uniform_data = FieldUniform {
@@ -80,7 +81,7 @@ impl D3Q15Node {
                 as wgpu::BufferAddress;
         let macro_tex_format = TextureFormat::Rgba16Float;
         let macro_tex_access = wgpu::StorageTextureAccess::WriteOnly;
-        let macro_tex = idroid::load_texture::empty(
+        let macro_tex = crate::util::load_texture::empty(
             device,
             macro_tex_format,
             lattice,

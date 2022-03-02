@@ -4,7 +4,7 @@
 
 
 struct StoreFloat {
-    data: @stride(4) array<f32>;
+    data: array<f32>;
 };
 
 @group(0) @binding(0) var<uniform> fluid: LbmUniform;

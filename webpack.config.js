@@ -25,7 +25,7 @@ module.exports = {
     rules: [
       {
         test: /\.sass$/,
-        use: [ { loader: 'sass-loader' } ]
+        use: [{ loader: 'sass-loader' }]
       },
       {
         test: /\.wasm$/,

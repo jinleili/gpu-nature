@@ -1,10 +1,11 @@
 use super::{AAD2Q9Node, OBSTACLE_RADIUS};
-use crate::{fluid::LbmUniform, setting_obj::SettingObj, FieldAnimationType, Player};
-use idroid::{
-    math::{Position, Size},
+use crate::util::{
     node::{BufferlessFullscreenNode, ComputeNode},
     BufferObj,
 };
+use app_surface::math::{Position, Size};
+
+use crate::{fluid::LbmUniform, setting_obj::SettingObj, FieldAnimationType, Player};
 use wgpu::{CommandEncoderDescriptor, Device, Queue, TextureFormat};
 use zerocopy::AsBytes;
 
@@ -28,7 +29,7 @@ pub struct FluidPlayer {
 
 impl FluidPlayer {
     pub fn new(
-        app_view: &idroid::AppView, canvas_size: Size<u32>, canvas_buf: &BufferObj,
+        app_view: &app_surface::AppSurface, canvas_size: Size<u32>, canvas_buf: &BufferObj,
         setting: &SettingObj,
     ) -> Self {
         let device = &app_view.device;
@@ -40,7 +41,7 @@ impl FluidPlayer {
             create_shader_module(device, "lbm/curl_update", Some("curl_update_shader"));
         // iOS cannot create R32Float texture, R16Float cannot use to storage texture
         let curl_texture_format = TextureFormat::Rgba16Float;
-        let curl_tex = idroid::load_texture::empty(
+        let curl_tex = crate::util::load_texture::empty(
             device,
             curl_texture_format,
             wgpu::Extent3d {
@@ -65,7 +66,7 @@ impl FluidPlayer {
         );
 
         let render_shader = create_shader_module(device, "lbm/present", Some("lbm present shader"));
-        let sampler = idroid::load_texture::bilinear_sampler(device);
+        let sampler = crate::util::load_texture::bilinear_sampler(device);
         let render_node = BufferlessFullscreenNode::new(
             device,
             app_view.config.format,
@@ -80,7 +81,6 @@ impl FluidPlayer {
             None,
             false,
         );
-        println!("abc2");
 
         let update_shader =
             create_shader_module(device, "lbm/particle_update", Some("particle_update_shader"));
@@ -96,7 +96,6 @@ impl FluidPlayer {
             vec![(&fluid_compute_node.macro_tex, None)],
             &update_shader,
         );
-        println!("abc3");
 
         let particle_shader = create_shader_module(device, "present", None);
         let particle_render = BufferlessFullscreenNode::new(
@@ -113,7 +112,6 @@ impl FluidPlayer {
             None,
             false,
         );
-        println!("abc4");
 
         FluidPlayer {
             animation_ty: setting.animation_type,
@@ -133,7 +131,7 @@ impl FluidPlayer {
 
 impl Player for FluidPlayer {
     fn on_click(
-        &mut self, _device: &wgpu::Device, queue: &wgpu::Queue, pos: idroid::math::Position,
+        &mut self, _device: &wgpu::Device, queue: &wgpu::Queue, pos: app_surface::math::Position,
     ) {
         if pos.x <= 0.0 || pos.y <= 0.0 {
             return;
@@ -155,7 +153,7 @@ impl Player for FluidPlayer {
         self.pre_pos = Position::new(0.0, 0.0);
     }
 
-    fn touch_move(&mut self, _device: &Device, queue: &Queue, pos: Position) {
+    fn touch_move(&mut self, _device: &Device, queue: &Queue, pos: app_surface::math::Position) {
         if pos.x <= 0.0 || pos.y <= 0.0 {
             self.pre_pos = Position::zero();
             return;
@@ -203,41 +201,41 @@ impl Player for FluidPlayer {
             let mut cpass = encoder
                 .begin_compute_pass(&wgpu::ComputePassDescriptor { label: Some("fluid solver") });
 
-            for _ in 0..3 {
+            for _ in 0..6 {
                 self.fluid_compute_node.dispatch(&mut cpass, 0);
-                self.particle_update_node.dispatch(&mut cpass);
-                // self.curl_cal_node.dispatch(&mut cpass);
+                // self.particle_update_node.dispatch(&mut cpass);
+                self.curl_cal_node.dispatch(&mut cpass);
 
                 if !self.use_aa_pattern {
                     self.fluid_compute_node.dispatch(&mut cpass, 1);
-                    self.particle_update_node.dispatch(&mut cpass);
-                    // self.curl_cal_node.dispatch(&mut cpass);
+                    // self.particle_update_node.dispatch(&mut cpass);
+                    self.curl_cal_node.dispatch(&mut cpass);
                 }
             }
         }
         // draw macro_tex
         {
-            // let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-            //     label: None,
-            //     color_attachments: &[wgpu::RenderPassColorAttachment {
-            //         view: frame_view,
-            //         resolve_target: None,
-            //         ops: wgpu::Operations {
-            //             load: wgpu::LoadOp::Clear(wgpu::Color { r: 0.2, g: 0.2, b: 0.25, a: 1.0 }),
-            //             store: true,
-            //         },
-            //     }],
-            //     depth_stencil_attachment: None,
-            // });
-            // self.render_node.draw_rpass(&mut rpass);
+            let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+                label: None,
+                color_attachments: &[wgpu::RenderPassColorAttachment {
+                    view: frame_view,
+                    resolve_target: None,
+                    ops: wgpu::Operations {
+                        load: wgpu::LoadOp::Clear(wgpu::Color { r: 0.2, g: 0.2, b: 0.25, a: 1.0 }),
+                        store: true,
+                    },
+                }],
+                depth_stencil_attachment: None,
+            });
+            self.render_node.draw_rpass(&mut rpass);
         }
         // draw paticles
         {
-            self.particle_render.draw(
-                frame_view,
-                &mut encoder,
-                wgpu::LoadOp::Clear(wgpu::Color { r: 0.2, g: 0.2, b: 0.25, a: 1.0 }),
-            );
+            // self.particle_render.draw(
+            //     frame_view,
+            //     &mut encoder,
+            //     wgpu::LoadOp::Clear(wgpu::Color { r: 0.2, g: 0.2, b: 0.25, a: 1.0 }),
+            // );
         }
         queue.submit(Some(encoder.finish()));
     }

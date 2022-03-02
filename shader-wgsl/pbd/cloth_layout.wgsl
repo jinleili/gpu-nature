@@ -9,16 +9,16 @@ struct Constraint {
 };
 
 struct ConstraintsBuffer {
-    data: @stride(16) array<Constraint>;
+    data: array<Constraint>;
 };
 
 // 这个粒子关联的所有约束
 struct ParticleConstraints {
-  list: @stride(4) array<i32, 3>;
+  list: array<i32, 3>;
 };
 
 struct ParticleConstraintsBuffer {
-    data: @stride(12) array<ParticleConstraints>;
+    data: array<ParticleConstraints>;
 };
 
 @group(0) @binding(0) var<uniform> cloth: ClothUniform;

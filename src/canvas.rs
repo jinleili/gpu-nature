@@ -1,12 +1,13 @@
-
 use crate::Diffraction;
 
-use idroid::{math::Position, math::TouchPoint, SurfaceView};
-use uni_view::{AppView, GPUContext};
+use app_surface::{
+    math::{Position, Rect, Size},
+    AppSurface, SurfaceFrame, Touch, TouchPhase,
+};
 pub struct Canvas {
-    pub app_view: AppView,
+    pub app_view: AppSurface,
     dc_origin: Position,
-    depth_tex: idroid::AnyTexture,
+    depth_tex: crate::util::AnyTexture,
     d3_noise: crate::noise::D3NoiseTexture,
     nature_node: Diffraction,
     floor_node: crate::Floor,
@@ -14,10 +15,10 @@ pub struct Canvas {
 
 #[allow(dead_code)]
 impl Canvas {
-    pub fn new(app_view: AppView) -> Self {
+    pub fn new(app_view: AppSurface) -> Self {
         let dc_origin =
             Position::new(app_view.config.width as f32 / 2.0, app_view.config.height as f32 / 2.0);
-        let depth_tex = idroid::load_texture::empty(
+        let depth_tex = crate::util::load_texture::empty(
             &app_view.device,
             wgpu::TextureFormat::Depth32Float,
             wgpu::Extent3d {
@@ -41,19 +42,23 @@ impl Canvas {
     }
 }
 
-impl SurfaceView for Canvas {
-    fn resize(&mut self) {
+impl SurfaceFrame for Canvas {
+    fn resize_surface(&mut self) {
         self.app_view.resize_surface();
     }
-    fn pintch_start(&mut self, _location: TouchPoint, _scale: f32) {}
-    fn pintch_changed(&mut self, _location: TouchPoint, _scale: f32) {}
-    fn touch_start(&mut self, _point: TouchPoint) {}
-    fn touch_end(&mut self, _point: TouchPoint) {}
-
-    fn touch_moved(&mut self, point: TouchPoint) {
-        let mut p = point.pos.minus(&self.dc_origin);
-        p.y *= -1.0;
-        self.nature_node.rotate(&self.app_view, p.y / self.dc_origin.y, -p.x / self.dc_origin.x);
+    fn touch(&mut self, touch: Touch) {
+        match touch.phase {
+            TouchPhase::Moved => {
+                let mut p = touch.position.minus(&self.dc_origin);
+                p.y *= -1.0;
+                self.nature_node.rotate(
+                    &self.app_view,
+                    p.y / self.dc_origin.y,
+                    -p.x / self.dc_origin.x,
+                );
+            }
+            _ => {}
+        }
     }
 
     fn enter_frame(&mut self) {

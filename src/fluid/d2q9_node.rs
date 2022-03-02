@@ -1,16 +1,17 @@
 use std::{borrow::BorrowMut, u32};
 
 use super::{init_lattice_material, is_sd_sphere, LatticeInfo, LatticeType, OBSTACLE_RADIUS};
+use crate::util::{
+    node::{BindingGroupSetting, ComputeNode},
+    AnyTexture, BufferObj,
+};
+use app_surface::math::{Position, Size};
+
 use crate::{
     create_shader_module, fluid::LbmUniform, setting_obj::SettingObj, FieldAnimationType,
     FieldUniform,
 };
-use idroid::{
-    math::{Position, Size},
-    node::{BindingGroupSetting, ComputeNode},
-    AnyTexture, BufferObj,
-};
-use wgpu::{TextureFormat};
+use wgpu::TextureFormat;
 use zerocopy::AsBytes;
 
 pub struct D2Q9Node {
@@ -31,10 +32,12 @@ pub struct D2Q9Node {
 
 #[allow(dead_code)]
 impl D2Q9Node {
-    pub fn new(app_view: &idroid::AppView, canvas_size: Size<u32>, setting: &SettingObj) -> Self {
+    pub fn new(
+        app_view: &app_surface::AppSurface, canvas_size: Size<u32>, setting: &SettingObj,
+    ) -> Self {
         let device = &app_view.device;
         let queue = &app_view.queue;
-        let lattice_pixel_size = 4;
+        let lattice_pixel_size = 2;
         let lattice = wgpu::Extent3d {
             width: canvas_size.width / lattice_pixel_size,
             height: canvas_size.height / lattice_pixel_size,
@@ -55,7 +58,7 @@ impl D2Q9Node {
         let lbm_uniform_data =
             LbmUniform::new(tau, fluid_ty, (lattice.width * lattice.height) as i32);
 
-        let (_, sx, sy) = idroid::utils::matrix_helper::fullscreen_factor(
+        let (_, sx, sy) = crate::util::utils::matrix_helper::fullscreen_factor(
             (canvas_size.width as f32, canvas_size.height as f32).into(),
         );
         let field_uniform_data = FieldUniform {
@@ -83,7 +86,7 @@ impl D2Q9Node {
         // );
         let macro_tex_format = TextureFormat::Rgba16Float;
         let macro_tex_access = wgpu::StorageTextureAccess::WriteOnly;
-        let macro_tex = idroid::load_texture::empty(
+        let macro_tex = crate::util::load_texture::empty(
             device,
             macro_tex_format,
             wgpu::Extent3d {

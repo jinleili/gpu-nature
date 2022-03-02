@@ -1,8 +1,8 @@
-use idroid::node::{ViewNode, ViewNodeBuilder};
-use idroid::{math::Size, BufferObj};
+use crate::util::node::{ViewNode, ViewNodeBuilder};
+use crate::util::{ BufferObj};
 
+use app_surface::{AppSurface, math::{Position, Size}, SurfaceFrame, Touch, TouchPhase};
 use nalgebra_glm as glm;
-use uni_view::{AppView, GPUContext};
 use zerocopy::AsBytes;
 
 pub struct Diffraction {
@@ -14,12 +14,12 @@ pub struct Diffraction {
 }
 
 impl Diffraction {
-    pub fn new(app_view: &AppView, is_use_depth_stencil: bool) -> Self {
+    pub fn new(app_view: &AppSurface, is_use_depth_stencil: bool) -> Self {
         // let mut encoder =
         //     app_view.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
         let viewport_size: Size<f32> = (&app_view.config).into();
         let (proj_mat, mv_mat, factor) =
-            idroid::utils::matrix_helper::perspective_mvp(viewport_size);
+            crate::util::utils::matrix_helper::perspective_mvp(viewport_size);
         // change mv_mat's z to 0
         let translate_z = factor.2 - 0.6;
 
@@ -46,8 +46,9 @@ impl Diffraction {
             crate::generate_disc_plane(0.1, 0.26, 50);
 
         let diffraction_shader =
-            idroid::shader::create_shader_module(&app_view.device, "diffraction_vertex", None);
-        let simle_shader = idroid::shader::create_shader_module(&app_view.device, "simple", None);
+            crate::util::shader::create_shader_module(&app_view.device, "diffraction_vertex", None);
+        let simle_shader =
+            crate::util::shader::create_shader_module(&app_view.device, "simple", None);
 
         let builder = ViewNodeBuilder::<crate::PosTangent>::new(vec![], &diffraction_shader)
             .with_uniform_buffers(vec![&mvp_buf, &uniform_buf])
@@ -72,7 +73,7 @@ impl Diffraction {
         instance
     }
 
-    pub fn rotate(&mut self, app_view: &idroid::AppView, x: f32, y: f32) {
+    pub fn rotate(&mut self, app_view: &app_surface::AppSurface, x: f32, y: f32) {
         let mut model_rotate_mat = glm::rotate_x(&glm::Mat4::identity(), 0.8 * x);
         model_rotate_mat = glm::rotate_y(&model_rotate_mat, 0.8 * y);
 
@@ -90,13 +91,13 @@ impl Diffraction {
         app_view.queue.write_buffer(&self.mvp_buf.buffer, 0, &mvp_uniform.as_bytes());
     }
 
-    pub fn enter_frame(&mut self, app_view: &mut AppView) {
+    pub fn enter_frame(&mut self, app_view: &mut AppSurface) {
         let (frame, frame_view) = app_view.get_current_frame_view();
         let color_attachments = [wgpu::RenderPassColorAttachment {
             view: &frame_view,
             resolve_target: None,
             ops: wgpu::Operations {
-                load: wgpu::LoadOp::Clear(idroid::utils::alpha_color()),
+                load: wgpu::LoadOp::Clear(crate::util::utils::alpha_color()),
                 store: true,
             },
         }];

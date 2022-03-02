@@ -10,12 +10,12 @@ struct BendConstraint {
 };
 
 struct BendConstraintBuf {
-    data: @stride(16) array<BendConstraint>;
+    data: array<BendConstraint>;
 };
 
 
 struct BendConstraintGoupBuf {
-    group: @stride(12) array<array<i32, 3>>;
+    group: array<array<i32, 3>>;
 };
 
 @group(0) @binding(0) var<uniform> cloth: ClothUniform;

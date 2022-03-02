@@ -19,7 +19,7 @@ impl CannyEdgeDetection {
         device: &mut wgpu::Device, encoder: &mut wgpu::CommandEncoder,
         src_view: &wgpu::TextureView, extent: wgpu::Extent3d,
     ) -> Self {
-        let output_view = idroid::load_texture::empty(
+        let output_view = crate::util::load_texture::empty(
             device,
             wgpu::TextureFormat::R16Float,
             extent,
@@ -41,7 +41,7 @@ impl CannyEdgeDetection {
         let offset_stride: wgpu::BufferAddress = 256;
         let uniform_size = offset_stride * 1;
 
-        let sobel_output_view = idroid::load_texture::empty(
+        let sobel_output_view = crate::util::load_texture::empty(
             device,
             wgpu::TextureFormat::Rgba8Unorm,
             extent,

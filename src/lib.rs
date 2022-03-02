@@ -1,5 +1,6 @@
 use zerocopy::{AsBytes, FromBytes};
 
+use app_surface::math::{Position, Size};
 use std::usize;
 
 mod field_player;
@@ -42,14 +43,14 @@ pub use web::*;
 #[cfg(not(target_arch = "wasm32"))]
 pub use std::println as console_log;
 
-// fn create_shader_module
+mod util;
 #[cfg(not(target_arch = "wasm32"))]
-use idroid::shader::{create_shader_module, insert_code_then_create};
+use util::shader::{create_shader_module, insert_code_then_create};
 #[cfg(target_arch = "wasm32")]
 use web::{create_shader_module, insert_code_then_create};
 
-use idroid::vertex::PosColor as PosTangent;
-use idroid::vertex::PosOnly;
+use util::vertex::PosColor as PosTangent;
+use util::vertex::PosOnly;
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, AsBytes, FromBytes)]
@@ -63,17 +64,11 @@ pub struct MVPMatUniform {
 trait Player {
     fn update_uniforms(&mut self, _queue: &wgpu::Queue, _setting: &crate::SettingObj) {}
 
-    fn on_click(
-        &mut self, _device: &wgpu::Device, _queue: &wgpu::Queue, _pos: idroid::math::Position,
-    ) {
-    }
+    fn on_click(&mut self, _device: &wgpu::Device, _queue: &wgpu::Queue, _pos: Position) {}
 
     fn touch_begin(&mut self, _device: &wgpu::Device, _queue: &wgpu::Queue) {}
 
-    fn touch_move(
-        &mut self, _device: &wgpu::Device, _queue: &wgpu::Queue, _pos: idroid::math::Position,
-    ) {
-    }
+    fn touch_move(&mut self, _device: &wgpu::Device, _queue: &wgpu::Queue, _pos: Position) {}
 
     fn touch_end(&mut self, _device: &wgpu::Device, _queue: &wgpu::Queue) {}
 
@@ -185,7 +180,6 @@ pub struct Pixel {
     pub rho: f32,
 }
 
-use idroid::math::Size;
 use rand::{prelude::Distribution, Rng};
 
 const MAX_PARTICLE_COUNT: usize = 205000;

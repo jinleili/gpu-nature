@@ -1,5 +1,5 @@
 [package]
-authors = ["li jinlei <grenlight@icloud.com>"]
+authors = ["jinleili"]
 edition = "2021"
 exclude = ["examples/**/*", "Cargo.lock", "target/**/*"]
 name = "nature"
@@ -13,8 +13,9 @@ crate-type = ["rlib", "cdylib", "staticlib"]
 # crate-type = ["cdylib"]
 
 [features]
+angle = ["wgpu/angle"]
 default = []
-# spirv = ["naga/spv-in"]
+vulkan-portability = ["wgpu/vulkan-portability"]
 
 [profile.release]
 # This makes the compiled code faster and smaller, but it makes compiling slower,
@@ -22,12 +23,11 @@ default = []
 lto = true
 
 [dependencies]
-idroid = {path = "../idroid/idroid"}
+app-surface = {git = "https://github.com/jinleili/wgpu-on-app", rev = "bf85a0b"}
 libc = "*"
-uni-view = {path = "../idroid/uni-view"}
-wgpu = {git = "https://github.com/gfx-rs/wgpu", rev = "39a0256b"}
-# uni-view = { git = "https://github.com/jinleili/idroid", branch="wgpu_0.9" }
-# idroid = { git = "https://github.com/jinleili/idroid", branch="wgpu_0.9" }
+wgpu = {git = "https://github.com/gfx-rs/wgpu", rev = "810dc5aa"}
+# app-surface = {path = "../wgpu-on-app/app-surface"}
+# wgpu = {path = "../../forks/wgpu/wgpu"}
 
 image = {version = "0.23", default-features = false, features = ["png"]}
 lazy_static = "*"
@@ -48,14 +48,14 @@ log = "0.4"
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 # The `wasm-bindgen` crate provides the bare minimum functionality needed
 # to interact with JavaScript.
-wasm-bindgen = "0.2.76"
+wasm-bindgen = "0.2.79"
 # `wee_alloc` is a tiny allocator for wasm that is only ~1K in code size
 # compared to the default allocator's ~10K. However, it is slower than the default
 # allocator, so it's not enabled by default.
-console_log = "0.1.2"
+console_log = "0.2"
 js-sys = "0.3.50"
-wasm-bindgen-futures = "0.4.23"
-web-sys = {version = "=0.3.53", features = [
+wasm-bindgen-futures = "0.4.29"
+web-sys = {version = "=0.3.56", features = [
   "Storage",
   "Document",
   "HtmlCollection",
@@ -65,7 +65,6 @@ web-sys = {version = "=0.3.53", features = [
   "Node",
   "NodeList",
   "RadioNodeList",
-  "Document",
   "Gpu",
   "GpuAdapter",
   "GpuAddressMode",

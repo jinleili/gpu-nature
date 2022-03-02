@@ -6,7 +6,7 @@ struct Particle {
 };
 
 struct ParticlesBuffer {
-    data: @stride(48) array<Particle>;
+    data: array<Particle>;
 };
 
 fn is_movable_particle(particle: Particle) -> bool {

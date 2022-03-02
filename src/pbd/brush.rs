@@ -1,12 +1,15 @@
-use idroid::node::{BufferlessFullscreenNode, ComputeNode, ViewNode, ViewNodeBuilder};
-use idroid::{math::Size, vertex::VertexEmpty, BufferObj};
+use crate::util::node::{BufferlessFullscreenNode, ComputeNode, ViewNode, ViewNodeBuilder};
+use crate::util::{vertex::VertexEmpty, BufferObj};
 
 use super::{
     bristle::{generate_bristles, BristleParticle},
     MeshColoringObj,
 };
+use app_surface::{
+    math::{Position, Size},
+    AppSurface, SurfaceFrame, Touch, TouchPhase,
+};
 use nalgebra_glm as glm;
-use uni_view::{AppView, GPUContext};
 
 use zerocopy::AsBytes;
 
@@ -36,10 +39,10 @@ pub struct MaoBrush {
 }
 
 impl MaoBrush {
-    pub fn new(app_view: &AppView) -> Self {
+    pub fn new(app_view: &AppSurface) -> Self {
         let viewport_size: Size<f32> = (&app_view.config).into();
         let (proj_mat, _mv_mat, factor) =
-            idroid::utils::matrix_helper::perspective_mvp(viewport_size);
+            crate::util::utils::matrix_helper::perspective_mvp(viewport_size);
         // change mv_mat's z to 0
         let translate_z = factor.2 - 0.6;
         let mut model_rotate_mat = glm::rotate_x(&glm::Mat4::identity(), -0.8);
@@ -158,7 +161,7 @@ impl MaoBrush {
             offset += dynamic_offset;
         }
         let predict_shader =
-            idroid::shader::create_shader_module(&app_view.device, "pbd/brush/predict", None);
+            crate::util::shader::create_shader_module(&app_view.device, "pbd/brush/predict", None);
         let predict_solver = ComputeNode::new_with_dynamic_uniforms(
             &app_view.device,
             (((20 * 13 + 31) as f32 / 32.0).floor() as u32, 1, 1),
@@ -179,7 +182,7 @@ impl MaoBrush {
             &reorder_streches,
             Some("stretch_constraints_group_buf"),
         );
-        let stretch_solver_shader = idroid::shader::create_shader_module(
+        let stretch_solver_shader = crate::util::shader::create_shader_module(
             &app_view.device,
             "pbd/brush/stretch_solver",
             None,
@@ -204,7 +207,7 @@ impl MaoBrush {
             &reorder_bendings,
             Some("reorder_bendings_buf"),
         );
-        let bend_solver_shader = idroid::shader::create_shader_module(
+        let bend_solver_shader = crate::util::shader::create_shader_module(
             &app_view.device,
             "pbd/brush/bending_solver",
             None,
@@ -219,7 +222,7 @@ impl MaoBrush {
             &bend_solver_shader,
         );
 
-        let bufferless_shader = idroid::shader::create_shader_module(
+        let bufferless_shader = crate::util::shader::create_shader_module(
             &app_view.device,
             "pbd/brush/debug_plane",
             Some("bufferless"),
@@ -237,7 +240,7 @@ impl MaoBrush {
         );
 
         let display_shader =
-            idroid::shader::create_shader_module(&app_view.device, "pbd/brush/display", None);
+            crate::util::shader::create_shader_module(&app_view.device, "pbd/brush/display", None);
         let display_node_builder = ViewNodeBuilder::<VertexEmpty>::new(vec![], &display_shader)
             .with_uniform_buffers(vec![&mvp_buf, &uniform_buf])
             .with_storage_buffers(vec![&particle_buf])
@@ -259,7 +262,7 @@ impl MaoBrush {
             depth_or_array_layers: 1,
         };
         let depth_texture_view =
-            idroid::depth_stencil::create_depth_texture_view(size, &app_view.device);
+            crate::util::depth_stencil::create_depth_texture_view(size, &app_view.device);
 
         let instance = Self {
             mvp_buf,
@@ -284,7 +287,7 @@ impl MaoBrush {
         instance
     }
 
-    pub fn rotate(&mut self, app_view: &idroid::AppView, x: f32, y: f32) {
+    pub fn rotate(&mut self, app_view: &app_surface::AppSurface, x: f32, y: f32) {
         let mut model_rotate_mat = glm::rotate_x(&glm::Mat4::identity(), 0.8 * x);
         model_rotate_mat = glm::rotate_y(&model_rotate_mat, 0.8 * y);
 
@@ -349,7 +352,7 @@ impl MaoBrush {
         self.frame_count += 1;
     }
 
-    pub fn enter_frame(&mut self, app_view: &mut AppView) {
+    pub fn enter_frame(&mut self, app_view: &mut AppSurface) {
         let mut encoder = app_view.device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
             label: Some("MaoBrush encoder"),
         });
@@ -363,14 +366,14 @@ impl MaoBrush {
                     view: &frame_view,
                     resolve_target: None,
                     ops: wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(idroid::utils::alpha_color()),
+                        load: wgpu::LoadOp::Clear(crate::util::utils::alpha_color()),
                         store: true,
                     },
                 }],
                 // depth_stencil_attachment: None,
-                depth_stencil_attachment: Some(idroid::utils::depth_stencil::create_attachment(
-                    &self.depth_texture_view,
-                )),
+                depth_stencil_attachment: Some(
+                    crate::util::utils::depth_stencil::create_attachment(&self.depth_texture_view),
+                ),
             });
             self.display_node.draw_render_pass(&mut rpass);
 

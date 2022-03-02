@@ -9,5 +9,5 @@ struct LatticeInfo {
 
 
 struct StoreInfo {
-    data: @stride(16) array<LatticeInfo>;
+    data: array<LatticeInfo>;
 };
