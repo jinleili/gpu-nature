@@ -2,11 +2,11 @@
 #include "pbd/brush/struct/brush_uniform.wgsl"
 
 struct BendingConstraint {
-    v: i32;
-    b0: i32;
-    b1: i32;
+    v: i32,
+    b0: i32,
+    b1: i32,
     // h 0 is the rest length (rest radius of curvature)
-    h0: f32;
+    h0: f32,
 };
 
 

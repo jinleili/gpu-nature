@@ -2,22 +2,22 @@
 #include "pbd/brush/struct/brush_uniform.wgsl"
 
 struct Constraint {
-   rest_length: f32;
-   particle0: i32;
-   particle1: i32;
+   rest_length: f32,
+   particle0: i32,
+   particle1: i32,
 };
 
 struct ConstraintsBuffer {
-    data: array<Constraint>;
+    data: array<Constraint>,
 };
 
 // 这个粒子关联的所有 stretch 约束
 struct ParticleConstraints {
-    list: array<i32, 3>;
+    list: array<i32, 3>,
 };
 
 struct ParticleConstraintsBuffer {
-    data: array<ParticleConstraints>;
+    data: array<ParticleConstraints>,
 };
 
 @group(0) @binding(0) var<uniform> brush: BrushUniform;

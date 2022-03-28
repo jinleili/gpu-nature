@@ -3,7 +3,7 @@
 
 struct DynamicUniform {
   // 第一帧之后，需要更新粒子的速度
-  need_update_velocity: i32;
+  need_update_velocity: i32,
 };
 @group(1) @binding(0) var<uniform> dy_uniform: DynamicUniform;
 

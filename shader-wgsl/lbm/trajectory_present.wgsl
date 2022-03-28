@@ -1,9 +1,9 @@
 
 struct TrajectoryUniform {
-    screen_factor: vec2<f32>;
+    screen_factor: vec2<f32>,
     // which view particles position will drawing to. 
-    trajectory_view_index: i32;
-    bg_view_index: i32;
+    trajectory_view_index: i32,
+    bg_view_index: i32,
 };
 
 @group(0) @binding(0) var<uniform> params: TrajectoryUniform;
@@ -11,8 +11,8 @@ struct TrajectoryUniform {
 @group(0) @binding(2) var tex_sampler: sampler;
 
 struct UpdateVertexOutput {
-    @location(0) fade: f32;
-    @builtin(position) position: vec4<f32>;
+    @location(0) fade: f32,
+    @builtin(position) position: vec4<f32>,
 };
 
 @stage(vertex)

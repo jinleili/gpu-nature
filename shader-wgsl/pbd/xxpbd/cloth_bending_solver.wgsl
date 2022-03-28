@@ -2,25 +2,25 @@
 #include "pbd/struct/cloth_uniform.wgsl"
 
 struct BendingConstraint {
-    v: i32;
-    b0: i32;
-    b1: i32;
+    v: i32,
+    b0: i32,
+    b1: i32,
     // h 0 is the rest length (rest radius of curvature)
-    h0: f32;
+    h0: f32,
 };
 
 
 struct BendingConstraintsBuffer {
-    data: array<BendingConstraint>;
+    data: array<BendingConstraint>,
 };
 
 // 这个粒子关联的所有弯曲约束
 struct BendingConstraintsGroup {
-    list: array<i32, 3>;
+    list: array<i32, 3>,
 };
 
 struct BendingConstraintsGroupBuffer {
-    data: array<BendingConstraintsGroup>;
+    data: array<BendingConstraintsGroup>,
 };
 
 @group(0) @binding(0) var<uniform> cloth: ClothUniform;
@@ -30,12 +30,12 @@ struct BendingConstraintsGroupBuffer {
 
 
 struct DynamicUniform {
-    offset: i32;
-    max_num_x: i32;
+    offset: i32,
+    max_num_x: i32,
     // 当前 mesh coloring 分组的数据长度
-    group_len: i32;
+    group_len: i32,
     // 迭代計數的倒數
-    invert_iter: f32;
+    invert_iter: f32,
 };
 @group(1) @binding(0) var<uniform> dy_uniform: DynamicUniform;
 

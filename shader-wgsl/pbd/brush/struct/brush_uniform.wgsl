@@ -1,6 +1,6 @@
 
 
 struct BrushUniform {
-   compliance: f32;
-   dt: f32;
+   compliance: f32,
+   dt: f32,
 };

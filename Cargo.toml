@@ -21,13 +21,15 @@ vulkan-portability = ["wgpu/vulkan-portability"]
 # This makes the compiled code faster and smaller, but it makes compiling slower,
 # so it's only enabled in release mode.
 lto = true
+# Rust 1.59+
+strip = "all"
 
 [dependencies]
-app-surface = {git = "https://github.com/jinleili/wgpu-on-app", rev = "bf85a0b"}
+# app-surface = {git = "https://github.com/jinleili/wgpu-on-app", rev = "bf85a0b"}
 libc = "*"
-wgpu = {git = "https://github.com/gfx-rs/wgpu", rev = "810dc5aa"}
-# app-surface = {path = "../wgpu-on-app/app-surface"}
-# wgpu = {path = "../../forks/wgpu/wgpu"}
+# wgpu = {git = "https://github.com/gfx-rs/wgpu", rev = "810dc5aa"}
+app-surface = {path = "../wgpu-on-app/app-surface"}
+wgpu = {path = "../../forks/wgpu/wgpu"}
 
 image = {version = "0.23", default-features = false, features = ["png"]}
 lazy_static = "*"

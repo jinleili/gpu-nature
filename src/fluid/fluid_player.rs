@@ -40,7 +40,9 @@ impl FluidPlayer {
         let curl_shader =
             create_shader_module(device, "lbm/curl_update", Some("curl_update_shader"));
         // iOS cannot create R32Float texture, R16Float cannot use to storage texture
+        // Need enable TEXTURE_ADAPTER_SPECIFIC_FORMAT_FEATURES feature
         let curl_texture_format = TextureFormat::Rgba16Float;
+        // let curl_texture_format = TextureFormat::R16Float;
         let curl_tex = crate::util::load_texture::empty(
             device,
             curl_texture_format,

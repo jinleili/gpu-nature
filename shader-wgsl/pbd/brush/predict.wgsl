@@ -7,7 +7,7 @@
 
 struct DynamicUniform {
   // 需要更新粒子的偏移
-  need_update_offset: i32;
+  need_update_offset: i32,
 };
 @group(1) @binding(0) var<uniform> dy_uniform: DynamicUniform;
 

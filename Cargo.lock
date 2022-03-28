@@ -49,11 +49,10 @@ dependencies = [
 [[package]]
 name = "app-surface"
 version = "0.1.0"
-source = "git+https://github.com/jinleili/wgpu-on-app?rev=bf85a0b#bf85a0b503744ba772bcbc1330cb2afdd832e77d"
 dependencies = [
  "android_logger",
  "async-executor",
- "core-graphics 0.22.3",
+ "core-graphics 0.19.2",
  "env_logger 0.9.0",
  "jni",
  "lazy_static",
@@ -440,8 +439,7 @@ checksum = "b365fabc795046672053e29c954733ec3b05e4be654ab130fe8f1f94d7051f35"
 [[package]]
 name = "d3d12"
 version = "0.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2daefd788d1e96e0a9d66dee4b828b883509bc3ea9ce30665f04c3246372690c"
+source = "git+https://github.com/gfx-rs/d3d12-rs.git?rev=ffe5e261da0a6cb85332b82ab310abd2a7e849f6#ffe5e261da0a6cb85332b82ab310abd2a7e849f6"
 dependencies = [
  "bitflags",
  "libloading",
@@ -956,7 +954,7 @@ checksum = "8452105ba047068f40ff7093dd1d9da90898e63dd61736462e9cdda6a90ad3c3"
 [[package]]
 name = "metal"
 version = "0.23.1"
-source = "git+https://github.com/gfx-rs/metal-rs?rev=a357159#a35715916fec38bbc08a510ecf7d115edc500c72"
+source = "git+https://github.com/gfx-rs/metal-rs?rev=1aaa903#1aaa9033a22b2af7ff8cae2ed412a4733799c3d3"
 dependencies = [
  "bitflags",
  "block",
@@ -1006,7 +1004,7 @@ dependencies = [
 [[package]]
 name = "naga"
 version = "0.8.0"
-source = "git+https://github.com/gfx-rs/naga?rev=a45b9a6#a45b9a6cc691a671aa24a32114b51c5acae02420"
+source = "git+https://github.com/gfx-rs/naga?rev=f90e563#f90e563c281cfc71c794e0426ebcced9e3999202"
 dependencies = [
  "bit-set",
  "bitflags",
@@ -2119,7 +2117,6 @@ dependencies = [
 [[package]]
 name = "wgpu"
 version = "0.12.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=810dc5aa#810dc5aa271d87312001081bb4cbb161ad135c6c"
 dependencies = [
  "arrayvec",
  "js-sys",
@@ -2139,7 +2136,6 @@ dependencies = [
 [[package]]
 name = "wgpu-core"
 version = "0.12.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=810dc5aa#810dc5aa271d87312001081bb4cbb161ad135c6c"
 dependencies = [
  "arrayvec",
  "bitflags",
@@ -2161,7 +2157,6 @@ dependencies = [
 [[package]]
 name = "wgpu-hal"
 version = "0.12.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=810dc5aa#810dc5aa271d87312001081bb4cbb161ad135c6c"
 dependencies = [
  "arrayvec",
  "ash",
@@ -2198,7 +2193,6 @@ dependencies = [
 [[package]]
 name = "wgpu-types"
 version = "0.12.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=810dc5aa#810dc5aa271d87312001081bb4cbb161ad135c6c"
 dependencies = [
  "bitflags",
 ]
