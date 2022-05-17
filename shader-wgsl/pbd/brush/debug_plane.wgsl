@@ -12,17 +12,17 @@ struct MVPMatUniform {
 
 @group(0) @binding(0) var<uniform> mvp_mat: MVPMatUniform;
 
-@stage(vertex)
+@vertex
 fn vs_main(@builtin(vertex_index) vertexIndex: u32) -> VertexOutput {
     let uv: vec2<f32> = vec2<f32>(f32((vertexIndex << 1u) & 2u), f32(vertexIndex & 2u));
 
-    var out: VertexOutput;
-    out.position = mvp_mat.mvp * vec4<f32>(uv * 2.0 - 1.0, 0.0, 1.0);
+    var result: VertexOutput;
+    result.position = mvp_mat.mvp * vec4<f32>(uv * 2.0 - 1.0, 0.0, 1.0);
  
-    return out;
+    return result;
 }
 
-@stage(fragment)
+@fragment
 fn fs_main() -> @location(0) vec4<f32> {
     var frag_color = vec4<f32>(vec3<f32>(0.95), 0.35);
     return frag_color;

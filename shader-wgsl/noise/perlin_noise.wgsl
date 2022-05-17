@@ -28,7 +28,7 @@ fn turbulence(octaves: i32, P: vec3<f32>, lacunarity: f32, gain: f32) -> f32 {
   return abs(sum);
 }
 
-@stage(fragment) 
+@fragment 
 fn fs_main(@builtin(position) coord : vec4<f32>) -> @location(0) vec4<f32> {
     let p = vec3<f32>(coord.xy / 105.0, 0.5) ; 
     // noise self

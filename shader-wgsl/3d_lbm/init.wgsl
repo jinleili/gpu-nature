@@ -1,7 +1,7 @@
 #include "3d_lbm/d3q15_layout_and_fn.wgsl"
 
 
-@stage(compute) @workgroup_size(64, 1, 1)
+@compute @workgroup_size(64, 1, 1)
 fn cs_main(@builtin(global_invocation_id) global_invocation_id: vec3<u32>) {
   let uv = vec3<i32>(global_invocation_id.xyz);
 

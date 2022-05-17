@@ -310,7 +310,7 @@ impl ClothX {
                 if let Some(bg) = &self.stretch_solver.dy_uniform_bg {
                     cpass.set_bind_group(1, &bg.bind_group, &[index * dynamic_offset]);
                 }
-                cpass.dispatch(mc.thread_group.0, mc.thread_group.1, 1);
+                cpass.dispatch_workgroups(mc.thread_group.0, mc.thread_group.1, 1);
                 index += 1;
             }
 
@@ -328,7 +328,7 @@ impl ClothX {
                         &[bending_dynamic_uniform_offset + index * dynamic_offset],
                     );
                 }
-                cpass.dispatch(mc.thread_group.0, mc.thread_group.1, 1);
+                cpass.dispatch_workgroups(mc.thread_group.0, mc.thread_group.1, 1);
                 index += 1;
             }
         }

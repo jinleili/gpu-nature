@@ -11,7 +11,7 @@
 let force: vec4<f32>  = vec4<f32>(0.0, 0.0, 0.0, 0.0);
 let ball_pos: vec4<f32> = vec4<f32>(0.0, 0.0, 0.0, 0.0);
 
-@stage(compute) @workgroup_size(32)
+@compute @workgroup_size(32)
 fn cs_main(@builtin(global_invocation_id) global_invocation_id: vec3<u32>) {
     let total = arrayLength(&particles.data);
     let field_index = global_invocation_id.x;

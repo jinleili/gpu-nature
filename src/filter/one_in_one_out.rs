@@ -94,6 +94,6 @@ impl OneInOneOut {
         let mut cpass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor { label: None });
         cpass.set_pipeline(&self.pipeline);
         cpass.set_bind_group(0, &self.bind_group, &[0]);
-        cpass.dispatch(self.dispatch_group_count.0, self.dispatch_group_count.1, 1);
+        cpass.dispatch_workgroups(self.dispatch_group_count.0, self.dispatch_group_count.1, 1);
     }
 }

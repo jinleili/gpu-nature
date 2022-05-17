@@ -15,7 +15,7 @@ struct UpdateVertexOutput {
     @builtin(position) position: vec4<f32>,
 };
 
-@stage(vertex)
+@vertex
 fn vs_update(
     @location(0) particle_pos: vec2<f32>,
     @location(1) particle_pos_initial: vec2<f32>,
@@ -24,14 +24,14 @@ fn vs_update(
     @location(4) position: vec2<f32>,
 ) -> UpdateVertexOutput {
     let pos = (particle_pos + position) * params.screen_factor - 1.0;
-    var output: UpdateVertexOutput;
-    output.position = vec4<f32>(pos.x, pos.y * (-1.0), 0.0, 1.0);
-    output.fade = particle_fade;
-    return output;
+    var result: UpdateVertexOutput;
+    result.position = vec4<f32>(pos.x, pos.y * (-1.0), 0.0, 1.0);
+    result.fade = particle_fade;
+    return result;
 }
 
 
-@stage(fragment)
+@fragment
 fn fs_update(in: UpdateVertexOutput) -> @location(0) vec4<f32> {
     if (in.fade <= 0.01) {
         discard;
@@ -41,9 +41,9 @@ fn fs_update(in: UpdateVertexOutput) -> @location(0) vec4<f32> {
 
 #include "bufferless.vs.wgsl"
 
-@stage(fragment)
-fn fs_fadeout(in: VertexOutput) -> @location(0) vec4<f32> {
-    let pixel = textureSample(trajectory_views, tex_sampler, in.uv, params.bg_view_index);
+@fragment
+fn fs_fadeout(vertex: VertexOutput) -> @location(0) vec4<f32> {
+    let pixel = textureSample(trajectory_views, tex_sampler, vertex.uv, params.bg_view_index);
     // fade out trajectory
     if (pixel.a >= 0.2) {
         return pixel * 0.05;
@@ -53,9 +53,9 @@ fn fs_fadeout(in: VertexOutput) -> @location(0) vec4<f32> {
 }
 
 // If have two attachments, fragment shader must write to two outputs
-@stage(fragment)
-fn fs_compose(in: VertexOutput) -> @location(0) vec4<f32> {
-    let val = textureSample(trajectory_views, tex_sampler, in.uv, params.trajectory_view_index);
+@fragment
+fn fs_compose(vertex: VertexOutput) -> @location(0) vec4<f32> {
+    let val = textureSample(trajectory_views, tex_sampler, vertex.uv, params.trajectory_view_index);
     if (val.a < 0.1) {
         discard;
     }

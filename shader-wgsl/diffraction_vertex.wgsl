@@ -52,7 +52,7 @@ struct VertexOutput {
     @builtin(position) position: vec4<f32>,
 };
 
-@stage(vertex)
+@vertex
 fn vs_main(
     @location(0) pos: vec3<f32>,
     @location(1) tangent: vec4<f32>,
@@ -84,14 +84,14 @@ fn vs_main(
         }
     } 
 
-    var output: VertexOutput;
-    output.position = mvp_mat.mvp * vec4<f32>(pos, 1.0);
-    output.color = out_color;
-    return output;
+    var result: VertexOutput;
+    result.position = mvp_mat.mvp * vec4<f32>(pos, 1.0);
+    result.color = out_color;
+    return result;
 }
 
 
-@stage(fragment)
-fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
-    return vec4<f32>(in.color, 1.0);
+@fragment
+fn fs_main(vertex: VertexOutput) -> @location(0) vec4<f32> {
+    return vec4<f32>(vertex.color, 1.0);
 }

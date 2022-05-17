@@ -13,7 +13,7 @@ struct DynamicUniform {
 
 let force: vec3<f32>  = vec3<f32>(0.0, 0.0, 9.98);
 
-@stage(compute) @workgroup_size(32, 1, 1)
+@compute @workgroup_size(32, 1, 1)
 fn cs_main(@builtin(global_invocation_id) global_invocation_id: vec3<u32>) {
     let total = arrayLength(&particles.data);
     let field_index = global_invocation_id.x;

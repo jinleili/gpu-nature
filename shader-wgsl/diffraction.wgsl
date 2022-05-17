@@ -15,17 +15,17 @@ struct VertexOutput {
     @builtin(position) position: vec4<f32>,
 };
 
-@stage(vertex)
+@vertex
 fn vs_main(
     @location(0) pos: vec3<f32>,
     @location(1) tangent: vec4<f32>,
 ) -> VertexOutput {
-    var output: VertexOutput;
-    output.position = mvp_mat.mvp * vec4<f32>(pos, 1.0);
-    output.ec_pos = (mvp_mat.mv * vec4<f32>(pos, 1.0)).xyz;
-    output.transf_tangent = (mvp_mat.normal * tangent).xyz;
+    var result: VertexOutput;
+    result.position = mvp_mat.mvp * vec4<f32>(pos, 1.0);
+    result.ec_pos = (mvp_mat.mv * vec4<f32>(pos, 1.0)).xyz;
+    result.transf_tangent = (mvp_mat.normal * tangent).xyz;
 
-    return output;
+    return result;
 }
 
 
@@ -65,17 +65,17 @@ fn rainbow(t: f32) -> vec3<f32> {
 
 #include "func/color_space_convert.wgsl"
 
-@stage(fragment)
-fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
-    let to_light = normalize(vec3<f32>(params.light_x, params.light_y, params.light_z) - in.ec_pos);
-    let to_eye = normalize(vec3<f32>(0.0) - in.ec_pos);
+@fragment
+fn fs_main(vertex: VertexOutput) -> @location(0) vec4<f32> {
+    let to_light = normalize(vec3<f32>(params.light_x, params.light_y, params.light_z) - vertex.ec_pos);
+    let to_eye = normalize(vec3<f32>(0.0) - vertex.ec_pos);
 
-    let sum = dot(to_light + to_eye, normalize(in.transf_tangent));
+    let sum = dot(to_light + to_eye, normalize(vertex.transf_tangent));
     let delta = params.d *  abs(sum);
     let m_min = i32(floor(delta / LAMBDA_MAX));
     let m_max = i32(ceil(delta / LAMBDA_MIN));
     var frag_color = vec4<f32>(vec3<f32>(0.75), 1.0);
-    // var frag_color =  vec4<f32>(hsv2rgb(in.transf_tangent.y, in.transf_tangent.y, 1.0), 1.0);
+    // var frag_color =  vec4<f32>(hsv2rgb(vertex.transf_tangent.y, vertex.transf_tangent.y, 1.0), 1.0);
     if (m_min > 0) {
         var color: vec3<f32> = vec3<f32>(0.0);
         var count: i32 = 0;

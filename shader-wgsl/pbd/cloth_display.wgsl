@@ -23,7 +23,7 @@ struct VertexOutput {
     @location(3) collision_area: f32,
 };
 
-@stage(vertex)
+@vertex
 fn vs_main(
     @location(0) particle_index: vec3<u32>,
 ) -> VertexOutput {
@@ -39,23 +39,23 @@ fn vs_main(
 
     let mv_pos = mvp_mat.mv * vec4<f32>(particle.pos.xyz, 1.0);
 
-    var output: VertexOutput;
+    var result: VertexOutput;
     // normal = normalize(cross(particle1.pos.xyz - particle.pos.xyz, particle2.pos.xyz - particle.pos.xyz) +
     //                    cross(particle3.pos.xyz - particle.pos.xyz, particle4.pos.xyz - particle.pos.xyz));
-    output.normal = (cross(particle2.pos.xyz - particle.pos.xyz, particle1.pos.xyz - particle.pos.xyz) +
+    result.normal = (cross(particle2.pos.xyz - particle.pos.xyz, particle1.pos.xyz - particle.pos.xyz) +
                         cross(particle4.pos.xyz - particle.pos.xyz, particle3.pos.xyz - particle.pos.xyz)) / 2.0;
-    output.position = mvp_mat.proj * mv_pos;
-    output.ec_pos = mv_pos.xyz;
-    output.uv = particle.uv_mass.xy;
-    output.collision_area = 0.0;
+    result.position = mvp_mat.proj * mv_pos;
+    result.ec_pos = mv_pos.xyz;
+    result.uv = particle.uv_mass.xy;
+    result.collision_area = 0.0;
     // let collesion = collisions.data[field_index];
     // if (collesion.count > 0) {
-    //     output.collision_area = 1.0;
+    //     result.collision_area = 1.0;
     // } else {
-    //     output.collision_area = 0.0;
+    //     result.collision_area = 0.0;
     // }
    
-    return output;
+    return result;
 }
 
 @group(0) @binding(3) var tex: texture_2d<f32>;
@@ -67,12 +67,12 @@ let view_pos = vec3<f32>(0.0, 0.0, 1.0);
 let ambient_strength = 0.75;
 let specular_strength = 0.05;
 
-@stage(fragment)
-fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
-    let color: vec4<f32> = textureSample(tex, tex_sampler, in.uv);
+@fragment
+fn fs_main(vertex: VertexOutput) -> @location(0) vec4<f32> {
+    let color: vec4<f32> = textureSample(tex, tex_sampler, vertex.uv);
     let ambient = ambient_strength * light_color.rgb;
     // Diffuse
-    var norm = normalize(in.normal);
+    var norm = normalize(vertex.normal);
     // 利用 faceforward 函数的方法，判断面相对于光线的朝向，如果背面朝向光源，则要反转法线
     let bg_color = color.rgb;
     let d = dot(view_pos, norm);
@@ -80,7 +80,7 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
         norm = -norm;
     }
 
-    let light_dir = normalize(light_pos - in.ec_pos);
+    let light_dir = normalize(light_pos - vertex.ec_pos);
     // 0.5 ambient
     let diffuse = clamp(abs(dot(norm, light_dir)), 0.5, 1.0) * color.rgb;
     return vec4<f32>(diffuse, color.a);

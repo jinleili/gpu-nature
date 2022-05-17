@@ -34,7 +34,7 @@ fn is_movable_particle(particle: Particle) -> bool {
 }
 // 初始双面角 ϕ0
 let phi0 = 3.1415926535;
-@stage(compute) @workgroup_size(32, 1)
+@compute @workgroup_size(32, 1)
 fn cs_main(@builtin(global_invocation_id) global_invocation_id: vec3<u32>) {  
     var field_index = i32(global_invocation_id.x);
     if (field_index >= dy_uniform.group_len) {

@@ -273,8 +273,8 @@ impl D2Q9Node {
     pub fn dispatch<'c, 'b: 'c>(&'b self, cpass: &mut wgpu::ComputePass<'c>, swap_index: usize) {
         cpass.set_bind_group(0, &self.setting_nodes[swap_index].bind_group, &[]);
         cpass.set_pipeline(&self.collide_stream_pipelines[swap_index]);
-        cpass.dispatch(self.dispatch_group_count.0, self.dispatch_group_count.1, 1);
+        cpass.dispatch_workgroups(self.dispatch_group_count.0, self.dispatch_group_count.1, 1);
         cpass.set_pipeline(&self.boundary_pipelines[swap_index]);
-        cpass.dispatch(self.dispatch_group_count.0, self.dispatch_group_count.1, 1);
+        cpass.dispatch_workgroups(self.dispatch_group_count.0, self.dispatch_group_count.1, 1);
     }
 }

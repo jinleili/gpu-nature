@@ -19,7 +19,7 @@ struct VertexOutput {
     @location(2) ec_pos: vec3<f32>,
 };
 
-@stage(vertex)
+@vertex
 fn vs_main(@builtin(vertex_index) vertex_index: u32) -> VertexOutput {
     // 1，找出对应编号的粒子，
     // 2，使用粒子的位置来计算顶点位置
@@ -32,13 +32,13 @@ fn vs_main(@builtin(vertex_index) vertex_index: u32) -> VertexOutput {
 
     let mv_pos = mvp_mat.mv * vec4<f32>(p0.pos.xyz, 1.0);
 
-    var output: VertexOutput;
-    output.position = mvp_mat.proj * mv_pos;
-    output.normal = (cross(particle2.pos.xyz - p0.pos.xyz, particle1.pos.xyz - p0.pos.xyz) +
+    var result: VertexOutput;
+    result.position = mvp_mat.proj * mv_pos;
+    result.normal = (cross(particle2.pos.xyz - p0.pos.xyz, particle1.pos.xyz - p0.pos.xyz) +
                         cross(particle4.pos.xyz - p0.pos.xyz, particle3.pos.xyz - p0.pos.xyz)) / 2.0;
-    output.ec_pos = mv_pos.xyz;
+    result.ec_pos = mv_pos.xyz;
    
-    return output;
+    return result;
 }
 
 
@@ -46,10 +46,10 @@ let light_color = vec3<f32>(0.9, 0.9, 0.9);
 let light_pos = vec3<f32>(-0.0, -0.0, 0.6);
 let view_pos = vec3<f32>(0.0, 0.0, 1.0);
 
-@stage(fragment)
-fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
+@fragment
+fn fs_main(vertex: VertexOutput) -> @location(0) vec4<f32> {
     let color: vec4<f32> = vec4<f32>(1.0);
-    var norm = normalize(in.normal);
+    var norm = normalize(vertex.normal);
     // 利用 faceforward 函数的方法，判断面相对于光线的朝向，如果背面朝向光源，则要反转法线
     let bg_color = color.rgb;
     let d = dot(view_pos, norm);
@@ -58,7 +58,7 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
     }
 
     // // Diffuse
-    // let light_dir = normalize(light_pos - in.ec_pos);
+    // let light_dir = normalize(light_pos - vertex.ec_pos);
     // // 0.5 ambient
     // let diffuse = clamp(abs(dot(norm, light_dir)), 0.5, 1.0) * color.rgb;
     // return vec4<f32>(diffuse, color.a);

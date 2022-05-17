@@ -4,7 +4,7 @@
 @group(1) @binding(0) var<uniform> dy_uniform: DynamicUniform;
 
 // mesh coloring 分组之后，最后一组往往约束组数量很小（64*64粒子，最小约束组长度是 94）
-@stage(compute) @workgroup_size(32, 1)
+@compute @workgroup_size(32, 1)
 fn cs_main(@builtin(global_invocation_id) global_invocation_id: vec3<u32>) {  
     var field_index = i32(global_invocation_id.x);
     if (field_index >= dy_uniform.group_len) {

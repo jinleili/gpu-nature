@@ -15,17 +15,17 @@
 
 let PI: f32 = 3.1415926535;
 
-@stage(fragment) 
-fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
+@fragment 
+fn fs_main(vertex: VertexOutput) -> @location(0) vec4<f32> {
     //trick wgpu validation
     let xx = particle_uniform.color;
-    let pixel_coord = min(vec2<i32>(floor(in.position.xy)), field.canvas_size.xy - 1);
+    let pixel_coord = min(vec2<i32>(floor(vertex.position.xy)), field.canvas_size.xy - 1);
     let p_index = pixel_coord.x + pixel_coord.y * field.canvas_size.x;
     var p: Pixel = canvas.pixels[p_index];
-    let macro: vec4<f32> = textureSample(macro_info, tex_sampler, in.uv);
+    let macro: vec4<f32> = textureSample(macro_info, tex_sampler, vertex.uv);
 
     // calculate curl
-    let curl: vec4<f32> = textureSample(cur_info, tex_sampler, in.uv);
+    let curl: vec4<f32> = textureSample(cur_info, tex_sampler, vertex.uv);
 
     var frag_color: vec4<f32>;
     let speed = abs(macro.x) + abs(macro.y);

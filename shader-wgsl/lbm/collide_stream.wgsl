@@ -11,7 +11,7 @@ fn diffuse_feq2(velocity: vec2<f32>, rho: f32, direction: i32, usqr: f32) -> f32
   // 公式： w * (rho + 𝛙*rho(3.0 * e_dot_u + 4.5 * (e_dot_u * e_dot_u) - usqr))
   // psi 放在 loop
   // 外计算后传进来并不能提高性能，似乎纯数据运算的速度是极快的，减小几步运算并没有优化效果
-  let psi = smoothStep(0.01, 0.2, rho) * rho;
+  let psi = smoothstep(0.01, 0.2, rho) * rho;
   return w(direction) * (rho + psi * (3.0 * e_dot_u + 4.5 * (e_dot_u * e_dot_u) - usqr));
 }
 
@@ -22,7 +22,7 @@ fn equilibrium(velocity: vec2<f32>, rho: f32, direction: i32, usqr: f32) -> f32 
 }
 
 
-@stage(compute) @workgroup_size(64, 4)
+@compute @workgroup_size(64, 4)
 fn cs_main(@builtin(global_invocation_id) global_invocation_id: vec3<u32>) {
     let uv = vec2<i32>(global_invocation_id.xy);
     if (uv.x >= field.lattice_size.x || uv.y >= field.lattice_size.y) {

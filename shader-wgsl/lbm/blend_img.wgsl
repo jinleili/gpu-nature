@@ -8,7 +8,7 @@
 let PI: f32 = 3.1415926;
 let PI_2: f32 = 1.570796;
 
-@stage(fragment)
+@fragment
 fn fs_main(in : VertexOutput) -> @location(0) vec4<f32> {
   let macro: vec4<f32> = textureSample(macro_info, tex_sampler, in.uv);
   // 角度

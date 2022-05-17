@@ -29,10 +29,13 @@ PREPROCESS_SHADER=true cargo build
 
 First, install [Firefox Nightly](https://www.mozilla.org/en-US/firefox/channel/desktop/#nightly) and enable `Web API: WebGPU`. Or, install Chrome Canary/Dev and setting: `chrome://flags/#enable-unsafe-webgpu`
 
-Second, install wasm-pack:
+Second, [install `wasm-pack`](https://rustwasm.github.io/wasm-pack/installer/#)
 
 ```sh
+# macOS(Intel CPU) or *nix system (Unix, Linux)
 curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+# macOS(M1) or other platforms
+cargo install wasm-pack
 ```
 
 Third, compile to wasm and start run:

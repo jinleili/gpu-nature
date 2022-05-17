@@ -11,6 +11,7 @@ struct Gradient {
 @group(0) @binding(0) var<storage, read> permutation : Permutation;
 @group(0) @binding(1) var<storage, read> gradient : Gradient;
 @group(0) @binding(2) var marble_tex: texture_storage_2d<rgba8unorm, write>;
+// @group(0) @binding(2) var marble_tex: texture_storage_2d<bgra8unorm, write>;
 
 #include "noise/fn_perlin_noise.wgsl"
 
@@ -26,7 +27,7 @@ fn turbulence(octaves: i32, P: vec3<f32>, lacunarity: f32, gain: f32) -> f32 {
   return abs(sum);
 }
 
-@stage(compute) @workgroup_size(16, 16)
+@compute @workgroup_size(16, 16)
 fn cs_main(@builtin(global_invocation_id) global_invocation_id: vec3<u32>) {
     let xy = vec2<f32>(global_invocation_id.xy);
     let p = vec3<f32>(xy / 105.0, 0.5) ; 

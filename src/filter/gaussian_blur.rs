@@ -51,7 +51,7 @@ impl GaussianBlurFilter {
         cpass.set_pipeline(&self.one_in_out.pipeline);
         // blur x
         cpass.set_bind_group(0, &self.one_in_out.bind_group, &[0]);
-        cpass.dispatch(
+        cpass.dispatch_workgroups(
             self.one_in_out.dispatch_group_count.0,
             self.one_in_out.dispatch_group_count.1,
             1,
@@ -62,7 +62,7 @@ impl GaussianBlurFilter {
             &self.one_in_out.bind_group,
             &[self.offset_stride as wgpu::DynamicOffset],
         );
-        cpass.dispatch(
+        cpass.dispatch_workgroups(
             self.one_in_out.dispatch_group_count.0,
             self.one_in_out.dispatch_group_count.1,
             1,

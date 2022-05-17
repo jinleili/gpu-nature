@@ -12,7 +12,7 @@
 
 let PI: f32 = 3.1415926535;
 
-@stage(fragment) 
+@fragment 
 fn fs_main(@builtin(position) coord: vec4<f32>) -> @location(0) vec4<f32> {
     let pixel_coord = min(vec2<i32>(floor(coord.xy)), field.canvas_size.xy - 1);
     let p_index = pixel_coord.x + pixel_coord.y * field.canvas_size.x;

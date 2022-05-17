@@ -18,7 +18,7 @@ fn get_velocity0(p: vec2<i32>) -> vec2<f32> {
     return v;
 }
 
-@stage(compute) @workgroup_size(16, 16)
+@compute @workgroup_size(16, 16)
 fn cs_main(@builtin(global_invocation_id) global_invocation_id: vec3<u32>) {
     let uv = vec2<i32>(global_invocation_id.xy);
     if (uv.x >= field.lattice_size.x || uv.y >= field.lattice_size.y) {
