@@ -1,12 +1,14 @@
 #include "aa_lbm/aa_layout_and_fn.wgsl"
 
-
-struct TickTockUniforms {
+struct TickTock {
   // A-A pattern lattice offset
-  read_offset: array<i32, 9>,
-  write_offset: array<i32, 9>,
-};
-@group(1) @binding(0) var<uniform> params: TickTockUniforms;
+  read_offset: i32,
+  write_offset: i32,
+  _pading0: i32,
+  _pading1: i32,
+}
+
+@group(1) @binding(0) var<uniform> params: array<TickTock, 9>;
 
 struct EqResults {
   val0: f32,
@@ -42,7 +44,7 @@ fn cs_main(@builtin(global_invocation_id) global_invocation_id: vec3<u32>) {
     var f_i: array<f32, 9>;
     f_i[0] = aa_cell.data[field_index];
     for (var i: i32 = 1; i < 9; i = i + 1) {
-      f_i[i] = aa_cell.data[field_index + params.read_offset[i] ];
+      f_i[i] = aa_cell.data[field_index + params[i].read_offset ];
     }
     var rho: f32 = f_i[0] + f_i[1] + f_i[2] + f_i[3] + f_i[4] + f_i[5] + f_i[6] + f_i[7] + f_i[8];
     rho = clamp(rho, 0.8, 1.2);
@@ -79,15 +81,15 @@ fn cs_main(@builtin(global_invocation_id) global_invocation_id: vec3<u32>) {
     let usqr = 1.5 * dot(velocity, velocity);
     aa_cell.data[field_index] = f_i[0] - fluid.omega * (f_i[0] - rho * w(0) * (1.0 - usqr));
     var eq: EqResults = equilibrium(velocity, rho, 1, usqr);
-    aa_cell.data[field_index + params.write_offset[1] ] = f_i[1] - fluid.omega * (f_i[1] - eq.val0) + F[1];
-    aa_cell.data[field_index + params.write_offset[3] ] = f_i[3] - fluid.omega * (f_i[3] - eq.val1) + F[3];
+    aa_cell.data[field_index + params[1].write_offset ] = f_i[1] - fluid.omega * (f_i[1] - eq.val0) + F[1];
+    aa_cell.data[field_index + params[3].write_offset ] = f_i[3] - fluid.omega * (f_i[3] - eq.val1) + F[3];
     eq = equilibrium(velocity, rho, 2, usqr);
-    aa_cell.data[field_index + params.write_offset[2] ] = f_i[2] - fluid.omega * (f_i[2] - eq.val0) + F[2];
-    aa_cell.data[field_index + params.write_offset[4] ] = f_i[4] - fluid.omega * (f_i[4] - eq.val1) + F[4];
+    aa_cell.data[field_index + params[2].write_offset ] = f_i[2] - fluid.omega * (f_i[2] - eq.val0) + F[2];
+    aa_cell.data[field_index + params[4].write_offset ] = f_i[4] - fluid.omega * (f_i[4] - eq.val1) + F[4];
     eq = equilibrium(velocity, rho, 5, usqr);
-    aa_cell.data[field_index + params.write_offset[5] ] = f_i[5] - fluid.omega * (f_i[5] - eq.val0) + F[5];
-    aa_cell.data[field_index + params.write_offset[7] ] = f_i[7] - fluid.omega * (f_i[7] - eq.val1) + F[7];
+    aa_cell.data[field_index + params[5].write_offset ] = f_i[5] - fluid.omega * (f_i[5] - eq.val0) + F[5];
+    aa_cell.data[field_index + params[7].write_offset ] = f_i[7] - fluid.omega * (f_i[7] - eq.val1) + F[7];
     eq = equilibrium(velocity, rho, 6, usqr);
-    aa_cell.data[field_index + params.write_offset[6] ] = f_i[6] - fluid.omega * (f_i[6] - eq.val0) + F[6];
-    aa_cell.data[field_index + params.write_offset[8] ] = f_i[8] - fluid.omega * (f_i[8] - eq.val1) + F[8];
+    aa_cell.data[field_index + params[6].write_offset ] = f_i[6] - fluid.omega * (f_i[6] - eq.val0) + F[6];
+    aa_cell.data[field_index + params[8].write_offset ] = f_i[8] - fluid.omega * (f_i[8] - eq.val1) + F[8];
 }

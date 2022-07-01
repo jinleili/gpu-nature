@@ -34,13 +34,13 @@ let PI: f32 = 3.1415926535;
 
 @fragment 
 fn fs_compose(in : VertexOutput) -> @location(0) vec4<f32> {
-    let macro: vec4<f32> = textureSample(macro_info, tex_sampler, in.uv.xyz);
-    let speed = abs(macro.x) + abs(macro.y);
+    let macro_data: vec4<f32> = textureSample(macro_info, tex_sampler, in.uv.xyz);
+    let speed = abs(macro_data.x) + abs(macro_data.y);
 
      // moving angle as color
-    let angle = (atan2(macro.y, macro.x) + PI) / (2.0 * PI);
+    let angle = (atan2(macro_data.y, macro_data.x) + PI) / (2.0 * PI);
     var frag_color: vec4<f32>;
-    frag_color = vec4<f32>(hsv2rgb(angle , 0.9, 0.6 + speed * 2.0), macro.z);
+    frag_color = vec4<f32>(hsv2rgb(angle , 0.9, 0.6 + speed * 2.0), macro_data.z);
 
     return frag_color;
     // return vec4<f32>(0.8);

@@ -11,6 +11,7 @@ pub struct Canvas {
     d3_noise: crate::noise::D3NoiseTexture,
     nature_node: Diffraction,
     floor_node: crate::Floor,
+    brick: crate::Brick,
 }
 
 #[allow(dead_code)]
@@ -38,7 +39,9 @@ impl Canvas {
         // floor
         let floor_node = crate::Floor::new(&app_view, &d3_noise.tex, true);
 
-        Self { app_view, dc_origin, depth_tex, d3_noise, nature_node, floor_node }
+        let brick = crate::Brick::new(&app_view);
+
+        Self { app_view, dc_origin, depth_tex, d3_noise, nature_node, floor_node, brick }
     }
 }
 
@@ -65,11 +68,11 @@ impl SurfaceFrame for Canvas {
         // self.nature_node.enter_frame(&mut self.app_view);
 
         let (frame, frame_view) = self.app_view.get_current_frame_view();
-        let color_attachments = [wgpu::RenderPassColorAttachment {
+        let color_attachments = [Some(wgpu::RenderPassColorAttachment {
             view: &frame_view,
             resolve_target: None,
             ops: wgpu::Operations { load: wgpu::LoadOp::Clear(wgpu::Color::BLACK), store: true },
-        }];
+        })];
         let render_pass_descriptor = wgpu::RenderPassDescriptor {
             label: None,
             color_attachments: &color_attachments,
@@ -86,9 +89,17 @@ impl SurfaceFrame for Canvas {
                 label: Some("diffraction encoder"),
             });
         {
-            let mut rpass = encoder.begin_render_pass(&render_pass_descriptor);
-            self.floor_node.draw_render_pass(&mut rpass);
-            self.nature_node.draw_render_pass(&mut rpass);
+            // let mut rpass = encoder.begin_render_pass(&render_pass_descriptor);
+            // self.floor_node.draw_render_pass(&mut rpass);
+            // self.nature_node.draw_render_pass(&mut rpass);
+        }
+        {
+            let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+                label: None,
+                color_attachments: &color_attachments,
+                depth_stencil_attachment: None,
+            });
+            self.brick.display_node.draw_rpass(&mut rpass);
         }
         self.app_view.queue.submit(Some(encoder.finish()));
         frame.present();

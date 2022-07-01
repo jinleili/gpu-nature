@@ -14,7 +14,8 @@ crate-type = ["rlib", "cdylib", "staticlib"]
 
 [features]
 angle = ["wgpu/angle"]
-default = []
+default = ["trace"]
+trace = ["wgpu/trace"]
 vulkan-portability = ["wgpu/vulkan-portability"]
 
 [profile.release]
@@ -25,19 +26,22 @@ lto = true
 strip = "all"
 
 [dependencies]
-# app-surface = {git = "https://github.com/jinleili/wgpu-on-app", rev = "bf85a0b"}
 libc = "*"
-# wgpu = {git = "https://github.com/gfx-rs/wgpu", rev = "810dc5aa"}
-app-surface = {path = "../wgpu-on-app/app-surface"}
-wgpu = {path = "../../forks/wgpu/wgpu"}
+# wgpu = { git = "https://github.com/gfx-rs/wgpu", rev = "fd954a2b" }
+# wgpu = { git = "https://github.com/gfx-rs/wgpu", rev = "91142837" }
+# wgpu = { git = "https://github.com/cwfitzgerald/wgpu", branch = "fix-sampling-usage" }
+wgpu = { path = "../../forks/wgpu/wgpu" }
 
-image = {version = "0.24", default-features = false, features = ["png"]}
+# app-surface = {git = "https://github.com/jinleili/wgpu-on-app", rev = "fd954a2b"}
+app-surface = { path = "../wgpu-on-app/app-surface" }
+
+image = { version = "0.24.2", default-features = false, features = ["png"] }
 lazy_static = "*"
-lyon = {git = "https://github.com/nical/lyon", version = "0.17.5"}
+lyon = { git = "https://github.com/nical/lyon", version = "0.17.5" }
 nalgebra-glm = "*"
-rand = {version = "0.7", features = ["wasm-bindgen"]}
+rand = { version = "0.7", features = ["wasm-bindgen"] }
 raw-window-handle = "0.4"
-winit = {version = "0.26.1"}
+winit = { version = "0.26.1" }
 zerocopy = "0.6.1"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
@@ -50,14 +54,14 @@ log = "0.4"
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 # The `wasm-bindgen` crate provides the bare minimum functionality needed
 # to interact with JavaScript.
-wasm-bindgen = "0.2.80"
+wasm-bindgen = "0.2.81"
 # `wee_alloc` is a tiny allocator for wasm that is only ~1K in code size
 # compared to the default allocator's ~10K. However, it is slower than the default
 # allocator, so it's not enabled by default.
 console_log = "0.2"
-js-sys = "0.3.57"
-wasm-bindgen-futures = "0.4.30"
-web-sys = {version = "=0.3.57", features = [
+js-sys = "0.3.58"
+wasm-bindgen-futures = "0.4.31"
+web-sys = { version = "=0.3.58", features = [
   "Storage",
   "Document",
   "HtmlCollection",
@@ -70,6 +74,7 @@ web-sys = {version = "=0.3.57", features = [
   "Gpu",
   "GpuAdapter",
   "GpuAddressMode",
+  "GpuAutoLayoutMode",
   "GpuBindGroup",
   "GpuBindGroupDescriptor",
   "GpuBindGroupEntry",
@@ -85,12 +90,10 @@ web-sys = {version = "=0.3.57", features = [
   "GpuBufferBindingLayout",
   "GpuBufferBindingType",
   "GpuBufferDescriptor",
-  "GpuBufferUsage",
   "GpuCanvasContext",
   "GpuCanvasConfiguration",
   "GpuColorDict",
   "GpuColorTargetState",
-  "GpuColorWrite",
   "GpuCommandBuffer",
   "GpuCommandBufferDescriptor",
   "GpuCommandEncoder",
@@ -109,6 +112,7 @@ web-sys = {version = "=0.3.57", features = [
   "GpuDeviceDescriptor",
   "GpuDeviceLostInfo",
   "GpuDeviceLostReason",
+  "GpuError",
   "GpuErrorFilter",
   "GpuExtent3dDict",
   "GpuFeatureName",
@@ -120,7 +124,8 @@ web-sys = {version = "=0.3.57", features = [
   "GpuImageDataLayout",
   "GpuIndexFormat",
   "GpuLoadOp",
-  "GpuMapMode",
+  "gpu_map_mode",
+  "GpuMipmapFilterMode",
   "GpuMultisampleState",
   "GpuObjectDescriptorBase",
   "GpuOrigin2dDict",
@@ -129,7 +134,6 @@ web-sys = {version = "=0.3.57", features = [
   "GpuPipelineDescriptorBase",
   "GpuPipelineLayout",
   "GpuPipelineLayoutDescriptor",
-  "GpuPipelineStatisticName",
   "GpuPowerPreference",
   "GpuPrimitiveState",
   "GpuPrimitiveTopology",
@@ -155,7 +159,6 @@ web-sys = {version = "=0.3.57", features = [
   "GpuSamplerDescriptor",
   "GpuShaderModule",
   "GpuShaderModuleDescriptor",
-  "GpuShaderStage",
   "GpuStencilFaceState",
   "GpuStencilOperation",
   "GpuStorageTextureAccess",
@@ -170,7 +173,6 @@ web-sys = {version = "=0.3.57", features = [
   "GpuTextureDimension",
   "GpuTextureFormat",
   "GpuTextureSampleType",
-  "GpuTextureUsage",
   "GpuTextureView",
   "GpuTextureViewDescriptor",
   "GpuTextureViewDimension",
@@ -183,13 +185,16 @@ web-sys = {version = "=0.3.57", features = [
   "GpuVertexState",
   "GpuVertexStepMode",
   "HtmlCanvasElement",
-  "Window",
-]}
-wee_alloc = {version = "0.4.5", optional = true}
+  "OffscreenCanvas",
+  "ImageBitmap",
+  "ImageBitmapRenderingContext",
+  "Window"
+] }
+wee_alloc = { version = "0.4.5", optional = true }
 
 [dev-dependencies]
 lazy_static = "*"
 palette = "0.4"
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies]
-wasm-bindgen-test = "0.3.30"
+wasm-bindgen-test = "0.3.31"

@@ -10,9 +10,9 @@ let PI_2: f32 = 1.570796;
 
 @fragment
 fn fs_main(in : VertexOutput) -> @location(0) vec4<f32> {
-  let macro: vec4<f32> = textureSample(macro_info, tex_sampler, in.uv);
+  let macro_data: vec4<f32> = textureSample(macro_info, tex_sampler, in.uv);
   // 角度
-  let angle = (atan2(macro.x, macro.y) + PI) / (2.0 * PI);
+  let angle = (atan2(macro_data.x, macro_data.y) + PI) / (2.0 * PI);
   return vec4<f32>(hsv2rgb(angle, 0.75, 1.0), 1.0);
   // 速度
   // let velocity = abs(macro.x) + abs(macro.y);

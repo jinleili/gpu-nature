@@ -219,14 +219,14 @@ impl Player for FluidPlayer {
         {
             let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: None,
-                color_attachments: &[wgpu::RenderPassColorAttachment {
+                color_attachments: &[Some(wgpu::RenderPassColorAttachment {
                     view: frame_view,
                     resolve_target: None,
                     ops: wgpu::Operations {
                         load: wgpu::LoadOp::Clear(wgpu::Color { r: 0.2, g: 0.2, b: 0.25, a: 1.0 }),
                         store: true,
                     },
-                }],
+                })],
                 depth_stencil_attachment: None,
             });
             self.render_node.draw_rpass(&mut rpass);

@@ -131,7 +131,7 @@ pub fn empty(
     }
     let tex_view_descriptor = wgpu::TextureViewDescriptor {
         label: Some(&view_label),
-        format: None,
+        format: Some(format),
         dimension: Some(view_dimension),
         aspect: wgpu::TextureAspect::All,
         base_mip_level: 0,

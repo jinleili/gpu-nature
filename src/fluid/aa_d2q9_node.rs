@@ -104,22 +104,30 @@ impl AAD2Q9Node {
         let collide_stream_shader =
             create_shader_module(device, "aa_lbm/aa_collide_stream", Some("aa_collide_stream"));
 
-        let mut dynamic_data0 =
-            super::TickTockUniforms { read_offset: [0; 9], write_offset: [0; 9] };
-        let mut dynamic_data1 =
-            super::TickTockUniforms { read_offset: [0; 9], write_offset: [0; 9] };
+        let mut dynamic_data0: Vec<super::TickTock> = vec![];
+        let mut dynamic_data1: Vec<super::TickTock> = vec![];
         let soa_offset = (lattice.width * lattice.height) as i32;
         for i in 1..9 {
             let e = lbm_uniform_data.e_w_max[i];
             let inversed = lbm_uniform_data.inversed_direction[i][0] as usize;
             let inversed_e = lbm_uniform_data.e_w_max[inversed];
-            dynamic_data0.read_offset[i] =
-                (e[0] + e[1] * lattice.width as f32) as i32 + soa_offset * inversed as i32;
-            dynamic_data0.write_offset[i] = (inversed_e[0] + inversed_e[1] * lattice.width as f32)
-                as i32
-                + soa_offset * i as i32;
-            dynamic_data1.read_offset[i] = soa_offset * i as i32;
-            dynamic_data1.write_offset[i] = soa_offset * inversed as i32;
+            let item = super::TickTock {
+                read_offset: (e[0] + e[1] * lattice.width as f32) as i32
+                    + soa_offset * inversed as i32,
+                write_offset: (inversed_e[0] + inversed_e[1] * lattice.width as f32) as i32
+                    + soa_offset * i as i32,
+                _pading0: 0,
+                _pading1: 0,
+            };
+            dynamic_data0.push(item);
+
+            let item = super::TickTock {
+                read_offset: soa_offset * i as i32,
+                write_offset: soa_offset * inversed as i32,
+                _pading0: 0,
+                _pading1: 0,
+            };
+            dynamic_data1.push(item);
         }
         let dynamic_offset =
             device.limits().min_uniform_buffer_offset_alignment as wgpu::BufferAddress;

@@ -29,8 +29,8 @@ fn turbulence(octaves: i32, P: vec3<f32>, lacunarity: f32, gain: f32) -> f32 {
 }
 
 @fragment 
-fn fs_main(@builtin(position) coord : vec4<f32>) -> @location(0) vec4<f32> {
-    let p = vec3<f32>(coord.xy / 105.0, 0.5) ; 
+fn fs_main(vertex: VertexOutput) -> @location(0) vec4<f32> {
+    let p = vec3<f32>(vertex.position.xy / 105.0, 0.5) ; 
     // noise self
     // return vec4<f32>(vec3<f32>(noise(p)), 1.0);
 

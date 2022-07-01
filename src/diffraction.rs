@@ -1,7 +1,10 @@
 use crate::util::node::{ViewNode, ViewNodeBuilder};
-use crate::util::{ BufferObj};
+use crate::util::BufferObj;
 
-use app_surface::{AppSurface, math::{Position, Size}, SurfaceFrame, Touch, TouchPhase};
+use app_surface::{
+    math::{Position, Size},
+    AppSurface, SurfaceFrame, Touch, TouchPhase,
+};
 use nalgebra_glm as glm;
 use zerocopy::AsBytes;
 
@@ -93,14 +96,14 @@ impl Diffraction {
 
     pub fn enter_frame(&mut self, app_view: &mut AppSurface) {
         let (frame, frame_view) = app_view.get_current_frame_view();
-        let color_attachments = [wgpu::RenderPassColorAttachment {
+        let color_attachments = [Some(wgpu::RenderPassColorAttachment {
             view: &frame_view,
             resolve_target: None,
             ops: wgpu::Operations {
                 load: wgpu::LoadOp::Clear(crate::util::utils::alpha_color()),
                 store: true,
             },
-        }];
+        })];
         let render_pass_descriptor = wgpu::RenderPassDescriptor {
             label: None,
             color_attachments: &color_attachments,

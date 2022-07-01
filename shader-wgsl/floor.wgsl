@@ -49,5 +49,4 @@ fn fs_main(vertex: VertexOutput) -> @location(0) vec4<f32> {
         fogFactor = smoothstep(0., 1., fogFactor);
     }
     return mix(color, vec4<f32>(0.0), fogFactor);
-    // return color;
 }

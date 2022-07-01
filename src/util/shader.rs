@@ -5,13 +5,16 @@ const SHADER_IMPORT: &str = "#include ";
 const SHADER_SEGMENT: &str = "#insert_code_segment";
 
 #[allow(dead_code)]
-pub fn create_shader_module(device: &wgpu::Device, shader_name: &'static str, label: Option<&str>) -> ShaderModule {
+pub fn create_shader_module(
+    device: &wgpu::Device, shader_name: &'static str, label: Option<&str>,
+) -> ShaderModule {
     insert_code_then_create(device, shader_name, None, label)
 }
 
 #[allow(dead_code)]
 pub fn insert_code_then_create(
-    device: &wgpu::Device, shader_name: &'static str, code_segment: Option<&str>, label: Option<&str>,
+    device: &wgpu::Device, shader_name: &'static str, code_segment: Option<&str>,
+    label: Option<&str>,
 ) -> ShaderModule {
     // @Kvark 20210402 ：Please don't use EXPERIMENTAL_TRANSLATION on Metal for this shader for now.
     // let flags = ShaderFlags::VALIDATION | ShaderFlags::EXPERIMENTAL_TRANSLATION;
@@ -52,7 +55,7 @@ pub fn insert_code_then_create(
         shader_source
     };
 
-    device.create_shader_module(&ShaderModuleDescriptor {
+    device.create_shader_module(ShaderModuleDescriptor {
         label,
         source: ShaderSource::Wgsl(Cow::Borrowed(&final_source)),
     })

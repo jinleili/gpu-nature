@@ -16,8 +16,7 @@ impl Floor {
         let tex_width = 16 * 62;
         let marble_tex = crate::util::load_texture::empty(
             &app_view.device,
-            // wgpu::TextureFormat::Rgba8Unorm,
-            wgpu::TextureFormat::Bgra8Unorm,
+            wgpu::TextureFormat::Rgba8Unorm,
             wgpu::Extent3d { width: tex_width, height: tex_width, depth_or_array_layers: 1 },
             None,
             Some(wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::STORAGE_BINDING),

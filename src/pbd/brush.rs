@@ -362,14 +362,14 @@ impl MaoBrush {
         {
             let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: Some("MaoBrush render pass"),
-                color_attachments: &[wgpu::RenderPassColorAttachment {
+                color_attachments: &[Some(wgpu::RenderPassColorAttachment {
                     view: &frame_view,
                     resolve_target: None,
                     ops: wgpu::Operations {
                         load: wgpu::LoadOp::Clear(crate::util::utils::alpha_color()),
                         store: true,
                     },
-                }],
+                })],
                 // depth_stencil_attachment: None,
                 depth_stencil_attachment: Some(
                     crate::util::utils::depth_stencil::create_attachment(&self.depth_texture_view),

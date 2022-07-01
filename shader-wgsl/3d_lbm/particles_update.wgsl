@@ -33,10 +33,10 @@ fn vs_update(
 fn fs_update(vertex: VertexOutput) -> @location(0) vec4<f32> {
     var particle: Particle3D = pb.particles[vertex.particle_index];
     let uv = (particle.pos.xyz + 1.0) / 2.0;
-    let macro: vec4<f32> = textureSample(macro_info, tex_sampler, uv);
-    if (macro.z > 0.001) {
-        // particle.pos = vec4<f32>(particle.pos.xyz + (macro.xyz * 4.0) * vec3<f32>(params.screen_factor, params.screen_factor.x), 1.0);
-        pb.particles[vertex.particle_index].pos = vec4<f32>(particle.pos.xyz + (macro.xyz * 4.0) * vec3<f32>(params.screen_factor, params.screen_factor.x), 1.0);
+    let macro_data: vec4<f32> = textureSample(macro_info, tex_sampler, uv);
+    if (macro_data.z > 0.001) {
+        // particle.pos = vec4<f32>(particle.pos.xyz + (macro_data.xyz * 4.0) * vec3<f32>(params.screen_factor, params.screen_factor.x), 1.0);
+        pb.particles[vertex.particle_index].pos = vec4<f32>(particle.pos.xyz + (macro_data.xyz * 4.0) * vec3<f32>(params.screen_factor, params.screen_factor.x), 1.0);
 
         discard;
     } 

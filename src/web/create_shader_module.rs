@@ -40,7 +40,7 @@ pub fn insert_code_then_create(
         shader_source
     };
 
-    device.create_shader_module(&ShaderModuleDescriptor {
+    device.create_shader_module(ShaderModuleDescriptor {
         label,
         source: ShaderSource::Wgsl(Cow::Borrowed(&final_source)),
     })

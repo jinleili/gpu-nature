@@ -22,19 +22,19 @@ fn fs_main(vertex: VertexOutput) -> @location(0) vec4<f32> {
     let pixel_coord = min(vec2<i32>(floor(vertex.position.xy)), field.canvas_size.xy - 1);
     let p_index = pixel_coord.x + pixel_coord.y * field.canvas_size.x;
     var p: Pixel = canvas.pixels[p_index];
-    let macro: vec4<f32> = textureSample(macro_info, tex_sampler, vertex.uv);
+    let macro_data: vec4<f32> = textureSample(macro_info, tex_sampler, vertex.uv);
 
     // calculate curl
     let curl: vec4<f32> = textureSample(cur_info, tex_sampler, vertex.uv);
 
     var frag_color: vec4<f32>;
-    let speed = abs(macro.x) + abs(macro.y);
+    let speed = abs(macro_data.x) + abs(macro_data.y);
 
      // moving angle as color
-    let angle = (atan2(macro.y, macro.x) + PI) / (2.0 * PI);
-    // frag_color = vec4<f32>(hsv2rgb(angle, 0.9, 1.0), macro.z);
-    // frag_color = vec4<f32>(hsv2rgb(curl.x , 0.9, 0.6 + speed * 2.0), macro.z);
-    frag_color = vec4<f32>(hsv2rgb(curl.x , 0.6 + speed * 1.4, 0.6 + macro.z * 0.33), macro.z);
+    let angle = (atan2(macro_data.y, macro_data.x) + PI) / (2.0 * PI);
+    // frag_color = vec4<f32>(hsv2rgb(angle, 0.9, 1.0), macro_data.z);
+    // frag_color = vec4<f32>(hsv2rgb(curl.x , 0.9, 0.6 + speed * 2.0), macro_data.z);
+    frag_color = vec4<f32>(hsv2rgb(curl.x , 0.6 + speed * 1.4, 0.6 + macro_data.z * 0.33), macro_data.z);
 
     return frag_color;
 }

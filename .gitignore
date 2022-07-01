@@ -4,6 +4,8 @@ src/web/generated_shader_map.rs
 GPU-Frame-Capture/
 web-test/
 WGPU_TRACE/
+WGPU_TRACE_*/
+*.zip
 Cargo.lock
 **/*.rs.bk
 */.DS_STORE

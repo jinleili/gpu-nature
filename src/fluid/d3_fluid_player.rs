@@ -25,7 +25,7 @@ impl D3FluidPlayer {
     ) -> Self {
         let fluid_compute_node = D3Q15Node::new(device, queue, canvas_size, setting);
         let lattice = fluid_compute_node.lattice;
-        let _macro_tex_access = wgpu::StorageTextureAccess::ReadOnly;
+        // let _macro_tex_access = wgpu::StorageTextureAccess::ReadOnly;
 
         // let update_shader =
         //     create_shader_module(device, "lbm/particle_update", Some("particle_update_shader"));
@@ -185,14 +185,14 @@ impl Player for D3FluidPlayer {
         {
             let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: None,
-                color_attachments: &[wgpu::RenderPassColorAttachment {
+                color_attachments: &[Some(wgpu::RenderPassColorAttachment {
                     view: frame_view,
                     resolve_target: None,
                     ops: wgpu::Operations {
                         load: wgpu::LoadOp::Clear(wgpu::Color { r: 0.2, g: 0.2, b: 0.25, a: 1.0 }),
                         store: true,
                     },
-                }],
+                })],
                 depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
                     view: &self.depth_tex.tex_view,
                     depth_ops: Some(wgpu::Operations {

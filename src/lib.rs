@@ -30,6 +30,9 @@ mod noise;
 mod pbd;
 pub use pbd::PBDCanvas;
 
+mod brick;
+pub use brick::Brick;
+
 #[cfg(target_os = "ios")]
 mod ffi_ios;
 #[cfg(target_os = "ios")]

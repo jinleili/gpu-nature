@@ -134,7 +134,7 @@ impl ParticleRenderNode {
             });
         let fade_out_pipeline = generate_pipeline(
             device,
-            vec![format.into()],
+            vec![Some(format.into())],
             &render_pipeline_layout,
             &trajectory_shader,
             ("main", "fs_fadeout"),
@@ -142,7 +142,7 @@ impl ParticleRenderNode {
         );
         let update_pipeline = generate_pipeline(
             device,
-            vec![format.into()],
+            vec![Some(format.into())],
             &render_pipeline_layout,
             &trajectory_shader,
             ("vs_update", "fs_update"),
@@ -150,7 +150,7 @@ impl ParticleRenderNode {
         );
         let compose_pipeline = generate_pipeline(
             device,
-            vec![format.into()],
+            vec![Some(format.into())],
             &render_pipeline_layout,
             &trajectory_shader,
             ("main", "fs_compose"),
@@ -174,14 +174,14 @@ impl ParticleRenderNode {
     ) {
         let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
             label: Some("update trajectory"),
-            color_attachments: &[wgpu::RenderPassColorAttachment {
+            color_attachments: &[Some(wgpu::RenderPassColorAttachment {
                 view: &self.trajectory_views[1],
                 resolve_target: None,
                 ops: wgpu::Operations {
                     load: wgpu::LoadOp::Clear(wgpu::Color { r: 0.0, g: 0.0, b: 0.0, a: 0.0 }),
                     store: true,
                 },
-            }],
+            })],
             depth_stencil_attachment: None,
         });
         // fade out previous frame trajectory
@@ -209,7 +209,7 @@ impl ParticleRenderNode {
 }
 
 fn generate_pipeline(
-    device: &wgpu::Device, targets: Vec<wgpu::ColorTargetState>,
+    device: &wgpu::Device, targets: Vec<Option<wgpu::ColorTargetState>>,
     pipeline_layout: &wgpu::PipelineLayout, shader: &wgpu::ShaderModule,
     entry_points: (&'static str, &'static str), is_bufferless: bool,
 ) -> wgpu::RenderPipeline {

@@ -68,9 +68,12 @@ impl LbmUniform {
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, AsBytes, FromBytes)]
-pub struct TickTockUniforms {
-    pub read_offset: [i32; 9],
-    pub write_offset: [i32; 9],
+pub struct TickTock {
+    // A-A pattern lattice offset
+    read_offset: i32,
+    write_offset: i32,
+    _pading0: i32,
+    _pading1: i32,
 }
 
 fn is_sd_sphere(p: &app_surface::math::Position, r: f32) -> bool {

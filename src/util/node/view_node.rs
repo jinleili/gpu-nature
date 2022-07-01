@@ -331,11 +331,11 @@ impl ViewNode {
             fragment: Some(wgpu::FragmentState {
                 module: &attributes.shader_module,
                 entry_point: "fs_main",
-                targets: &[wgpu::ColorTargetState {
+                targets: &[Some(wgpu::ColorTargetState {
                     format: corlor_format,
                     blend: attributes.color_blend_state,
                     write_mask: wgpu::ColorWrites::ALL,
-                }],
+                })],
             }),
             primitive: wgpu::PrimitiveState {
                 topology: attributes.primitive_topology,
@@ -404,11 +404,11 @@ impl ViewNode {
     ) {
         let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
             label: None,
-            color_attachments: &[wgpu::RenderPassColorAttachment {
+            color_attachments: &[Some(wgpu::RenderPassColorAttachment {
                 view: frame_view,
                 resolve_target: None,
                 ops: wgpu::Operations { load: load_op, store: true },
-            }],
+            })],
             depth_stencil_attachment: None,
         });
         self.set_rpass(&mut rpass);

@@ -113,7 +113,7 @@ impl D3ParticleRenderNode {
 
         let compose_pipeline = generate_pipeline(
             device,
-            vec![canvas_format.into()],
+            vec![Some(canvas_format.into())],
             &render_pipeline_layout,
             &compose_shader,
             ("vs_compose", "fs_compose"),
@@ -176,7 +176,7 @@ impl D3ParticleRenderNode {
         );
         let update_pipeline = generate_pipeline(
             device,
-            vec![canvas_format.into()],
+            vec![Some(canvas_format.into())],
             &update_pipeline_layout,
             &update_shader,
             ("vs_update", "fs_update"),
@@ -202,14 +202,14 @@ impl D3ParticleRenderNode {
         // update
         let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
             label: None,
-            color_attachments: &[wgpu::RenderPassColorAttachment {
+            color_attachments: &[Some(wgpu::RenderPassColorAttachment {
                 view: frame_view,
                 resolve_target: None,
                 ops: wgpu::Operations {
                     load: wgpu::LoadOp::Clear(wgpu::Color { r: 0.2, g: 0.2, b: 0.25, a: 1.0 }),
                     store: false,
                 },
-            }],
+            })],
             depth_stencil_attachment: None,
         });
         rpass.set_pipeline(&self.update_pipeline);
@@ -229,7 +229,7 @@ impl D3ParticleRenderNode {
 }
 
 fn generate_pipeline(
-    device: &wgpu::Device, targets: Vec<wgpu::ColorTargetState>,
+    device: &wgpu::Device, targets: Vec<Option<wgpu::ColorTargetState>>,
     pipeline_layout: &wgpu::PipelineLayout, shader: &wgpu::ShaderModule,
     entry_points: (&'static str, &'static str), is_update: bool,
     depth_tex: Option<&crate::util::AnyTexture>,
